@@ -137,7 +137,19 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.goto("/");
   // First load after an edit can take a while in dev while the page recompiles.
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 30_000 });
+  // #1: the landing page explains the app with three steps, not a paragraph.
+  await expect(page.locator("main").getByRole("heading", { name: "Development" })).toBeVisible();
   await check(page, "landing-signed-out", { keyboard: true });
+
+  // #4: the ? in the header opens "How it works"; Escape closes it and returns focus.
+  const help = page.getByRole("button", { name: "How it works" });
+  await help.click();
+  const guide = page.getByRole("dialog", { name: "How it works" });
+  await expect(guide).toBeVisible();
+  await check(page, "how-it-works-dialog");
+  await page.keyboard.press("Escape");
+  await expect(guide).toBeHidden();
+  await expect(help).toBeFocused();
 
   await page.goto("/s/11111111-1111-1111-1111-111111111111");
   await expect(page.getByRole("heading", { name: /isn.t shared anymore/ })).toBeVisible();
@@ -177,7 +189,27 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.getByLabel(/Link/).fill("example.com/onions");
   await page.getByRole("button", { name: "Save idea" }).click();
   await page.waitForURL(/\/d\//); // an idea is an entry with notes and no cook's words yet
+  // #2: right after saving, say so and offer the next step (once).
+  const savedView = page.locator("main").filter({ visible: true });
+  await expect(savedView.getByRole("status").filter({ hasText: "Saved to Ideas" })).toBeVisible();
+  await expect(savedView.getByRole("link", { name: "Add another idea" })).toBeVisible();
+  await check(page, "idea-just-saved", { keyboard: true });
+  await expect.poll(() => new URL(page.url()).searchParams.get("saved")).toBeNull(); // shown once
   const ideaUrl = page.url();
+
+  // #3: "Save and add another" clears the form for the next idea.
+  await savedView.getByRole("link", { name: "Add another idea" }).click();
+  await page.waitForURL(/\/ideas\/new/);
+  const formView = page.locator("main").filter({ visible: true });
+  await formView.getByLabel("Idea", { exact: true }).fill(`${IDEA} #2`);
+  await formView.getByRole("button", { name: "Save and add another" }).click();
+  await expect(formView.getByRole("status").filter({ hasText: `Saved “${IDEA} #2”` })).toBeVisible();
+  await expect(formView.getByLabel("Idea", { exact: true })).toHaveValue(""); // fresh form
+  await check(page, "idea-saved-add-another", { keyboard: true });
+  await page.goto("/?tab=ideas");
+  await expect(page.locator("main").getByRole("link", { name: "+ New idea" })).toBeVisible();
+  await page.goto(ideaUrl);
+  await expect(page.locator("main").filter({ visible: true }).getByRole("status")).toHaveCount(0); // not again
   await expect(page.getByRole("link", { name: /example\.com\/onions/ })).toBeVisible();
   await check(page, "idea", { keyboard: true });
   // In Ideas there's no cook's-words box, only "Move to Development".
@@ -207,13 +239,13 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   expect(page.url()).toBe(ideaUrl);
 
   await page.goto("/?tab=ideas");
-  const ideaRow = page.getByRole("listitem").filter({ hasText: IDEA, visible: true });
+  const ideaRow = page.getByRole("listitem").filter({ has: page.getByText(`${IDEA} (renamed)`, { exact: true }), visible: true });
   await expect(ideaRow).toBeVisible();
   await check(page, "home-ideas-with-idea");
   await ideaRow.getByRole("button", { name: "Development" }).click();
   await expect(ideaRow).toHaveCount(0); // it leaves the Ideas tab once moved
   await page.goto("/?tab=development");
-  await expect(page.getByRole("listitem").filter({ hasText: IDEA, visible: true })).toBeVisible();
+  await expect(page.getByRole("listitem").filter({ has: page.getByText(`${IDEA} (renamed)`, { exact: true }), visible: true })).toBeVisible();
   await check(page, "home-development-moved-idea");
 
   // In Development, the idea keeps its notes and offers "Add the cook's words".
@@ -236,7 +268,14 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.waitForURL((u) => u.pathname === "/");
   // Scope to <main>: Next keeps hidden copies of past pages, and its screen-reader
   // route announcer still holds the old title.
-  await expect(page.locator("main").getByText(IDEA).filter({ visible: true })).toHaveCount(0);
+  await expect(page.locator("main").getByText(`${IDEA} (renamed)`, { exact: true }).filter({ visible: true })).toHaveCount(0);
+  // Also remove the second idea from the "Save and add another" check.
+  await page.goto("/?tab=ideas");
+  await page.locator("main").getByText(`${IDEA} #2`, { exact: true }).first().click();
+  await page.waitForURL(/\/d\//);
+  page.once("dialog", (d) => d.accept());
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete", exact: true }).click();
+  await page.waitForURL((u) => u.pathname === "/");
 
   // ---- Capture ----
   await page.goto("/");
