@@ -664,3 +664,12 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   with tighter spacing and more compact steps on small screens. Measured: the
   button is fully on screen at 390×844, 375×667, 768×1024, 1280×720, and
   1440×900 (0px scroll except 19px of bottom padding on the 375×667 phone).
+- **Student:** "Are you able to add tabs at the top that people can always
+  navigate between Ideas, Development and Finished. I don't like finished,
+  what's any word?" **Options offered:** Recipes / Cookbook / Perfected /
+  Library. **Student chose:** "Recipes." The label is renamed everywhere; the
+  stored stage stays `finished` (shared DB with v1). `TopTabs` in the header
+  (signed in) marks the open section (`aria-current`). The home page now always
+  redirects to an explicit `?tab=`. The in-page tab bar was removed (it's in the
+  header now), and the counts moved into the hint ("Ideas · 12 · …"). Verify ✓
+  at 390/1440.
