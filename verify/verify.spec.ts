@@ -19,6 +19,7 @@ const RUN = new Date().toISOString().slice(5, 19).replace("T", " ");
 const IDEA = `Caramelized onion crunch (verify ${RUN})`;
 // Constant, so the dev-only AI cache can reuse responses (the dish name is part of the prompt).
 const DISH = "Yogurt (verify run)";
+const MANUAL = `Typed-in yogurt (verify ${RUN})`;
 const YOGURT =
   "Yogurt is a very simple dish you need about 1/2 gallon jug of milk and then one of these small 10 in yogurt container that is not flavored at all uh you heat up the milk make sure it doesn't boil uh just until it steams a little bit and then from there you add 1/3 a cup of sugar maybe less if you like it less sweet and then you mix in the yogurt with the milk you stir it into everything blends and then you put it into these little jars and then you put all these little jars into this incubator and you let it sit for about 8 hours if you don't like it too tangy but I like it at 12 hours super tangy and then from there you can either keep it in the fridge or freeze it and then serve";
 
@@ -185,22 +186,44 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(page.locator("main").getByRole("link", { name: "+ Cook's words" })).toBeVisible();
 
   // ---- Ideas: create, validate, move, delete ----
-  // Recipes tab keeps the "New" menu: keyboard first (Enter opens, Tab reaches the options, Escape closes).
+  // ---- Recipes tab: add a recipe by hand (same format as AI recipes, no AI) ----
   await page.goto("/?tab=finished");
-  const newBtn = page.getByRole("button", { name: "New" });
-  await newBtn.focus();
-  await page.keyboard.press("Enter");
-  await expect(newBtn).toHaveAttribute("aria-expanded", "true");
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: /^Idea A note/ })).toBeFocused();
-  await page.keyboard.press("Escape");
-  await expect(newBtn).toHaveAttribute("aria-expanded", "false");
-  await expect(newBtn).toBeFocused();
-  report.push("## New menu keyboard", "- Enter opens ✓ · Tab reaches “Idea” ✓ · Escape closes and returns focus ✓", "");
-  await newBtn.click();
-  await check(page, "home-new-menu-open");
-  await page.getByRole("link", { name: /^Idea A note/ }).click();
-  await page.waitForURL(/\/ideas\/new/);
+  await page.locator("main").getByRole("link", { name: "+ New recipe" }).click();
+  await page.waitForURL(/\/recipes\/new/);
+  const rf = page.locator("main").filter({ visible: true });
+  await rf.getByRole("button", { name: "Save recipe" }).click();
+  await expect(rf.getByText("Give the recipe a name.")).toBeVisible();
+  await expect(rf.getByText("Add at least one ingredient.")).toBeVisible();
+  await expect(rf.getByText("Add at least one step.")).toBeVisible();
+  await rf.getByLabel("Recipe name").fill(MANUAL);
+  await rf.getByLabel(/Whose recipe/).fill("Grandma");
+  await rf.getByLabel("Amount 1").fill("1/2 gallon");
+  await rf.getByLabel("Ingredient 1").fill("whole milk");
+  await rf.getByLabel("Amount 2").fill("1/3 cup");
+  await rf.getByLabel("Ingredient 2").fill("sugar");
+  await rf.getByLabel("Step 1").fill("Heat the milk until it steams. Don't let it boil.");
+  await rf.getByRole("button", { name: "+ Why it works" }).first().click();
+  await rf.getByLabel(/Why it works/).fill("Boiling can scorch the milk.");
+  await rf.getByRole("button", { name: "+ Add step" }).click();
+  await rf.getByLabel("Step 2").fill("Stir in the sugar.");
+  await check(page, "manual-recipe-form", { keyboard: true });
+  await rf.getByRole("button", { name: "Save recipe" }).click();
+  await page.waitForURL(/\/r\//);
+  const manualUrl = page.url();
+  const mr = page.locator("main").filter({ visible: true });
+  await expect(mr.getByRole("heading", { name: MANUAL })).toBeVisible();
+  await expect(mr.getByText("whole milk")).toBeVisible();
+  await expect(mr.getByRole("button", { name: "Why step 1 works" })).toBeVisible(); // same format as AI recipes
+  await expect(mr.getByText("Their words")).toHaveCount(0); // no cook's-words section on hand-typed recipes
+  await check(page, "manual-recipe", { keyboard: true });
+  page.once("dialog", (d) => d.accept());
+  await mr.getByRole("button", { name: "Delete this recipe" }).click();
+  await page.waitForURL((u) => u.pathname === "/");
+  await page.goto(manualUrl);
+  await expect(page.getByRole("heading", { name: "Not in your lab book" })).toBeVisible();
+
+  // ---- The full idea form (note + link) ----
+  await page.goto("/ideas/new");
   await page.getByRole("button", { name: "Save idea" }).click();
   await expect(page.getByText(/Give the idea a short name/)).toBeVisible();
   await page.getByLabel("Idea", { exact: true }).fill(IDEA);
