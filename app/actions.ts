@@ -647,7 +647,9 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
     .single();
   if (e2 || !made) {
     console.error("[createManualRecipe recipe]", e2);
-    if (createdEntry) await supabase.from("dictations").delete().eq("id", entry.id); // don't leave a half-saved entry
+    // Don't leave a half-saved entry: remove a new one, or move an existing one back.
+    if (createdEntry) await supabase.from("dictations").delete().eq("id", entry.id);
+    else await supabase.from("dictations").update({ stage: "development" }).eq("id", entry.id);
     return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
   }
   revalidatePath("/");
