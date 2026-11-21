@@ -95,6 +95,15 @@ export function LinkButton({
 
 export const textLink = `underline decoration-ls-rule underline-offset-4 transition-colors hover:decoration-ls-ink active:text-ls-muted ${focusRing}`;
 
+/** A square, hairline chip. "On" is Ink-filled (Scarlet stays for the one primary action). */
+export function chipClass(on: boolean) {
+  return `inline-flex min-h-11 cursor-pointer items-center gap-1.5 border px-3 font-ls-sans text-[15px] transition-colors duration-150 active:translate-y-px ${focusRing} ${
+    on
+      ? "border-ls-ink bg-ls-ink text-ls-surface hover:bg-ls-ink/85"
+      : "border-ls-ink/40 bg-ls-surface text-ls-ink hover:border-ls-ink hover:bg-white active:bg-ls-ink/[0.08]"
+  }`;
+}
+
 // ---------------------------------------------------------------------------
 // Form fields
 // ---------------------------------------------------------------------------
