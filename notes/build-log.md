@@ -735,3 +735,25 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   while an IME is composing. Shift+Enter is a new line in a step. A hint line
   sits under each heading. Verify ✓ (Enter adds row 3 with focus, no submit;
   Shift+Enter keeps one step).
+
+## Nov 21 — Sections in the Recipes tab (issue #8, first part)
+- Student's call: several sections per recipe, their own list (create/delete).
+- Migration `20261121020000_sections.sql` (additive; v1 never reads it):
+  `sections` (name 1–40, unique per owner ignoring case) and `entry_sections`
+  (entry ↔ section). Owner-only RLS; inserting a link checks that **both** the
+  entry and the section are yours (the Nov 14 re-pointing lesson). No UPDATE
+  grant at all; anon gets nothing. Tested in the DB (rolled back): duplicate
+  name blocked, another user sees 0, can't link into someone else's entry
+  (42501), can't delete theirs, update and anon blocked, deleting a section
+  keeps the entry and removes its links.
+- Links hang off the entry (`dictations`), not the recipe, so they survive
+  re-creating a recipe. Shared copies don't carry sections (they're personal).
+- UI: Recipes tab filter chips (`?section=<id>`, `aria-current`), section names
+  on each card; on a Recipes item, toggle chips (`aria-pressed`, optimistic)
+  + "+ New section" (adds it and puts the recipe in it); `/sections` to add,
+  count, and delete (confirm: the recipes stay). The starter list is offered
+  only when you have no sections, so deleted ones never come back on their own.
+  Chips are Ink when on, so Scarlet stays the one primary.
+- Verify ✓ (axe clean at 390/1440). Fixed after the screenshot review: an
+  "Added to …" line stayed on screen after the chip was toggled off, so it was removed.
+- Still open in #8: search by title, AI-suggested sections.
