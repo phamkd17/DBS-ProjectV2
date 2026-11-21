@@ -232,6 +232,53 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(mr.getByRole("button", { name: "Why step 1 works" })).toBeVisible(); // same format as AI recipes
   await expect(mr.getByText("Their words")).toHaveCount(0); // no cook's-words section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
+
+  // ---- Sections (Recipes tab): several per recipe, filter, delete (the recipe stays) ----
+  const SEC = `Desserts ${RUN}`;
+  const SEC2 = `Breakfast ${RUN}`;
+  const picker = mr.getByRole("region", { name: "Sections" });
+  const newSection = picker.getByRole("button", { name: "+ New section" });
+  const addTo = async (name: string) => {
+    if (await newSection.isVisible()) await newSection.click();
+    await picker.getByLabel("New section").fill(name);
+    await picker.getByLabel("New section").press("Enter");
+  };
+  await addTo(SEC);
+  await expect(picker.getByRole("button", { name: SEC })).toHaveAttribute("aria-pressed", "true"); // made + added
+  await addTo(SEC.toUpperCase());
+  await expect(picker.getByText(/already have a section/)).toBeVisible(); // no duplicates (any case)
+  await picker.getByLabel("New section").fill(SEC2);
+  await picker.getByLabel("New section").press("Enter");
+  await expect(picker.getByRole("button", { name: SEC2 })).toHaveAttribute("aria-pressed", "true"); // several per recipe
+  await picker.getByRole("button", { name: SEC2 }).click(); // tap again = out of it
+  await expect(picker.getByRole("button", { name: SEC2 })).toHaveAttribute("aria-pressed", "false");
+  await check(page, "recipe-sections", { keyboard: true });
+
+  await page.goto("/?tab=finished");
+  const rt = page.locator("main").filter({ visible: true });
+  const filter = rt.getByRole("navigation", { name: "Filter by section" });
+  await expect(filter.getByRole("link", { name: "All" })).toHaveAttribute("aria-current", "page");
+  await filter.getByRole("link", { name: SEC }).click();
+  await expect(filter.getByRole("link", { name: SEC })).toHaveAttribute("aria-current", "page");
+  await expect(rt.getByText(MANUAL, { exact: true })).toBeVisible();
+  await check(page, "recipes-by-section", { keyboard: true });
+  await filter.getByRole("link", { name: SEC2 }).click();
+  await expect(filter.getByRole("link", { name: SEC2 })).toHaveAttribute("aria-current", "page");
+  await expect(rt.getByText(MANUAL, { exact: true })).toHaveCount(0);
+  await expect(rt.getByText(`Nothing in ${SEC2} yet.`, { exact: false })).toBeVisible();
+
+  await filter.getByRole("link", { name: "Edit sections" }).click();
+  await page.waitForURL(/\/sections/);
+  const secPage = page.locator("main").filter({ visible: true });
+  await expect(secPage.getByRole("link", { name: new RegExp(`${SEC}\\s*1 recipe$`) })).toBeVisible();
+  await check(page, "sections-page", { keyboard: true });
+  for (const name of [SEC, SEC2]) {
+    page.once("dialog", (d) => d.accept());
+    await secPage.getByRole("button", { name: `Delete ${name}`, exact: true }).click();
+    await expect(secPage.getByRole("button", { name: `Delete ${name}`, exact: true })).toHaveCount(0);
+  }
+  await page.goto(manualUrl);
+  await expect(mr.getByRole("heading", { name: MANUAL })).toBeVisible(); // deleting a section keeps the recipe
   page.once("dialog", (d) => d.accept());
   await mr.getByRole("button", { name: "Delete this recipe" }).click();
   await page.waitForURL((u) => u.pathname === "/");

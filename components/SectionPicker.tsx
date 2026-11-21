@@ -71,7 +71,7 @@ export function SectionPicker({
   );
 }
 
-/** "+ New section": type a name, Enter. It's added and this recipe goes in it. */
+/** "+ New section": type a name, Enter. It's added and this recipe goes in it (its chip shows ✓). */
 function NewSection({ dictationId, startOpen }: { dictationId: string; startOpen: boolean }) {
   const [open, setOpen] = useState(startOpen);
   const input = useRef<HTMLInputElement>(null);
@@ -88,7 +88,7 @@ function NewSection({ dictationId, startOpen }: { dictationId: string; startOpen
 
   if (!open)
     return (
-      <div className="flex flex-wrap items-baseline gap-x-3">
+      <div>
         <button
           type="button"
           onClick={() => {
@@ -99,11 +99,6 @@ function NewSection({ dictationId, startOpen }: { dictationId: string; startOpen
         >
           + New section
         </button>
-        {state.saved && (
-          <p aria-live="polite" className="text-[15px] text-ls-muted">
-            <span aria-hidden className="text-ls-success">✓ </span>Added to “{state.values?.added}”.
-          </p>
-        )}
       </div>
     );
 
