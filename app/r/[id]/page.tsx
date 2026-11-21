@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { deleteDictation } from "@/app/actions";
+import { deleteDictation, discardDraft, saveAnswersForLater } from "@/app/actions";
 import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { RecipeView } from "@/components/RecipeView";
 import { DictationEditor } from "@/components/DictationEditor";
 import { EditableNotes } from "@/components/InlineEdit";
-import { eyebrow, focusRing, formatDate, SourceBadge, textLink } from "@/components/ui";
+import { Button, eyebrow, focusRing, formatDate, SourceBadge, textLink } from "@/components/ui";
 import { supabaseForUser } from "@/lib/supabase/server";
 import type { DictationRow, QuestionRow, RecipeRow } from "@/lib/types";
 import { QuestionsForm } from "./QuestionsForm";
@@ -45,6 +45,26 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
             These are things a new cook couldn&apos;t figure out from {dictation.cook_name ? `${dictation.cook_name}'s` : "the"}{" "}
             words. Answer what you know.
           </p>
+          {/* Leave the questions: keep answers for later, or throw the AI draft away. */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+            <Button
+              type="submit"
+              form="questions-form"
+              formAction={saveAnswersForLater.bind(null, recipe.id)}
+              formNoValidate
+              variant="secondary"
+            >
+              Save for later
+            </Button>
+            <form action={discardDraft.bind(null, recipe.id)}>
+              <ConfirmSubmit
+                variant="danger"
+                message="Discard these questions and the AI draft? Your answers will be lost. You can edit the cook's words and create the recipe again."
+              >
+                Discard questions
+              </ConfirmSubmit>
+            </form>
+          </div>
         </div>
         <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
         <DictationEditor dictation={dictation} />

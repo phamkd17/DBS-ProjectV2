@@ -52,7 +52,7 @@ export function QuestionsForm({
   }
 
   return (
-    <form action={action} className="space-y-5">
+    <form id="questions-form" action={action} className="space-y-5">
       <p className="text-[15px] text-ls-muted" aria-live="polite">
         {questions.length === 0
           ? "No questions this time. Their words had everything a new cook needs."
