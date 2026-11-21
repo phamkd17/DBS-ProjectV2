@@ -196,6 +196,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(rf.getByText("Add at least one ingredient.")).toBeVisible();
   await expect(rf.getByText("Add at least one step.")).toBeVisible();
   await rf.getByLabel("Recipe name").fill(MANUAL);
+  await expect(rf.getByText("Give the recipe a name.")).toHaveCount(0); // clears as soon as it's fixed
   await rf.getByLabel(/Whose recipe/).fill("Grandma");
   await rf.getByLabel("Amount 1", { exact: true }).fill("1/2 gallon");
   await rf.getByLabel("Ingredient 1", { exact: true }).fill("whole milk");
