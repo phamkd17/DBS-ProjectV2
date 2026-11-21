@@ -659,3 +659,8 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   **Student chose:** A: "From inspiration to recipe: type or dictate your dish,
   and AI makes recipe development easy, with the food science built in."
   Also updated AGENTS.md, the v2 plan, and the talking points.
+- **Student:** "the text is too big. i want to minimize scrolling." The landing
+  headline is now 2rem / 4xl / 5xl (phone / tablet / laptop), was 2.5rem / 7xl,
+  with tighter spacing and more compact steps on small screens. Measured: the
+  button is fully on screen at 390×844, 375×667, 768×1024, 1280×720, and
+  1440×900 (0px scroll except 19px of bottom padding on the 375×667 phone).
