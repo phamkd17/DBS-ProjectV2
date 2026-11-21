@@ -86,13 +86,32 @@ export async function updateDictation(dictationId: string, _prev: ActionState, f
   const cook_name = String(formData.get("cook_name") ?? "").trim().slice(0, 60) || null;
   const values = { transcript, dish_name: dish_name ?? "", cook_name: cook_name ?? "" };
 
-  if (!transcript.trim()) return { values, fieldErrors: { transcript: "Their words can't be empty. To remove this, delete it instead." } };
   if (transcript.length > MAX_TRANSCRIPT) {
     return { values, fieldErrors: { transcript: `That's too long for one recipe (${transcript.length} of ${MAX_TRANSCRIPT} characters).` } };
   }
-
   const supabase = await supabaseForUser();
-  const { error } = await supabase.from("dictations").update({ transcript, dish_name, cook_name }).eq("id", dictationId);
+  // Saving the words empty deletes them (student, Nov 21), unless AI questions are
+  // still open, because finishing them needs the words.
+  const empty = !transcript.trim();
+  if (empty) {
+    const { data: draft } = await supabase
+      .from("recipes")
+      .select("id")
+      .eq("dictation_id", dictationId)
+      .eq("status", "needs_answers")
+      .limit(1)
+      .maybeSingle();
+    if (draft) {
+      return {
+        values,
+        fieldErrors: { transcript: "The AI questions still need these words. Finish or discard the questions first." },
+      };
+    }
+  }
+  const { error } = await supabase
+    .from("dictations")
+    .update({ transcript: empty ? null : transcript, dish_name, cook_name })
+    .eq("id", dictationId);
   if (error) {
     console.error("[updateDictation]", error);
     return { values, error: "Couldn't save your changes. What you typed is still here. Try again." };
