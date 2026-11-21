@@ -11,7 +11,8 @@ import { CreateRecipe } from "./CreateRecipe";
 import { SavedBanner } from "@/components/SavedBanner";
 import { StartDeveloping } from "@/components/StartDeveloping";
 import { MoveTo } from "@/components/MoveTo";
-import { STAGE_LABEL } from "@/lib/types";
+import { STAGE_LABEL, type SectionRow } from "@/lib/types";
+import { SectionPicker } from "@/components/SectionPicker";
 
 // Gemini can take a while on the free tier.
 export const maxDuration = 300;
@@ -34,6 +35,13 @@ export default async function DictationPage({ params, searchParams }: PageProps<
   if (recipe) redirect(`/r/${recipe.id}`);
 
   const justSaved = saved === "1" && d.stage === "ideas";
+  const [{ data: sections }, { data: links }] =
+    d.stage === "finished"
+      ? await Promise.all([
+          supabase.from("sections").select("id, name, created_at").order("name").returns<SectionRow[]>(),
+          supabase.from("entry_sections").select("section_id").eq("dictation_id", d.id),
+        ])
+      : [{ data: null }, { data: null }];
 
   return (
     <main className="space-y-8">
@@ -60,6 +68,10 @@ export default async function DictationPage({ params, searchParams }: PageProps<
 
       {/* Idea notes stay in every stage. */}
       <EditableNotes kind="dictation" id={d.id} note={d.notes} link={d.link} />
+
+      {d.stage === "finished" && (
+        <SectionPicker dictationId={d.id} sections={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
+      )}
 
       {/* Cook · Their words: added only in Development (shown anywhere once they exist). */}
       {d.stage === "development" || d.transcript ? (

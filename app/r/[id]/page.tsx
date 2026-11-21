@@ -13,6 +13,8 @@ import { QuestionsForm } from "./QuestionsForm";
 import { MoveTo } from "@/components/MoveTo";
 import { STAGE_LABEL } from "@/lib/types";
 import { SharePanel } from "./SharePanel";
+import { SectionPicker } from "@/components/SectionPicker";
+import type { SectionRow } from "@/lib/types";
 
 // Pass 2 can take a while on the free tier.
 export const maxDuration = 300;
@@ -74,6 +76,14 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
   }
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
+  // Sections (Recipes tab only): your list + which ones this recipe is in.
+  const [{ data: sections }, { data: links }] =
+    dictation.stage === "finished"
+      ? await Promise.all([
+          supabase.from("sections").select("id, name, created_at").order("name").returns<SectionRow[]>(),
+          supabase.from("entry_sections").select("section_id").eq("dictation_id", dictation.id),
+        ])
+      : [{ data: null }, { data: null }];
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
   const shareUrl = recipe.share_token ? `${origin}/s/${recipe.share_token}` : null;
@@ -98,6 +108,10 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
       <RecipeView recipe={recipe.recipe} cookName={dictation.cook_name} editableRecipeId={recipe.id} />
 
       <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
+
+      {dictation.stage === "finished" && (
+        <SectionPicker dictationId={dictation.id} sections={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
+      )}
 
       {/* Hand-typed recipes (model "manual") have no cook's words to show or add. */}
       {(recipe.model !== "manual" || dictation.transcript) && (
