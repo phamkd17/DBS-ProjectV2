@@ -122,7 +122,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   );
 }
 
-/** Recipes tab: All · each tag · Edit tags. */
+/** Recipes tab: All · each tag · All tags. */
 function TagFilter({ tags, current }: { tags: TagRow[]; current?: string }) {
   if (tags.length === 0)
     return (
@@ -149,7 +149,7 @@ function TagFilter({ tags, current }: { tags: TagRow[]; current?: string }) {
         </Link>
       ))}
       <Link href="/tags" className={`min-h-11 px-2 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
-        Edit tags
+        All tags
       </Link>
     </nav>
   );

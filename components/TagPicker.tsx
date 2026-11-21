@@ -70,7 +70,7 @@ export function TagPicker({ dictationId, allTags, selected }: { dictationId: str
         </h2>
         {allTags.length > 0 && (
           <Link href="/tags" className={`font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
-            Edit tags
+            All tags
           </Link>
         )}
       </div>

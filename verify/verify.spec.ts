@@ -272,7 +272,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.goto("/?tab=finished");
   const rt = page.locator("main").filter({ visible: true });
   const filter = rt.getByRole("navigation", { name: "Filter by tag" });
-  await expect(filter.getByRole("link", { name: "All" })).toHaveAttribute("aria-current", "page");
+  await expect(filter.getByRole("link", { name: "All", exact: true })).toHaveAttribute("aria-current", "page");
   await filter.getByRole("link", { name: TAG }).click();
   await expect(filter.getByRole("link", { name: TAG })).toHaveAttribute("aria-current", "page");
   await expect(rt.getByText(MANUAL, { exact: true })).toBeVisible();
@@ -282,10 +282,14 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(rt.getByText(MANUAL, { exact: true })).toHaveCount(0);
   await expect(rt.getByText(`No recipes tagged ${TAG2} yet.`, { exact: false })).toBeVisible();
 
-  await filter.getByRole("link", { name: "Edit tags" }).click();
+  await filter.getByRole("link", { name: "All tags" }).click();
   await page.waitForURL(/\/tags/);
   const tagPage = page.locator("main").filter({ visible: true });
-  await expect(tagPage.getByRole("link", { name: new RegExp(`${TAG}\\s*1 recipe$`) })).toBeVisible();
+  // Every tag with its recipes under it.
+  const tagBlock = tagPage.getByRole("region", { name: TAG, exact: true });
+  await expect(tagBlock.getByText("1 recipe", { exact: true })).toBeVisible();
+  await expect(tagBlock.getByRole("list", { name: `Recipes tagged ${TAG}` }).getByRole("link", { name: MANUAL })).toBeVisible();
+  await expect(tagPage.getByRole("region", { name: TAG2, exact: true }).getByText("No recipes yet.", { exact: false })).toBeVisible();
   await check(page, "tags-page", { keyboard: true });
   for (const name of [TAG, TAG2]) {
     page.once("dialog", (d) => d.accept());
