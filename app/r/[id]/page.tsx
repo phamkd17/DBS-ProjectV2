@@ -13,8 +13,8 @@ import { QuestionsForm } from "./QuestionsForm";
 import { MoveTo } from "@/components/MoveTo";
 import { STAGE_LABEL } from "@/lib/types";
 import { SharePanel } from "./SharePanel";
-import { SectionPicker } from "@/components/SectionPicker";
-import type { SectionRow } from "@/lib/types";
+import { TagPicker } from "@/components/TagPicker";
+import type { TagRow } from "@/lib/types";
 
 // Pass 2 can take a while on the free tier.
 export const maxDuration = 300;
@@ -76,11 +76,11 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
   }
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
-  // Sections (Recipes tab only): your list + which ones this recipe is in.
+  // Tags (Recipes tab only): your list + which ones this recipe has.
   const [{ data: sections }, { data: links }] =
     dictation.stage === "finished"
       ? await Promise.all([
-          supabase.from("sections").select("id, name, created_at").order("name").returns<SectionRow[]>(),
+          supabase.from("sections").select("id, name, created_at").order("name").returns<TagRow[]>(),
           supabase.from("entry_sections").select("section_id").eq("dictation_id", dictation.id),
         ])
       : [{ data: null }, { data: null }];
@@ -110,7 +110,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
       <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
 
       {dictation.stage === "finished" && (
-        <SectionPicker dictationId={dictation.id} sections={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
+        <TagPicker dictationId={dictation.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
       )}
 
       {/* Hand-typed recipes (model "manual") have no cook's words to show or add. */}

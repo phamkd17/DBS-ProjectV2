@@ -89,7 +89,8 @@ export type ActionState = {
   values?: Record<string, string>;
 };
 
-// Sections in the Recipes tab (student, Nov 21). Your own list; a recipe can be in several.
-export type SectionRow = { id: string; name: string; created_at: string };
-/** Offered when you have no sections yet. Draft names: for the student to review. */
-export const STARTER_SECTIONS = ["American", "Indian", "Mexican", "Desserts"];
+// Tags in the Recipes tab (student, Nov 21). Your own list; a recipe can have several.
+// Stored in the `sections` table (they were first called sections).
+export type TagRow = { id: string; name: string; created_at: string };
+/** Offered when you have no tags yet. Draft names: for the student to review. */
+export const STARTER_TAGS = ["American", "Indian", "Mexican", "Desserts"];

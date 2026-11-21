@@ -1,16 +1,16 @@
 "use client";
 
 import { useActionState, useRef } from "react";
-import { addSection } from "@/app/actions";
+import { addTag } from "@/app/actions";
 import type { ActionState } from "@/lib/types";
 import { Button, fieldClass, Spinner } from "./ui";
 
-/** Type a section name, Enter. Ready for the next one right away. */
-export function AddSectionForm() {
+/** Tags page: type a tag name, Enter. Ready for the next one right away. */
+export function AddTagForm() {
   const form = useRef<HTMLFormElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const [state, action, pending] = useActionState<ActionState, FormData>(async (prev, fd) => {
-    const result = await addSection(prev, fd);
+    const result = await addTag(prev, fd);
     if (result.saved) {
       form.current?.reset();
       input.current?.focus();
@@ -21,20 +21,20 @@ export function AddSectionForm() {
 
   return (
     <form ref={form} action={action} className="space-y-1.5">
-      <label htmlFor="section-name" className="block text-[17px] font-medium">
-        New section
+      <label htmlFor="tag-name" className="block text-[17px] font-medium">
+        New tag
       </label>
       <div className="flex gap-2">
         <input
           ref={input}
-          id="section-name"
+          id="tag-name"
           name="name"
           maxLength={40}
           autoComplete="off"
           defaultValue={state.saved ? undefined : state.values?.name}
           placeholder="e.g. Desserts"
           aria-invalid={!!state.fieldErrors?.name}
-          aria-describedby={err ? "section-name-error" : undefined}
+          aria-describedby={err ? "tag-name-error" : undefined}
           className={`${fieldClass} min-w-0 flex-1`}
         />
         <Button type="submit" disabled={pending} className="shrink-0">
@@ -43,7 +43,7 @@ export function AddSectionForm() {
       </div>
       <p aria-live="polite" className="min-h-5 text-[15px]">
         {err ? (
-          <span id="section-name-error" className="text-ls-error">
+          <span id="tag-name-error" className="text-ls-error">
             {err}
           </span>
         ) : state.saved ? (

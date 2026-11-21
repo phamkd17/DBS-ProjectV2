@@ -7,7 +7,7 @@ import { Button, chipClass, ErrorNote, eyebrow, focusRing, formatDate, LinkButto
 import { MoveTo } from "@/components/MoveTo";
 import { QuickAddIdea } from "@/components/QuickAddIdea";
 import { HowItWorks } from "@/components/HowItWorks";
-import type { DictationRow, RecipeStatus, SectionRow } from "@/lib/types";
+import type { DictationRow, RecipeStatus, TagRow } from "@/lib/types";
 
 type Row = DictationRow & {
   recipes: { id: string; status: RecipeStatus; recipe: { title?: string } | null }[];
@@ -41,16 +41,16 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   if (!userId) return <Landing />;
 
   const supabase = await supabaseForUser();
-  const [{ tab: tabParam, section: sectionParam }, { data, error }, { data: sectionData }] = await Promise.all([
+  const [{ tab: tabParam, tag: tagParam }, { data, error }, { data: tagData }] = await Promise.all([
     searchParams,
     supabase
       .from("dictations")
       .select("*, recipes(id, status, recipe), entry_sections(section_id)")
       .order("created_at", { ascending: false })
       .returns<Row[]>(),
-    supabase.from("sections").select("id, name, created_at").order("name").returns<SectionRow[]>(),
+    supabase.from("sections").select("id, name, created_at").order("name").returns<TagRow[]>(), // tags
   ]);
-  const sections = sectionData ?? [];
+  const tags = tagData ?? [];
 
   const rows = data ?? [];
   const byTab: Record<Tab, Row[]> = { ideas: [], development: [], finished: [] };
@@ -63,12 +63,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   }
   const tab = tabParam as Tab;
 
-  // Recipes tab: filter by one section (?section=<id>); a recipe can be in several.
-  const section = tab === "finished" ? sections.find((s) => s.id === sectionParam) : undefined;
-  const items = section
-    ? byTab[tab].filter((d) => d.entry_sections.some((l) => l.section_id === section.id))
-    : byTab[tab];
-  const sectionNames = new Map(sections.map((s) => [s.id, s.name]));
+  // Recipes tab: filter by one tag (?tag=<id>); a recipe can have several.
+  const tag = tab === "finished" ? tags.find((t) => t.id === tagParam) : undefined;
+  const items = tag ? byTab[tab].filter((d) => d.entry_sections.some((l) => l.section_id === tag.id)) : byTab[tab];
+  const tagNames = new Map(tags.map((t) => [t.id, t.name]));
 
   return (
     <main className="space-y-5">
@@ -101,11 +99,11 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
           {tab === "ideas" && <QuickAddIdea />}
 
-          {tab === "finished" && byTab.finished.length > 0 && <SectionFilter sections={sections} current={section?.id} />}
+          {tab === "finished" && byTab.finished.length > 0 && <TagFilter tags={tags} current={tag?.id} />}
 
           {items.length === 0 ? (
             <p className="border border-dashed border-ls-border p-6 text-[15px] text-ls-muted">
-              {section ? `Nothing in ${section.name} yet. Open a recipe and tap ${section.name} to add it.` : TABS[tab].empty}
+              {tag ? `No recipes tagged ${tag.name} yet. Open a recipe and add the tag.` : TABS[tab].empty}
             </p>
           ) : (
             <ul className="divide-y divide-ls-border border-y border-ls-ink">
@@ -113,7 +111,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 <EntryCard
                   key={d.id}
                   d={d}
-                  sections={tab === "finished" ? d.entry_sections.map((l) => sectionNames.get(l.section_id)).filter((n): n is string => !!n).sort() : []}
+                  tags={tab === "finished" ? d.entry_sections.map((l) => tagNames.get(l.section_id)).filter((n): n is string => !!n).sort() : []}
                 />
               ))}
             </ul>
@@ -124,40 +122,40 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   );
 }
 
-/** Recipes tab: All · each section · Edit sections. */
-function SectionFilter({ sections, current }: { sections: SectionRow[]; current?: string }) {
-  if (sections.length === 0)
+/** Recipes tab: All · each tag · Edit tags. */
+function TagFilter({ tags, current }: { tags: TagRow[]; current?: string }) {
+  if (tags.length === 0)
     return (
       <p className="text-[15px] text-ls-muted">
-        <Link href="/sections" className={`text-ls-ink ${textLink}`}>
-          Make sections
+        <Link href="/tags" className={`text-ls-ink ${textLink}`}>
+          Add tags
         </Link>{" "}
         to sort your recipes, like Mexican or Desserts.
       </p>
     );
   return (
-    <nav aria-label="Filter by section" className="flex flex-wrap items-center gap-2">
+    <nav aria-label="Filter by tag" className="flex flex-wrap items-center gap-2">
       <Link href="/?tab=finished" aria-current={current ? undefined : "page"} className={chipClass(!current)}>
         All
       </Link>
-      {sections.map((s) => (
+      {tags.map((s) => (
         <Link
           key={s.id}
-          href={`/?tab=finished&section=${s.id}`}
+          href={`/?tab=finished&tag=${s.id}`}
           aria-current={current === s.id ? "page" : undefined}
           className={chipClass(current === s.id)}
         >
           {s.name}
         </Link>
       ))}
-      <Link href="/sections" className={`min-h-11 px-2 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
-        Edit sections
+      <Link href="/tags" className={`min-h-11 px-2 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
+        Edit tags
       </Link>
     </nav>
   );
 }
 
-function EntryCard({ d, sections = [] }: { d: Row; sections?: string[] }) {
+function EntryCard({ d, tags = [] }: { d: Row; tags?: string[] }) {
   const r = d.recipes[0];
   const title = r?.recipe?.title || d.dish_name || "Untitled dictation";
   const href = r ? `/r/${r.id}` : `/d/${d.id}`;
@@ -186,7 +184,7 @@ function EntryCard({ d, sections = [] }: { d: Row; sections?: string[] }) {
               {d.copied_from ? " · from a link" : ""}
               {d.link ? " · has a link" : ""}
             </p>
-            {sections.length > 0 && <p className="text-[15px] text-ls-ink">{sections.join(" · ")}</p>}
+            {tags.length > 0 && <p className="text-[15px] text-ls-ink">{tags.join(" · ")}</p>}
           </div>
           {next && (
             <span className="shrink-0 pt-1 text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 group-hover:decoration-ls-ink">

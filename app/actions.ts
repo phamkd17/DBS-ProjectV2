@@ -15,7 +15,7 @@ import type { Answer, AnswerSource } from "@/lib/ai/schema";
 import { supabaseForUser } from "@/lib/supabase/server";
 import {
   isStage,
-  STARTER_SECTIONS,
+  STARTER_TAGS,
   toQuestion,
   type ActionState,
   type DictationRow,
@@ -715,61 +715,85 @@ export async function deleteWords(dictationId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Sections for the Recipes tab (student, Nov 21; issue #8). Your own list
-// (create, delete); a recipe can be in several. Deleting a section never
-// deletes recipes, only the links. RLS checks both ends of every link.
+// Tags for the Recipes tab (student, Nov 21; issue #8). Your own list (create,
+// delete); a recipe can have several. Stored in `sections` / `entry_sections`
+// (first called sections). Deleting a tag never deletes recipes, only the
+// links. RLS checks both ends of every link.
 // ---------------------------------------------------------------------------
-const UUID = /^[0-9a-f-]{36}$/i;
+const cleanTag = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
 
-/** Add a section. With `attach` (an entry id), also put that entry in it. */
-export async function addSection(_prev: ActionState, formData: FormData): Promise<ActionState> {
+/** Tags page: make a tag. */
+export async function addTag(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireUser();
-  const name = String(formData.get("name") ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
-  const attach = String(formData.get("attach") ?? "");
-  if (!name) return { fieldErrors: { name: "Name the section, like “Desserts”." } };
+  const name = cleanTag(formData.get("name"));
+  if (!name) return { fieldErrors: { name: "Name the tag, like “Desserts”." } };
   const supabase = await supabaseForUser();
-  const { data, error } = await supabase.from("sections").insert({ name }).select("id").single();
+  const { error } = await supabase.from("sections").insert({ name });
   if (error) {
-    if (error.code === "23505") return { values: { name }, fieldErrors: { name: `You already have a section called “${name}”.` } };
-    console.error("[addSection]", error);
-    return { values: { name }, error: "Couldn't add the section. Try again." };
-  }
-  if (UUID.test(attach)) {
-    const { error: linkError } = await supabase.from("entry_sections").insert({ dictation_id: attach, section_id: data.id });
-    if (linkError) console.error("[addSection link]", linkError);
+    if (error.code === "23505") return { values: { name }, fieldErrors: { name: `You already have a tag called “${name}”.` } };
+    console.error("[addTag]", error);
+    return { values: { name }, error: "Couldn't add the tag. Try again." };
   }
   revalidatePath("/", "layout");
   return { saved: true, values: { added: name } };
 }
 
-/** Add the starter sections (lib/types.ts). Skips ones you already have. */
-export async function addStarterSections(): Promise<void> {
+/** Add the starter tags (lib/types.ts). Skips ones you already have. */
+export async function addStarterTags(): Promise<void> {
   await requireUser();
   const supabase = await supabaseForUser();
-  for (const name of STARTER_SECTIONS) {
+  for (const name of STARTER_TAGS) {
     const { error } = await supabase.from("sections").insert({ name });
-    if (error && error.code !== "23505") console.error("[addStarterSections]", error);
+    if (error && error.code !== "23505") console.error("[addStarterTags]", error);
   }
   revalidatePath("/", "layout");
 }
 
-export async function deleteSection(sectionId: string): Promise<void> {
+export async function deleteTag(tagId: string): Promise<void> {
   await requireUser();
   const supabase = await supabaseForUser();
-  const { error } = await supabase.from("sections").delete().eq("id", sectionId);
-  if (error) console.error("[deleteSection]", error);
+  const { error } = await supabase.from("sections").delete().eq("id", tagId);
+  if (error) console.error("[deleteTag]", error);
   revalidatePath("/", "layout");
 }
 
-/** Put an entry in a section, or take it out. */
-export async function setInSection(dictationId: string, sectionId: string, on: boolean): Promise<{ ok: boolean }> {
+/**
+ * Type-to-add on a recipe: tag it with `name`. Uses your existing tag with that
+ * name (any case), or makes a new one.
+ */
+export async function tagEntry(
+  dictationId: string,
+  rawName: string,
+): Promise<{ ok: true; tag: { id: string; name: string } } | { ok: false; error: string }> {
+  await requireUser();
+  const name = cleanTag(rawName);
+  if (!name) return { ok: false, error: "Type a tag first." };
+  const supabase = await supabaseForUser();
+  const { data: mine } = await supabase.from("sections").select("id, name").returns<{ id: string; name: string }[]>();
+  let tag = (mine ?? []).find((t) => t.name.toLowerCase() === name.toLowerCase());
+  if (!tag) {
+    const { data, error } = await supabase.from("sections").insert({ name }).select("id, name").single();
+    if (error || !data) {
+      console.error("[tagEntry]", error);
+      return { ok: false, error: "Couldn't add the tag. Try again." };
+    }
+    tag = data;
+  }
+  const { error } = await supabase.from("entry_sections").insert({ dictation_id: dictationId, section_id: tag.id });
+  if (error && error.code !== "23505") {
+    console.error("[tagEntry link]", error);
+    return { ok: false, error: "Couldn't add the tag. Try again." };
+  }
+  revalidatePath("/", "layout");
+  return { ok: true, tag };
+}
+
+/** Take a tag off a recipe (the tag itself stays). */
+export async function untagEntry(dictationId: string, tagId: string): Promise<{ ok: boolean }> {
   await requireUser();
   const supabase = await supabaseForUser();
-  const { error } = on
-    ? await supabase.from("entry_sections").insert({ dictation_id: dictationId, section_id: sectionId })
-    : await supabase.from("entry_sections").delete().eq("dictation_id", dictationId).eq("section_id", sectionId);
-  const ok = !error || error.code === "23505"; // already in it = fine
-  if (!ok) console.error("[setInSection]", error);
+  const { error } = await supabase.from("entry_sections").delete().eq("dictation_id", dictationId).eq("section_id", tagId);
+  if (error) console.error("[untagEntry]", error);
   revalidatePath("/", "layout");
-  return { ok };
+  return { ok: !error };
 }
