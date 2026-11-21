@@ -757,3 +757,19 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Verify ✓ (axe clean at 390/1440). Fixed after the screenshot review: an
   "Added to …" line stayed on screen after the chip was toggled off, so it was removed.
 - Still open in #8: search by title, AI-suggested sections.
+
+## Nov 21 — Sections become Tags, with a type-to-add box
+- Student's call after I suggested it: "tag" fits several-per-recipe, and typing
+  scales better than a wall of chips. Labels, route (`/tags`), query param
+  (`?tag=`), and code names changed. The tables keep their names
+  (`sections`, `entry_sections`): no migration, nothing for v1 to notice.
+- `TagPicker`: tags on the recipe are Ink chips with ×. One input: Enter adds.
+  `tagEntry` reuses your tag with that name (any case) or makes a new one, then
+  links it. Your other tags are listed below and narrow as you type; tap to add.
+  With no tags yet, the starter names are offered (tapping one makes it).
+  Optimistic updates; `aria-busy` while saving.
+- Bug found by verify: removing a tag right after adding it sent its temporary
+  id and failed. `untagEntry` now goes by name (the server looks the tag up).
+- Verify ✓ (axe clean): type to add, Enter, focus stays, no duplicate in any
+  case, ×, matching tags, saved after reload, filter, delete keeps the recipe.
+  Cleaned leftover test tags and recipes from failed runs (verify names only).
