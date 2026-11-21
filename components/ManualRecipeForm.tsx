@@ -24,11 +24,24 @@ export function ManualRecipeForm() {
     { key: `${uid}-1`, amount: "", item: "" },
   ]);
   const [steps, setSteps] = useState<Step[]>(() => [{ key: `${uid}-2`, text: "", why: "", showWhy: false }]);
-  const [state, action, pending] = useActionState<ActionState, FormData>(createManualRecipe, {});
+  // Errors clear as soon as you edit that part, and come back only on the next Save.
+  const [edited, setEdited] = useState<Record<string, boolean>>({});
+  const [state, action, pending] = useActionState<ActionState, FormData>((prev, fd) => {
+    setEdited({});
+    return createManualRecipe(prev, fd);
+  }, {});
   const v = state.values ?? {};
-  const err = state.fieldErrors ?? {};
-  const setIng = (key: string, p: Partial<Ing>) => setIngs((r) => r.map((x) => (x.key === key ? { ...x, ...p } : x)));
-  const setStep = (key: string, p: Partial<Step>) => setSteps((r) => r.map((x) => (x.key === key ? { ...x, ...p } : x)));
+  const all = state.fieldErrors ?? {};
+  const err = Object.fromEntries(Object.entries(all).filter(([f]) => !edited[f]));
+  const touch = (f: string) => setEdited((e) => (e[f] ? e : { ...e, [f]: true }));
+  const setIng = (key: string, p: Partial<Ing>) => {
+    touch("ingredients");
+    setIngs((r) => r.map((x) => (x.key === key ? { ...x, ...p } : x)));
+  };
+  const setStep = (key: string, p: Partial<Step>) => {
+    touch("steps");
+    setSteps((r) => r.map((x) => (x.key === key ? { ...x, ...p } : x)));
+  };
 
   return (
     <form action={action} className="space-y-8">
@@ -51,6 +64,7 @@ export function ManualRecipeForm() {
             name="title"
             maxLength={120}
             defaultValue={v.title}
+            onChange={() => touch("title")}
             aria-invalid={!!err.title}
             aria-describedby={err.title ? "title-error" : undefined}
             className={fieldClass}
