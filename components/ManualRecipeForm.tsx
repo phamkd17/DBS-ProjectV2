@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useId, useRef, useState } from "react";
 import { createManualRecipe } from "@/app/actions";
 import type { ActionState } from "@/lib/types";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
@@ -9,19 +9,21 @@ import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } 
 type Ing = { key: string; amount: string; item: string };
 type Step = { key: string; text: string; why: string; showWhy: boolean };
 
-let n = 0;
-const k = () => `r${++n}`;
 
 const removeBtn = `grid size-11 shrink-0 cursor-pointer place-items-center text-xl text-ls-muted hover:bg-ls-ink/[0.06] hover:text-ls-error active:bg-ls-ink/[0.12] ${focusRing}`;
 const addBtn = `min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`;
 
 /** Type a recipe in yourself, in the same shape as an AI recipe: ingredients, then numbered steps with an optional "why". */
 export function ManualRecipeForm() {
+  // Stable per-component ids, so server and browser render the same ids.
+  const uid = useId().replace(/:/g, "");
+  const next = useRef(3);
+  const k = () => `${uid}-${next.current++}`;
   const [ings, setIngs] = useState<Ing[]>(() => [
-    { key: k(), amount: "", item: "" },
-    { key: k(), amount: "", item: "" },
+    { key: `${uid}-0`, amount: "", item: "" },
+    { key: `${uid}-1`, amount: "", item: "" },
   ]);
-  const [steps, setSteps] = useState<Step[]>(() => [{ key: k(), text: "", why: "", showWhy: false }]);
+  const [steps, setSteps] = useState<Step[]>(() => [{ key: `${uid}-2`, text: "", why: "", showWhy: false }]);
   const [state, action, pending] = useActionState<ActionState, FormData>(createManualRecipe, {});
   const v = state.values ?? {};
   const err = state.fieldErrors ?? {};
