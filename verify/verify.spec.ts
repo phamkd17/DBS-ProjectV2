@@ -317,8 +317,25 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(view.getByText(/Dry at 200°F/)).toBeVisible(); // notes still there
   await check(page, "idea-with-words-added");
 
+  // ---- Write its recipe yourself (no AI), right from Development ----
+  await view.getByRole("link", { name: "or write the recipe yourself" }).click();
+  await page.waitForURL(/\/recipes\/new\?from=/);
+  const wf = page.locator("main").filter({ visible: true });
+  await expect(wf.getByLabel("Recipe name")).toHaveValue(`${IDEA} (renamed)`); // prefilled from the item
+  await wf.getByLabel("Ingredient 1", { exact: true }).fill("yellow onions");
+  await wf.getByLabel("Amount 1", { exact: true }).fill("4");
+  await wf.getByLabel("Step 1", { exact: true }).fill("Slice thin and cook low for an hour, then dry in a 200°F oven.");
+  await check(page, "write-recipe-from-item");
+  await wf.getByRole("button", { name: "Save recipe" }).click();
+  await page.waitForURL(/\/r\//);
+  const wr = page.locator("main").filter({ visible: true });
+  await expect(wr.getByRole("link", { name: "Recipes" }).first()).toBeVisible(); // moved to Recipes
+  await expect(wr.getByText("yellow onions")).toBeVisible();
+  await expect(wr.getByText(/Dry at 200°F/)).toBeVisible(); // its idea notes came along
+
+  // Delete it (this removes the item too).
   page.once("dialog", (d) => d.accept());
-  await view.getByRole("button", { name: "Delete", exact: true }).click();
+  await wr.getByRole("button", { name: "Delete this recipe" }).click();
   await page.waitForURL((u) => u.pathname === "/");
   // Scope to <main>: Next keeps hidden copies of past pages, and its screen-reader
   // route announcer still holds the old title.
