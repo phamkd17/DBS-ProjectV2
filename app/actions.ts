@@ -605,3 +605,48 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
   revalidatePath("/");
   redirect(`/r/${made.id}`);
 }
+
+// ---------------------------------------------------------------------------
+// Leave the AI questions (student, Nov 20): save for later, or discard.
+// ---------------------------------------------------------------------------
+/** Save whatever answers are typed so far (no AI call) and go back to Development. */
+export async function saveAnswersForLater(recipeId: string, formData: FormData): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { data: questions } = await supabase
+    .from("recipe_questions")
+    .select("*")
+    .eq("recipe_id", recipeId)
+    .returns<QuestionRow[]>();
+  const now = new Date().toISOString();
+  for (const q of questions ?? []) {
+    const text = String(formData.get(`answer_${q.id}`) ?? "").slice(0, 2000);
+    const mode = String(formData.get(`mode_${q.id}`) ?? "own");
+    // Untouched questions stay unanswered, so they're still open next time.
+    if (!text.trim()) continue;
+    const { error } = await supabase
+      .from("recipe_questions")
+      .update({ answer: text.trim(), answer_source: answerSourceFor(mode, text, q.suggestion), answered_at: now })
+      .eq("id", q.id);
+    if (error) console.error("[saveAnswersForLater]", error);
+  }
+  revalidatePath("/", "layout");
+  redirect("/?tab=development");
+}
+
+/** Throw the AI draft and its questions away, back to the cook's words, to start over. */
+export async function discardDraft(recipeId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  // RLS: only your own recipe comes back, and only a draft can be discarded here.
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("dictation_id, status")
+    .eq("id", recipeId)
+    .maybeSingle<{ dictation_id: string; status: string }>();
+  if (!recipe || recipe.status === "ready") redirect(`/r/${recipeId}`);
+  const { error } = await supabase.from("recipes").delete().eq("id", recipeId); // questions cascade
+  if (error) console.error("[discardDraft]", error);
+  revalidatePath("/", "layout");
+  redirect(`/d/${recipe.dictation_id}`);
+}
