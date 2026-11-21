@@ -24,6 +24,8 @@ who said it → send it by link; the recipient saves a copy to their own lab boo
    shows what came from the cook, from you, and from the AI. Keep it, or tap
    **Make a link** to send it.
 
+Already have a recipe written down? On **Recipes**, tap **+ New recipe** and type it in. No AI needed.
+
 Lost? Tap **?** at the top of any page.
 
 ## Run locally

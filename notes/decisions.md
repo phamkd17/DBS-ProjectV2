@@ -42,8 +42,9 @@
 | Nov 15 | The cook's words are added only in Development | |
 | Nov 20 | The cook's words can be typed as well as dictated | |
 | Nov 20 | Tabs at the top of every page; rename "Finished" to **Recipes** | Cookbook, Perfected, Library |
-| Nov 20 | One start button per tab, matching what you do there: **+ New idea** (Ideas), **+ Cook's words** (Development), **New ▾** (Recipes); no duplicate start buttons | Keep only the New menu; hide New on an empty lab book |
+| Nov 20 | One start button per tab, matching what you do there: quick-add (Ideas), **+ Cook's words** (Development), **+ New recipe** (Recipes); no duplicate start buttons | Keep only the New menu; hide New on an empty lab book |
 | Nov 20 | Creating an idea shouldn't mean going to the Ideas tab, tapping a button, and filling in a separate page: a **quick-add box** at the top of the Ideas tab (type, Enter, done; notes and a link later with the pencil) | Clickable step cards; a "+ New" in the header |
+| Nov 20 | Recipes can be added by hand, in the same format as AI recipes (ingredients, numbered steps, optional "why it works"), with no AI call; **+ New recipe** is the Recipes tab's start button | |
 
 ## What the app is
 

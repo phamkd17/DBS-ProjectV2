@@ -685,3 +685,13 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   button is gone (the box replaces it); the full form (`/ideas/new`) is still
   reachable from New ▾ on Recipes. Verify ✓: empty Enter error, item appears,
   box clears and keeps focus, cleanup.
+- Recipes can be added by hand in the same format as AI recipes.
+  `createManualRecipe` saves an entry (stage finished) + a ready recipe
+  (`model: "manual"`; everything labeled as the cook's, i.e. "Whose recipe?"; a
+  why note → a cook-sourced why, so the science icon shows "<cook>'s reason").
+  If the recipe insert fails, the entry is removed (no half-saved rows).
+  `/recipes/new` form: rows for ingredients and steps, "+ Why it works" per
+  step; errors clear when you edit that part; ids via useId (no hydration
+  mismatch). The Recipes tab's button is now **+ New recipe**; the unused New
+  menu was removed. Hand-typed recipes hide the cook's-words section. Verify ✓
+  (errors, save, format, no words section, delete).
