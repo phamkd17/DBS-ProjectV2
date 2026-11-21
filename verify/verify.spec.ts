@@ -160,6 +160,12 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await clerk.signIn({ page, emailAddress: TEST_EMAIL });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Your lab book" })).toBeVisible();
+  // Tabs at the top of every page; the open section is marked.
+  const topTabs = page.getByRole("navigation", { name: "Lab book sections" });
+  await expect(topTabs.getByRole("link", { name: "Recipes" })).toBeVisible();
+  await expect(topTabs.locator('[aria-current="page"]')).toHaveCount(1); // home always opens a named tab
+  await topTabs.getByRole("link", { name: "Ideas" }).click();
+  await expect(topTabs.getByRole("link", { name: "Ideas" })).toHaveAttribute("aria-current", "page");
   await check(page, "home", { keyboard: true });
 
   // ---- Ideas: create, validate, move, delete ----
@@ -405,11 +411,11 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // ---- Move a finished recipe back to Development and back again ----
   await page.goto(recipeUrl);
   await page.getByRole("button", { name: "Development" }).click();
-  await expect(page.getByRole("button", { name: "Finished" })).toBeVisible(); // now offers "Finished"
+  await expect(page.getByRole("button", { name: "Recipes" })).toBeVisible(); // now offers "Recipes"
   await expect(page.getByRole("button", { name: "Development" })).toHaveCount(0);
   await page.reload();
   await expect(page.locator("main").getByRole("link", { name: "Development" })).toBeVisible(); // breadcrumb follows the move
-  await page.getByRole("button", { name: "Finished" }).click();
+  await page.getByRole("button", { name: "Recipes" }).click();
   await expect(page.getByRole("button", { name: "Development" })).toBeVisible();
 
   // ---- Edit their words after the recipe exists (no AI call) ----
