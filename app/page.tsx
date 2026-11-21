@@ -24,9 +24,9 @@ const TABS = {
     empty: "Nothing in development yet.",
   },
   finished: {
-    label: "Finished",
+    label: "Recipes",
     blurb: "Ready to cook, keep, or send.",
-    empty: "No finished recipes yet.",
+    empty: "No recipes yet.",
   },
 } as const;
 type Tab = keyof typeof TABS;

@@ -4,7 +4,7 @@
 const STEPS = [
   { tab: "Ideas", line: "Save what inspires you", Icon: BulbIcon },
   { tab: "Development", line: "Type or dictate it. The AI asks what's missing", Icon: MicIcon },
-  { tab: "Finished", line: "Cook it, keep it, or send it", Icon: BookIcon },
+  { tab: "Recipes", line: "Cook it, keep it, or send it", Icon: BookIcon },
 ];
 
 export function HowItWorks({ headingLevel = 2 }: { headingLevel?: 2 | 3 }) {

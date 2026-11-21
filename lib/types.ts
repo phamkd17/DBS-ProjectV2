@@ -5,7 +5,8 @@ export type Stage = (typeof STAGES)[number];
 export const STAGE_LABEL: Record<Stage, string> = {
   ideas: "Ideas",
   development: "Development",
-  finished: "Finished",
+  // Shown as "Recipes" (student, Nov 20); the stored value stays "finished" (v1 shares the DB).
+  finished: "Recipes",
 };
 export function isStage(v: unknown): v is Stage {
   return typeof v === "string" && (STAGES as readonly string[]).includes(v);

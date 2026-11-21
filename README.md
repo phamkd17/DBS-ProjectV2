@@ -19,7 +19,7 @@ who said it → send it by link; the recipient saves a copy to their own lab boo
    cook's words: type or dictate the ingredients, then each step (the phone's 🎤
    works). Tick **I'm ready** and tap **Create recipe with AI**. Answer what
    you know, or tap **Use suggestion**.
-3. **Finished:** the recipe is ready to cook. Tap the 🧪 icon on a step for
+3. **Recipes:** the recipe is ready to cook. Tap the 🧪 icon on a step for
    *why it works*, and the sliders icon to *adjust to taste*. **Show sources**
    shows what came from the cook, from you, and from the AI. Keep it, or tap
    **Make a link** to send it.
