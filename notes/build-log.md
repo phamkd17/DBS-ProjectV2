@@ -716,3 +716,7 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   note. AGENTS.md rule 1 updated.
 - Tested in the DB (rolled back): no copy after an edit, everything gone after a
   delete, another user deletes 0. Verify ✓.
+- Saving the cook's words empty now deletes them (it used to be an error).
+  `updateDictation` sets the transcript to null when empty, except while a draft
+  has open AI questions ("The AI questions still need these words…"). The edit
+  hint says clearing deletes. Verify ✓ for both cases.

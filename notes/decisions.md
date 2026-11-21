@@ -46,7 +46,7 @@
 | Nov 20 | Creating an idea shouldn't mean going to the Ideas tab, tapping a button, and filling in a separate page: a **quick-add box** at the top of the Ideas tab (type, Enter, done; notes and a link later with the pencil) | Clickable step cards; a "+ New" in the header |
 | Nov 20 | Recipes can be added by hand, in the same format as AI recipes (ingredients, numbered steps, optional "why it works"), with no AI call; **+ New recipe** is the Recipes tab's start button | |
 | Nov 20 | A way out of the AI questions: **Save for later** (keeps typed answers, back to Development) and **Discard questions** (with a confirm; deletes the AI draft so the recipe can be created again) | Save for later only; discard only |
-| Nov 21 | The cook's words can be **deleted** (with a confirm); the idea notes and any finished recipe stay | |
+| Nov 21 | The cook's words can be **deleted**, with the Delete button or by saving them empty; the idea notes and any finished recipe stay | |
 | Nov 21 | **No original versions are kept**: editing just replaces the words, and deleting removes them completely (only the "edited after this recipe was made" warning remains) | Keep the first version (the previous rule) |
 
 ## What the app is
