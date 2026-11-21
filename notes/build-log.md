@@ -720,3 +720,12 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   `updateDictation` sets the transcript to null when empty, except while a draft
   has open AI questions ("The AI questions still need these words…"). The edit
   hint says clearing deletes. Verify ✓ for both cases.
+
+## Nov 21 — Write the recipe yourself from Development
+- "Or write the recipe yourself, no AI" under the AI panel and in the no-words
+  box links to `/recipes/new?from=<id>`. The page loads the entry through RLS
+  and prefills name, cook, and notes. `createManualRecipe` with `dictation_id`
+  checks ownership, refuses if a recipe already exists (unless it failed),
+  moves the entry to Recipes, and rolls the stage back if the recipe insert
+  fails. A manual recipe shows the cook's words section only if words exist.
+  Verify ✓.
