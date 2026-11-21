@@ -79,9 +79,12 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
 
-      <section aria-label="Original dictation" className="space-y-3">
-        <DictationEditor dictation={dictation} />
-      </section>
+      {/* Hand-typed recipes (model "manual") have no cook's words to show or add. */}
+      {recipe.model !== "manual" && (
+        <section aria-label="Original dictation" className="space-y-3">
+          <DictationEditor dictation={dictation} />
+        </section>
+      )}
 
       {answered.length > 0 && (
         <details className="border border-ls-border bg-ls-surface">

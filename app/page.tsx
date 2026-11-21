@@ -7,7 +7,6 @@ import { Button, ErrorNote, eyebrow, focusRing, formatDate, LinkButton } from "@
 import { MoveTo } from "@/components/MoveTo";
 import { QuickAddIdea } from "@/components/QuickAddIdea";
 import { HowItWorks } from "@/components/HowItWorks";
-import { NewMenu } from "@/components/NewMenu";
 import type { DictationRow, RecipeStatus } from "@/lib/types";
 
 type Row = DictationRow & { recipes: { id: string; status: RecipeStatus; recipe: { title?: string } | null }[] };
@@ -69,7 +68,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         {tab === "ideas" ? null : tab === "development" ? (
           <LinkButton href="/new">+ Cook&apos;s words</LinkButton>
         ) : (
-          <NewMenu />
+          <LinkButton href="/recipes/new">+ New recipe</LinkButton>
         )}
       </div>
 
