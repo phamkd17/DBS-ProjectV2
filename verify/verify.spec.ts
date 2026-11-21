@@ -233,52 +233,67 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(mr.getByText("Their words")).toHaveCount(0); // no cook's-words section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
 
-  // ---- Sections (Recipes tab): several per recipe, filter, delete (the recipe stays) ----
-  const SEC = `Desserts ${RUN}`;
-  const SEC2 = `Breakfast ${RUN}`;
-  const picker = mr.getByRole("region", { name: "Sections" });
-  const newSection = picker.getByRole("button", { name: "+ New section" });
-  const addTo = async (name: string) => {
-    if (await newSection.isVisible()) await newSection.click();
-    await picker.getByLabel("New section").fill(name);
-    await picker.getByLabel("New section").press("Enter");
-  };
-  await addTo(SEC);
-  await expect(picker.getByRole("button", { name: SEC })).toHaveAttribute("aria-pressed", "true"); // made + added
-  await addTo(SEC.toUpperCase());
-  await expect(picker.getByText(/already have a section/)).toBeVisible(); // no duplicates (any case)
-  await picker.getByLabel("New section").fill(SEC2);
-  await picker.getByLabel("New section").press("Enter");
-  await expect(picker.getByRole("button", { name: SEC2 })).toHaveAttribute("aria-pressed", "true"); // several per recipe
-  await picker.getByRole("button", { name: SEC2 }).click(); // tap again = out of it
-  await expect(picker.getByRole("button", { name: SEC2 })).toHaveAttribute("aria-pressed", "false");
-  await check(page, "recipe-sections", { keyboard: true });
+  // ---- Tags (Recipes tab): type to add, several per recipe, filter, delete (the recipe stays) ----
+  const TAG = `Desserts ${RUN}`;
+  const TAG2 = `Breakfast ${RUN}`;
+  const tagsBox = mr.getByRole("region", { name: "Tags" });
+  const tagInput = tagsBox.getByRole("textbox", { name: "Add a tag" });
+  const onRecipe = tagsBox.getByRole("list", { name: "Tags on this recipe" });
+  await tagInput.fill(TAG);
+  await expect(tagsBox.getByText(`Press Enter to make the new tag “${TAG}”.`)).toBeVisible();
+  await tagInput.press("Enter");
+  await expect(onRecipe.getByText(TAG)).toBeVisible(); // made + added
+  await expect(tagInput).toHaveValue(""); // ready for the next one
+  await expect(tagInput).toBeFocused();
+  await tagInput.fill(TAG2);
+  await tagInput.press("Enter");
+  await expect(onRecipe.getByText(TAG2)).toBeVisible(); // several per recipe
+  await tagInput.fill(TAG.toUpperCase());
+  await tagInput.press("Enter"); // same tag, any case: no duplicate
+  await expect(onRecipe.getByText(TAG, { exact: true })).toHaveCount(1);
+  await expect(onRecipe.getByText(TAG.toUpperCase(), { exact: true })).toHaveCount(0);
+  await onRecipe.getByRole("button", { name: `Remove ${TAG2}` }).click(); // × = off this recipe
+  await expect(onRecipe.getByText(TAG2)).toHaveCount(0);
+  // Your other tags narrow as you type; tap one to add it back.
+  await tagInput.fill(`Breakfast ${RUN}`.slice(0, 12));
+  const pick = tagsBox.getByRole("list", { name: "Tap a tag to add it" }).getByRole("button", { name: `Add ${TAG2}` });
+  await expect(pick).toBeVisible();
+  await expect(tagsBox.getByRole("button", { name: `Add ${TAG}` })).toHaveCount(0); // already on it
+  await check(page, "recipe-tags", { keyboard: true });
+  await pick.click();
+  await expect(onRecipe.getByText(TAG2)).toBeVisible();
+  await onRecipe.getByRole("button", { name: `Remove ${TAG2}` }).click();
+  await expect(onRecipe.getByText(TAG2)).toHaveCount(0);
+  await expect(tagsBox).toHaveAttribute("aria-busy", "false"); // every change has reached the server
+  await page.reload(); // saved, not just on screen
+  await expect(mr.getByRole("list", { name: "Tags on this recipe" }).getByText(TAG2)).toHaveCount(0);
+  await expect(mr.getByRole("list", { name: "Tags on this recipe" }).getByText(TAG)).toBeVisible();
 
   await page.goto("/?tab=finished");
   const rt = page.locator("main").filter({ visible: true });
-  const filter = rt.getByRole("navigation", { name: "Filter by section" });
+  const filter = rt.getByRole("navigation", { name: "Filter by tag" });
   await expect(filter.getByRole("link", { name: "All" })).toHaveAttribute("aria-current", "page");
-  await filter.getByRole("link", { name: SEC }).click();
-  await expect(filter.getByRole("link", { name: SEC })).toHaveAttribute("aria-current", "page");
+  await filter.getByRole("link", { name: TAG }).click();
+  await expect(filter.getByRole("link", { name: TAG })).toHaveAttribute("aria-current", "page");
   await expect(rt.getByText(MANUAL, { exact: true })).toBeVisible();
-  await check(page, "recipes-by-section", { keyboard: true });
-  await filter.getByRole("link", { name: SEC2 }).click();
-  await expect(filter.getByRole("link", { name: SEC2 })).toHaveAttribute("aria-current", "page");
+  await check(page, "recipes-by-tag", { keyboard: true });
+  await filter.getByRole("link", { name: TAG2 }).click();
+  await expect(filter.getByRole("link", { name: TAG2 })).toHaveAttribute("aria-current", "page");
   await expect(rt.getByText(MANUAL, { exact: true })).toHaveCount(0);
-  await expect(rt.getByText(`Nothing in ${SEC2} yet.`, { exact: false })).toBeVisible();
+  await expect(rt.getByText(`No recipes tagged ${TAG2} yet.`, { exact: false })).toBeVisible();
 
-  await filter.getByRole("link", { name: "Edit sections" }).click();
-  await page.waitForURL(/\/sections/);
-  const secPage = page.locator("main").filter({ visible: true });
-  await expect(secPage.getByRole("link", { name: new RegExp(`${SEC}\\s*1 recipe$`) })).toBeVisible();
-  await check(page, "sections-page", { keyboard: true });
-  for (const name of [SEC, SEC2]) {
+  await filter.getByRole("link", { name: "Edit tags" }).click();
+  await page.waitForURL(/\/tags/);
+  const tagPage = page.locator("main").filter({ visible: true });
+  await expect(tagPage.getByRole("link", { name: new RegExp(`${TAG}\\s*1 recipe$`) })).toBeVisible();
+  await check(page, "tags-page", { keyboard: true });
+  for (const name of [TAG, TAG2]) {
     page.once("dialog", (d) => d.accept());
-    await secPage.getByRole("button", { name: `Delete ${name}`, exact: true }).click();
-    await expect(secPage.getByRole("button", { name: `Delete ${name}`, exact: true })).toHaveCount(0);
+    await tagPage.getByRole("button", { name: `Delete ${name}`, exact: true }).click();
+    await expect(tagPage.getByRole("button", { name: `Delete ${name}`, exact: true })).toHaveCount(0);
   }
   await page.goto(manualUrl);
-  await expect(mr.getByRole("heading", { name: MANUAL })).toBeVisible(); // deleting a section keeps the recipe
+  await expect(mr.getByRole("heading", { name: MANUAL })).toBeVisible(); // deleting a tag keeps the recipe
   page.once("dialog", (d) => d.accept());
   await mr.getByRole("button", { name: "Delete this recipe" }).click();
   await page.waitForURL((u) => u.pathname === "/");

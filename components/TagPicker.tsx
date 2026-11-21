@@ -7,7 +7,7 @@ import { STARTER_TAGS, type TagRow } from "@/lib/types";
 import { Button, chipClass, eyebrow, fieldClass, focusRing, textLink } from "./ui";
 
 type Tag = { id: string; name: string };
-type Change = { add: Tag } | { remove: string };
+type Change = { add: Tag } | { remove: string }; // remove = by name
 
 /**
  * Tags on a recipe (student, Nov 21): type a tag and press Enter. Your other
@@ -22,9 +22,9 @@ export function TagPicker({ dictationId, allTags, selected }: { dictationId: str
       ? cur.some((t) => t.name.toLowerCase() === c.add.name.toLowerCase())
         ? cur
         : [...cur, c.add]
-      : cur.filter((t) => t.id !== c.remove),
+      : cur.filter((t) => t.name.toLowerCase() !== c.remove.toLowerCase()),
   );
-  const [, start] = useTransition();
+  const [saving, start] = useTransition();
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -56,14 +56,14 @@ export function TagPicker({ dictationId, allTags, selected }: { dictationId: str
     setError(null);
     input.current?.focus();
     start(async () => {
-      change({ remove: t.id });
-      const { ok } = await untagEntry(dictationId, t.id);
+      change({ remove: t.name });
+      const { ok } = await untagEntry(dictationId, t.name);
       if (!ok) setError(`Couldn't remove “${t.name}”. Try again.`);
     });
   };
 
   return (
-    <section aria-labelledby="tags-heading" className="space-y-3">
+    <section aria-labelledby="tags-heading" aria-busy={saving} className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="tags-heading" className={eyebrow}>
           Tags
@@ -79,7 +79,7 @@ export function TagPicker({ dictationId, allTags, selected }: { dictationId: str
         <ul className="flex flex-wrap gap-2" aria-label="Tags on this recipe">
           {tags.map((t) => (
             <li key={t.id} className="inline-flex min-h-11 items-center border border-ls-ink bg-ls-ink pl-3 font-ls-sans text-[15px] text-ls-surface">
-              {t.name}
+              <span>{t.name}</span>
               <button
                 type="button"
                 aria-label={`Remove ${t.name}`}

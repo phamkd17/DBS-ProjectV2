@@ -788,11 +788,18 @@ export async function tagEntry(
   return { ok: true, tag };
 }
 
-/** Take a tag off a recipe (the tag itself stays). */
-export async function untagEntry(dictationId: string, tagId: string): Promise<{ ok: boolean }> {
+/**
+ * Take a tag off a recipe (the tag itself stays). By name, so it also works on
+ * a tag that was added a moment ago and has no id on screen yet.
+ */
+export async function untagEntry(dictationId: string, rawName: string): Promise<{ ok: boolean }> {
   await requireUser();
+  const name = cleanTag(rawName).toLowerCase();
   const supabase = await supabaseForUser();
-  const { error } = await supabase.from("entry_sections").delete().eq("dictation_id", dictationId).eq("section_id", tagId);
+  const { data: mine } = await supabase.from("sections").select("id, name").returns<{ id: string; name: string }[]>();
+  const tag = (mine ?? []).find((t) => t.name.toLowerCase() === name);
+  if (!tag) return { ok: true }; // nothing to remove
+  const { error } = await supabase.from("entry_sections").delete().eq("dictation_id", dictationId).eq("section_id", tag.id);
   if (error) console.error("[untagEntry]", error);
   revalidatePath("/", "layout");
   return { ok: !error };
