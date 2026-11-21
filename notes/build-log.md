@@ -654,3 +654,8 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   that asks for the cook's words now says **type or dictate**. That pushed the
   main screens to 154 words (over the ≤150 target), so the New dictation intro
   was trimmed back to 149.
+- **Student:** "Mention typing, mention that it makes recipe development easy."
+  **Options offered:** A keeps the opening / B leads with easy / C shortest.
+  **Student chose:** A: "From inspiration to recipe: type or dictate your dish,
+  and AI makes recipe development easy, with the food science built in."
+  Also updated AGENTS.md, the v2 plan, and the talking points.

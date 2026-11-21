@@ -10,8 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # AGENTS.md — Culinary Lab Book
 
-**From inspiration to recipe: develop dishes by voice and AI, with the food
-science built in.** (Landing headline, Nov 16, student's pick. The proposal's
+**From inspiration to recipe: type or dictate your dish, and AI makes recipe development easy, with the food science built in.** (Landing headline, Nov 16, student's pick. The proposal's
 original one-liner was "Culinary Lab Book helps cooks turn what they say while
 they cook into recipes that can be shared for others to repeat." In the
 student's words, it's now "an app to track culinary inspiration, provides a
