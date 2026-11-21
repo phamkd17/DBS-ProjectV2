@@ -49,6 +49,7 @@
 | Nov 21 | The cook's words can be **deleted**, with the Delete button or by saving them empty; the idea notes and any finished recipe stay | |
 | Nov 21 | **No original versions are kept**: editing just replaces the words, and deleting removes them completely (only the "edited after this recipe was made" warning remains) | Keep the first version (the previous rule) |
 | Nov 21 | In Development, an item's recipe can also be **written by hand** ("Or write the recipe yourself" under the AI panel and in the no-words box): the form opens with the item's name, cook, and notes, and saving moves it to Recipes | |
+| Nov 21 | A shortcut when writing a recipe by hand: **Enter adds the next ingredient or step** and moves the cursor there (Shift+Enter is a new line inside a step) | |
 
 ## What the app is
 

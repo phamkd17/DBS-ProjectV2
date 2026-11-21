@@ -729,3 +729,9 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   moves the entry to Recipes, and rolls the stage back if the recipe insert
   fails. A manual recipe shows the cook's words section only if words exist.
   Verify ✓.
+- Shortcut (student's request): Enter in an ingredient field or a step adds a
+  row right below and focuses it (Ingredient on phones, Amount at 640px+, the
+  first field on screen). It doesn't submit the form, and it ignores Enter
+  while an IME is composing. Shift+Enter is a new line in a step. A hint line
+  sits under each heading. Verify ✓ (Enter adds row 3 with focus, no submit;
+  Shift+Enter keeps one step).
