@@ -32,7 +32,7 @@
 | Nov 14 | No per-person daily AI limit for now | A 10-recipes-a-day cap |
 | Nov 14 | One "New" button (Idea or Dictation) instead of two | |
 | Nov 14 | The AI step is deliberate: highlighted, behind an "I'm ready" tick, and only in Development | |
-| Nov 14 | The cook's words are always editable (replaces the proposal's "never edited" rule; the first version is still kept) | Editable until the AI uses them; lock the words |
+| Nov 14 | The cook's words are always editable (replaces the proposal's "never edited" rule; at first the first version was kept, dropped Nov 21) | Editable until the AI uses them; lock the words |
 | Nov 14 | Edit in place with small pencil icons, not on separate pages | |
 | Nov 15 | Idea notes and the cook's words are separate sections; notes stay at every stage; the words can be added later | |
 | Nov 15 | One edit button for the whole ingredient list | One pencil per ingredient |
@@ -46,6 +46,8 @@
 | Nov 20 | Creating an idea shouldn't mean going to the Ideas tab, tapping a button, and filling in a separate page: a **quick-add box** at the top of the Ideas tab (type, Enter, done; notes and a link later with the pencil) | Clickable step cards; a "+ New" in the header |
 | Nov 20 | Recipes can be added by hand, in the same format as AI recipes (ingredients, numbered steps, optional "why it works"), with no AI call; **+ New recipe** is the Recipes tab's start button | |
 | Nov 20 | A way out of the AI questions: **Save for later** (keeps typed answers, back to Development) and **Discard questions** (with a confirm; deletes the AI draft so the recipe can be created again) | Save for later only; discard only |
+| Nov 21 | The cook's words can be **deleted** (with a confirm); the idea notes and any finished recipe stay | |
+| Nov 21 | **No original versions are kept**: editing just replaces the words, and deleting removes them completely (only the "edited after this recipe was made" warning remains) | Keep the first version (the previous rule) |
 
 ## What the app is
 

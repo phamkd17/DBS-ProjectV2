@@ -703,3 +703,16 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   "Save for later" submits the questions form via `form` + `formAction`.
   Verify ✓: the answer persists after save; after discard the draft URL is gone
   and the recipe can be recreated (dev cache, 0 Gemini calls).
+
+## Nov 21 — Delete the cook's words; no original versions
+- Delete their words: `deleteWords` sets the transcript to null; the entry, idea
+  notes, and recipe stay. Not offered on the AI questions page (pass 2 needs
+  the words). Confirm dialog. Edit comes before Delete when they wrap.
+- The student doesn't need original versions kept. The trigger now never keeps
+  `original_transcript`, sets `edited_at` on edit, and clears it on delete;
+  existing originals were cleared (migrations `20261121000000`,
+  `20261121010000`). The column stays (additive rule; v1 reads it and shows
+  nothing). Removed "See the original words" and the "first version is kept"
+  note. AGENTS.md rule 1 updated.
+- Tested in the DB (rolled back): no copy after an edit, everything gone after a
+  delete, another user deletes 0. Verify ✓.
