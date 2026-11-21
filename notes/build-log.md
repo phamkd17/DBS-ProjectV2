@@ -678,3 +678,10 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   now the heading + steps only; the extra + New idea next to the hint is gone.
   Tests point to the right tab for each button. Verify ✓; an empty account
   shows exactly one start link.
+- Creating an idea felt indirect (tab → button → separate page). **Options:**
+  quick-add box / clickable step cards / "+ New" in the header. **Chosen:**
+  quick-add. `quickAddIdea` saves just the name (no redirect); the box resets
+  and keeps focus, and a status line confirms it. The Ideas tab's "+ New idea"
+  button is gone (the box replaces it); the full form (`/ideas/new`) is still
+  reachable from New ▾ on Recipes. Verify ✓: empty Enter error, item appears,
+  box clears and keeps focus, cleanup.
