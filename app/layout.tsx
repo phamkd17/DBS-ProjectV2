@@ -8,6 +8,7 @@ import { PageLoading } from "@/components/PageLoading";
 import { focusRing } from "@/components/ui";
 import { HelpButton } from "@/components/HelpButton";
 import { HowItWorks } from "@/components/HowItWorks";
+import { TopTabs } from "@/components/TopTabs";
 
 const serif = Instrument_Serif({ variable: "--font-instrument-serif", subsets: ["latin"], weight: "400" });
 const sans = Jost({ variable: "--font-jost", subsets: ["latin"] });
@@ -64,6 +65,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </Suspense>
               </div>
             </div>
+            <Suspense fallback={null}>
+              <Show when="signed-in">
+                <TopTabs />
+              </Show>
+            </Suspense>
           </header>
           <div className="mx-auto w-full max-w-3xl flex-1 px-5 py-8">
             <Suspense fallback={<PageLoading />}>{children}</Suspense>

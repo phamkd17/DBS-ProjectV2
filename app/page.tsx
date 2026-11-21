@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { SignUpButton } from "@clerk/nextjs";
 import { supabaseForUser } from "@/lib/supabase/server";
@@ -50,15 +51,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const byTab: Record<Tab, Row[]> = { ideas: [], development: [], finished: [] };
   for (const d of rows) byTab[d.stage].push(d);
 
-  // Explicit ?tab= wins; otherwise open where the work is.
-  const tab: Tab =
-    typeof tabParam === "string" && tabParam in TABS
-      ? (tabParam as Tab)
-      : byTab.development.length
-        ? "development"
-        : byTab.finished.length
-          ? "finished"
-          : "ideas";
+  // Explicit ?tab= wins; otherwise open where the work is. Redirect so the URL
+  // (and the header tabs) always say which section is open.
+  if (!(typeof tabParam === "string" && tabParam in TABS)) {
+    redirect(`/?tab=${byTab.development.length ? "development" : byTab.finished.length ? "finished" : "ideas"}`);
+  }
+  const tab = tabParam as Tab;
 
   const items = byTab[tab];
 
@@ -75,32 +73,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <FirstRun />
       ) : (
         <>
-          <nav aria-label="Lab book sections" className="border-b border-ls-border">
-            <ul className="flex gap-6 sm:gap-8">
-              {(Object.keys(TABS) as Tab[]).map((t) => {
-                const active = t === tab;
-                return (
-                  <li key={t}>
-                    <Link
-                      href={`/?tab=${t}`}
-                      aria-current={active ? "page" : undefined}
-                      className={`-mb-px inline-flex min-h-11 items-center gap-2 border-b-2 px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] transition-colors duration-150 ${focusRing} ${
-                        active
-                          ? "border-ls-ink text-ls-ink"
-                          : "border-transparent text-ls-muted hover:border-ls-rule hover:text-ls-ink active:border-ls-border"
-                      }`}
-                    >
-                      {TABS[t].label}
-                      <span className="tabular-nums text-ls-muted">{byTab[t].length}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[15px] text-ls-muted">{TABS[tab].blurb}</p>
+            <p className="text-[15px] text-ls-muted">
+              <span className="font-medium text-ls-ink">{TABS[tab].label}</span>
+              {items.length ? ` · ${items.length}` : ""} · {TABS[tab].blurb}
+            </p>
             {tab === "ideas" && (
               <LinkButton href="/ideas/new" variant="secondary">
                 + New idea
