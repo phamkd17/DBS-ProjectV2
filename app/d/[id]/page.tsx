@@ -8,6 +8,7 @@ import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { supabaseForUser } from "@/lib/supabase/server";
 import type { DictationRow } from "@/lib/types";
 import { CreateRecipe } from "./CreateRecipe";
+import { SavedBanner } from "@/components/SavedBanner";
 import { StartDeveloping } from "@/components/StartDeveloping";
 import { MoveTo } from "@/components/MoveTo";
 import { STAGE_LABEL } from "@/lib/types";
@@ -15,8 +16,8 @@ import { STAGE_LABEL } from "@/lib/types";
 // Gemini can take a while on the free tier.
 export const maxDuration = 300;
 
-export default async function DictationPage({ params }: PageProps<"/d/[id]">) {
-  const { id } = await params;
+export default async function DictationPage({ params, searchParams }: PageProps<"/d/[id]">) {
+  const [{ id }, { saved }] = await Promise.all([params, searchParams]);
   const supabase = await supabaseForUser();
 
   // RLS: returns nothing unless this dictation is yours.
@@ -32,14 +33,25 @@ export default async function DictationPage({ params }: PageProps<"/d/[id]">) {
     .maybeSingle();
   if (recipe) redirect(`/r/${recipe.id}`);
 
+  const justSaved = saved === "1" && d.stage === "ideas";
+
   return (
     <main className="space-y-8">
+      {justSaved && <SavedBanner />}
       <div className="space-y-3">
-        <p className={eyebrow}>
-          <Link href={`/?tab=${d.stage}`} className={textLink}>
-            {STAGE_LABEL[d.stage]}
-          </Link>
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <p className={eyebrow}>
+            <Link href={`/?tab=${d.stage}`} className={textLink}>
+              {STAGE_LABEL[d.stage]}
+            </Link>
+          </p>
+          {/* Issue #3: another idea is always one tap away. */}
+          {d.stage === "ideas" && !justSaved && (
+            <Link href="/ideas/new" className={`font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
+              + New idea
+            </Link>
+          )}
+        </div>
         <EditableTitle kind="dictation" id={d.id} title={d.dish_name ?? ""} placeholder="Untitled" />
         <p className={eyebrow}>
           {d.cook_name ? `${d.cook_name} · ` : ""}Saved {formatDate(d.created_at)}
@@ -57,11 +69,11 @@ export default async function DictationPage({ params }: PageProps<"/d/[id]">) {
               <CreateRecipe dictationId={d.id} />
             ) : null
           ) : (
-            <StartDeveloping dictationId={d.id} />
+            <StartDeveloping dictationId={d.id} primary={!justSaved} />
           )}
         </DictationEditor>
       ) : (
-        <StartDeveloping dictationId={d.id} />
+        <StartDeveloping dictationId={d.id} primary={!justSaved} />
       )}
 
       <MoveTo kind="dictation" id={d.id} current={d.stage} hide={d.stage === "development" ? [] : ["development"]} />

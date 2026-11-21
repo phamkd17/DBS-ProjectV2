@@ -92,6 +92,11 @@ export function IdeaForm({
           {pending && <Spinner />}
           {pending ? "Saving…" : idea ? "Save changes" : "Save idea"}
         </Button>
+        {!idea && (
+          <Button type="submit" name="intent" value="another" variant="secondary" disabled={pending} className="w-full sm:w-auto">
+            Save and add another
+          </Button>
+        )}
         {onCancel && (
           <button
             type="button"

@@ -9,7 +9,7 @@ import { AiBadge, Button, Spinner } from "./ui";
  * The AI recipe step only lives in Development (student's rule, Nov 15).
  * Draft wording: for the student to review.
  */
-export function StartDeveloping({ dictationId }: { dictationId: string }) {
+export function StartDeveloping({ dictationId, primary = true }: { dictationId: string; primary?: boolean }) {
   const [pending, start] = useTransition();
   return (
     <section aria-labelledby="start-dev" className="space-y-4 border border-ls-border bg-ls-surface p-5">
@@ -17,10 +17,10 @@ export function StartDeveloping({ dictationId }: { dictationId: string }) {
       <h2 id="start-dev" className="font-ls-serif text-3xl leading-tight">
         Ready to develop it?
       </h2>
-      <p className="max-w-prose text-[15px] leading-relaxed text-ls-muted">
-        Move it to Development to add the cook&apos;s words and create the recipe with AI.
-      </p>
+      <p className="text-[15px] text-ls-muted">Add the cook&apos;s words there, then make the recipe.</p>
+      {/* Secondary right after saving, so "Add another idea" stays the one primary action. */}
       <Button
+        variant={primary ? "primary" : "secondary"}
         disabled={pending}
         onClick={() => {
           const fd = new FormData();

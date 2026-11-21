@@ -328,7 +328,12 @@ export async function createIdea(_prev: ActionState, formData: FormData): Promis
     return { values, error: "Couldn't save the idea. What you typed is still here. Try again." };
   }
   revalidatePath("/");
-  redirect(`/d/${data.id}`);
+  // Issue #3: "Save and add another" goes straight to a fresh form.
+  if (formData.get("intent") === "another") {
+    redirect(`/ideas/new?added=${encodeURIComponent(title)}&n=${Date.now()}`);
+  }
+  // Issue #2: show "Saved to Ideas" and the next step, once.
+  redirect(`/d/${data.id}?saved=1`);
 }
 
 export async function updateIdea(ideaId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
