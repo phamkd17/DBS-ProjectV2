@@ -138,7 +138,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // First load after an edit can take a while in dev while the page recompiles.
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 30_000 });
   // #1: the landing page explains the app with three steps, not a paragraph.
-  await expect(page.locator("main").getByRole("heading", { name: "Development" })).toBeVisible();
+  await expect(page.locator("main").getByRole("heading", { name: "Development", exact: true })).toBeVisible();
   await check(page, "landing-signed-out", { keyboard: true });
 
   // #4: the ? in the header opens "How it works"; Escape closes it and returns focus.
