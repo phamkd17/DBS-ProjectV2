@@ -12,14 +12,14 @@ export function HowItWorks({ headingLevel = 2 }: { headingLevel?: 2 | 3 }) {
   return (
     <ol className="grid gap-px border border-ls-ink bg-ls-ink sm:grid-cols-3">
       {STEPS.map(({ tab, line, Icon }, i) => (
-        <li key={tab} className="flex items-start gap-4 bg-ls-surface p-5 sm:flex-col sm:gap-3">
+        <li key={tab} className="flex items-center gap-4 bg-ls-surface px-4 py-3 sm:flex-col sm:items-start sm:gap-3 sm:p-5">
           <span aria-hidden className="flex items-center gap-3 text-ls-ink">
             <span className="font-ls-serif text-3xl leading-none text-ls-muted">{i + 1}</span>
             <Icon />
           </span>
-          <span className="space-y-1">
+          <span className="space-y-0.5 sm:space-y-1">
             <H className="font-ls-sans text-xs font-medium uppercase tracking-[0.18em]">{tab}</H>
-            <span className="block font-ls-serif text-xl leading-snug">{line}</span>
+            <span className="block font-ls-serif text-lg leading-snug sm:text-xl">{line}</span>
           </span>
         </li>
       ))}
