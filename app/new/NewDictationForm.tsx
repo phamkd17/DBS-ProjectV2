@@ -46,17 +46,13 @@ export function NewDictationForm({
           autoFocus={!!dictation}
           defaultValue={v.transcript}
           aria-invalid={!!err.transcript}
-          aria-describedby={err.transcript ? "transcript-error" : "transcript-hint"}
+          aria-describedby={err.transcript ? "transcript-error" : undefined}
           className={FIELD}
           placeholder="e.g. “Yogurt is a very simple dish, you need about a half gallon of milk…”"
         />
-        {err.transcript ? (
+        {err.transcript && (
           <p id="transcript-error" className="text-[15px] text-ls-error">
             {err.transcript}
-          </p>
-        ) : (
-          <p id="transcript-hint" className="text-[15px] text-ls-muted">
-            Tip: on a phone, tap the 🎤 on the keyboard and have the cook name the ingredients first, then each step.
           </p>
         )}
       </div>
@@ -77,13 +73,10 @@ export function NewDictationForm({
           name="cook_name"
           maxLength={60}
           defaultValue={v.cook_name}
-          aria-describedby="cook_name-hint"
           className={FIELD}
           placeholder="e.g. Grandma"
         />
-        <p id="cook_name-hint" className="text-[15px] text-ls-muted">
-          Used to label their reasons in the recipe.
-        </p>
+
       </div>
 
       {state.error && <ErrorNote>{state.error}</ErrorNote>}

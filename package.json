@@ -12,7 +12,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "check-env": "node --env-file=.env.local scripts/check-env.mjs",
     "verify": "node --env-file=.env.local ./node_modules/@playwright/test/cli.js test",
-    "verify:fresh": "rm -rf .ai-cache && npm run verify"
+    "verify:fresh": "rm -rf .ai-cache && npm run verify",
+    "words": "node --env-file=.env.local ./node_modules/@playwright/test/cli.js test verify/words.spec.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.10.0",

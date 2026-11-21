@@ -35,9 +35,7 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
         Ready to make it a recipe?
       </h2>
       <p className="max-w-prose text-[15px] leading-relaxed text-ls-muted">
-        The AI reads their words, drafts a recipe, and asks you about anything a new cook couldn&apos;t figure out.
-        It takes about 30 seconds. Make sure their words are complete first: the recipe is made from what&apos;s
-        here now.
+        The AI drafts the recipe and asks about anything missing. About 30 seconds.
       </p>
 
       <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[17px]">
