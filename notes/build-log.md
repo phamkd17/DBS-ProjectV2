@@ -773,3 +773,8 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Verify ✓ (axe clean): type to add, Enter, focus stays, no duplicate in any
   case, ×, matching tags, saved after reload, filter, delete keeps the recipe.
   Cleaned leftover test tags and recipes from failed runs (verify names only).
+- All tags (student's pick): `/tags` now lists each tag as a region with its
+  recipes (one embedded query: tags → links → entries → recipes, all under
+  RLS), linking to the recipe (or the entry if it has none). "Edit tags" links
+  are now "All tags". Verify ✓ (the tag's region lists the recipe; an unused
+  tag says "No recipes yet").

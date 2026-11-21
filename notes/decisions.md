@@ -52,6 +52,7 @@
 | Nov 21 | A shortcut when writing a recipe by hand: **Enter adds the next ingredient or step** and moves the cursor there (Shift+Enter is a new line inside a step) | |
 | Nov 21 | **Sections** to organize the Recipes tab (like American, Indian, Mexican, Desserts): I create and delete my own, and a recipe can be in **several** | One section per recipe, like folders |
 | Nov 21 | Call them **Tags** instead of sections (a recipe can have several), and add them by **typing**: Enter adds a tag, my existing tags narrow as I type, a new name makes a new tag, × removes it | Keep "sections" with tap-only chips |
+| Nov 21 | A way to **see all tags**: the Tags page ("All tags") lists every tag with its recipes under it | A Tags tab in the top bar; a "See all tags" button in a recipe's tag box |
 
 ## What the app is
 
