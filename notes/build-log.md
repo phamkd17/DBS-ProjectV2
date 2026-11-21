@@ -613,3 +613,15 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   working (rule added to AGENTS.md).
 - Safety: the `v1` remote's push URL is disabled in this folder.
 - Started `notes/what-changed.md` (a brief requirement).
+
+### V2. v2 live URL + issues
+- Vercel project for v2: https://dbs-project-v2.vercel.app (same 6 env vars,
+  same Clerk app and DB). Smoke test: home ✓, signed-out → sign-in ✓,
+  `.env.local` 404 ✓, signed-in lab book loads ✓.
+- v2 brief step 1: the plan became **GitHub issues #1–#15**, ordered with the
+  cousin's stuck points first (#1–#4), then the required security work (#5
+  rate limit + token cap, #6 security pass), then the features (#7 photos, #8
+  categories, #9 iterations + AI eval, #10 variations, #11 scaling, #12 prompt
+  p5, #13 progress line, #14 nutrition, labeled cut-first), then #15 What
+  Changed + demo prep. Labels: stuck-point, security, feature, ai, polish,
+  docs, cut-first. **Student:** "Create them in this order."
