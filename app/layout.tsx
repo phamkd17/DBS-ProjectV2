@@ -14,7 +14,7 @@ const sans = Jost({ variable: "--font-jost", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Culinary Lab Book",
-  description: "From inspiration to recipe: develop dishes by voice and AI, with the food science built in.",
+  description: "From inspiration to recipe: type or dictate your dish, and AI makes recipe development easy, with the food science built in.",
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#ece7dc" };
