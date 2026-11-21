@@ -56,7 +56,11 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
             editedAt={d.edited_at}
             open={open}
           />
+          {/* Edit first (the common action); Delete second, so it never sits above Edit when they wrap. */}
           <div className="flex flex-wrap justify-end gap-x-2">
+            <Button ref={editBtn} variant="quiet" onClick={() => setEditing(true)}>
+              Edit their words
+            </Button>
             {canDelete && (
               <form action={deleteWords.bind(null, d.id)}>
                 <ConfirmSubmit variant="danger" message="Delete the cook's words? Your idea notes and any recipe made from them stay. This can't be undone.">
@@ -64,9 +68,6 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
                 </ConfirmSubmit>
               </form>
             )}
-            <Button ref={editBtn} variant="quiet" onClick={() => setEditing(true)}>
-              Edit their words
-            </Button>
           </div>
         </div>
       ) : (
