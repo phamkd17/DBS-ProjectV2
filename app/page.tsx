@@ -4,6 +4,7 @@ import { SignUpButton } from "@clerk/nextjs";
 import { supabaseForUser } from "@/lib/supabase/server";
 import { Button, ErrorNote, eyebrow, focusRing, formatDate, LinkButton } from "@/components/ui";
 import { MoveTo } from "@/components/MoveTo";
+import { HowItWorks } from "@/components/HowItWorks";
 import { NewMenu } from "@/components/NewMenu";
 import type { DictationRow, RecipeStatus } from "@/lib/types";
 
@@ -14,18 +15,18 @@ type Row = DictationRow & { recipes: { id: string; status: RecipeStatus; recipe:
 const TABS = {
   ideas: {
     label: "Ideas",
-    blurb: "Notes, links, and saved words to come back to.",
-    empty: "Nothing here yet. Tap “New” to jot down an idea or save a cook's words.",
+    blurb: "Notes and links to come back to.",
+    empty: "No ideas yet.",
   },
   development: {
     label: "Development",
-    blurb: "Recipes you're working on.",
-    empty: "Nothing in development. Move an idea here, or open saved words and tap “Create recipe”.",
+    blurb: "Add the cook's words and make the recipe.",
+    empty: "Nothing in development yet.",
   },
   finished: {
     label: "Finished",
-    blurb: "Recipes ready to cook and send.",
-    empty: "No finished recipes yet. Answer a recipe's questions to finish it, or move something here.",
+    blurb: "Ready to cook, keep, or send.",
+    empty: "No finished recipes yet.",
   },
 } as const;
 type Tab = keyof typeof TABS;
@@ -98,7 +99,14 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             </ul>
           </nav>
 
-          <p className="text-[15px] text-ls-muted">{TABS[tab].blurb}</p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[15px] text-ls-muted">{TABS[tab].blurb}</p>
+            {tab === "ideas" && (
+              <LinkButton href="/ideas/new" variant="secondary">
+                + New idea
+              </LinkButton>
+            )}
+          </div>
 
           {items.length === 0 ? (
             <p className="border border-dashed border-ls-border p-6 text-[15px] text-ls-muted">{TABS[tab].empty}</p>
@@ -161,41 +169,20 @@ function EntryCard({ d }: { d: Row }) {
 }
 
 function FirstRun() {
-  // Draft wording: for the student to review.
-  const cards = [
-    {
-      id: "start-idea",
-      title: "Start with an idea",
-      body: "Tasted something you want to make, saw a technique, or found a recipe online? Jot it down with a note and a link. It waits in Ideas until you're ready to develop it into a recipe.",
-      href: "/ideas/new",
-      cta: "Save an idea",
-    },
-    {
-      id: "start-words",
-      title: "Start with the cook's words",
-      body: "Have the cook dictate how they make the dish: the ingredients, then each step in detail. Tap the microphone on the phone keyboard, or paste what they said. The AI will format it into a recipe anyone can repeat.",
-      href: "/new",
-      cta: "Add the cook's words",
-    },
-  ];
   return (
-    <section aria-labelledby="first-run" className="space-y-4">
+    <section aria-labelledby="first-run" className="space-y-5">
       <h2 id="first-run" className="font-ls-serif text-3xl leading-tight">
         Start with one dish
       </h2>
-      <ul className="grid gap-4 sm:grid-cols-2">
-        {cards.map((c) => (
-          <li key={c.id} aria-labelledby={c.id} className="flex flex-col gap-4 border border-ls-ink bg-ls-surface p-6">
-            <h3 id={c.id} className="font-ls-serif text-2xl leading-tight">
-              {c.title}
-            </h3>
-            <p className="flex-1 text-[17px] leading-relaxed">{c.body}</p>
-            <LinkButton href={c.href} variant="secondary" className="self-start">
-              {c.cta}
-            </LinkButton>
-          </li>
-        ))}
-      </ul>
+      <HowItWorks headingLevel={3} />
+      <div className="flex flex-wrap gap-3">
+        <LinkButton href="/ideas/new" variant="secondary">
+          Save an idea
+        </LinkButton>
+        <LinkButton href="/new" variant="secondary">
+          Add the cook&apos;s words
+        </LinkButton>
+      </div>
     </section>
   );
 }
@@ -207,12 +194,8 @@ function Landing() {
       <h1 className="font-ls-serif text-5xl leading-[1.05] text-balance sm:text-7xl">
         From inspiration to recipe: develop dishes by voice and AI, with the food science built in.
       </h1>
-      <p className="max-w-prose text-lg leading-relaxed text-ls-muted">
-        Jot down ideas, save what the cook says while they cook, and develop them into recipes. The AI asks what a new
-        cook couldn&apos;t know, explains the science behind each step, and keeps track of what came from whom. When
-        it&apos;s ready, send it to someone else to cook or save it for future use.
-      </p>
-      <div className="flex flex-wrap gap-3 border-t border-ls-ink pt-8">
+      <HowItWorks />
+      <div className="flex flex-wrap gap-3">
         <SignUpButton mode="modal">
           <Button>Start your lab book</Button>
         </SignUpButton>
