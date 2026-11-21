@@ -168,8 +168,14 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(topTabs.getByRole("link", { name: "Ideas" })).toHaveAttribute("aria-current", "page");
   await check(page, "home", { keyboard: true });
 
+  // One start button per tab: Ideas → "+ New idea", Development → "+ Cook's words".
+  await expect(page.locator("main").getByRole("link", { name: "+ New idea" })).toHaveCount(1); // no duplicate
+  await page.goto("/?tab=development");
+  await expect(page.locator("main").getByRole("link", { name: "+ Cook's words" })).toBeVisible();
+
   // ---- Ideas: create, validate, move, delete ----
-  // "New" menu: keyboard first (Enter opens, Tab reaches the options, Escape closes).
+  // Recipes tab keeps the "New" menu: keyboard first (Enter opens, Tab reaches the options, Escape closes).
+  await page.goto("/?tab=finished");
   const newBtn = page.getByRole("button", { name: "New" });
   await newBtn.focus();
   await page.keyboard.press("Enter");
@@ -284,9 +290,9 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.waitForURL((u) => u.pathname === "/");
 
   // ---- Capture ----
-  await page.goto("/");
-  await page.getByRole("button", { name: "New" }).click();
-  await page.getByRole("link", { name: /^Dictation/ }).click();
+  await page.goto("/?tab=development");
+  await page.locator("main").getByRole("link", { name: "+ Cook's words" }).click();
+  await page.waitForURL(/\/new$/);
   await page.getByRole("button", { name: /Save their words/ }).click();
   await expect(page.getByText(/Type, paste, or dictate/)).toBeVisible();
   await check(page, "new-empty-error", { keyboard: true });
