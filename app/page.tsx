@@ -189,9 +189,10 @@ function FirstRun() {
 
 function Landing() {
   return (
-    <main className="space-y-8 py-8">
+    // Sized so the headline, the three steps, and the button fit on one screen (no scrolling).
+    <main className="space-y-6 py-2 sm:py-4">
       <p className={eyebrow}>A lab book for recipe development</p>
-      <h1 className="font-ls-serif text-[2.5rem] leading-[1.05] text-balance sm:text-7xl">
+      <h1 className="max-w-[24ch] font-ls-serif text-[2rem] leading-[1.1] text-balance sm:text-4xl lg:text-5xl">
         From inspiration to recipe: type or dictate your dish, and AI makes recipe development easy, with the food science built in.
       </h1>
       <HowItWorks />
