@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useId, useRef, useState } from "react";
+import { useActionState, useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { createManualRecipe } from "@/app/actions";
 import type { ActionState } from "@/lib/types";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
@@ -48,6 +48,36 @@ export function ManualRecipeForm({
     setSteps((r) => r.map((x) => (x.key === key ? { ...x, ...p } : x)));
   };
 
+  // Shortcut: Enter adds the next ingredient or step right below and moves the cursor there.
+  const focusId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusId.current) return;
+    document.getElementById(focusId.current)?.focus();
+    focusId.current = null;
+  }, [ings, steps]);
+  const isEnter = (e: KeyboardEvent) => e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing;
+  const nextIngredient = (e: KeyboardEvent, after: string) => {
+    if (!isEnter(e)) return;
+    e.preventDefault(); // don't submit the form
+    const key = k();
+    // The first field on screen: Ingredient on phones, Amount on wider screens.
+    focusId.current = `${window.matchMedia("(min-width: 40rem)").matches ? "amt" : "item"}-${key}`;
+    setIngs((r) => {
+      const i = r.findIndex((x) => x.key === after);
+      return [...r.slice(0, i + 1), { key, amount: "", item: "" }, ...r.slice(i + 1)];
+    });
+  };
+  const nextStep = (e: KeyboardEvent, after: string) => {
+    if (!isEnter(e)) return;
+    e.preventDefault(); // Shift+Enter still starts a new line
+    const key = k();
+    focusId.current = `step-${key}`;
+    setSteps((r) => {
+      const i = r.findIndex((x) => x.key === after);
+      return [...r.slice(0, i + 1), { key, text: "", why: "", showWhy: false }, ...r.slice(i + 1)];
+    });
+  };
+
   return (
     <form action={action} className="space-y-8">
       {from && <input type="hidden" name="dictation_id" value={from.id} />}
@@ -92,6 +122,7 @@ export function ManualRecipeForm({
 
       <fieldset className="space-y-3" aria-describedby={err.ingredients ? "ing-error" : undefined}>
         <legend className="font-ls-serif text-3xl leading-tight">Ingredients</legend>
+        <p className="text-[15px] text-ls-muted">Press Enter for the next ingredient.</p>
         <ul className="space-y-3">
           {ings.map((r, i) => (
             <li key={r.key} className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1.5 sm:grid-cols-[10rem_1fr_auto] sm:items-end">
@@ -99,13 +130,13 @@ export function ManualRecipeForm({
                 <label htmlFor={`amt-${r.key}`} className={`${eyebrow} ${i === 0 ? "" : "sm:sr-only"}`}>
                   Amount<span className="sr-only"> {i + 1}</span>
                 </label>
-                <input id={`amt-${r.key}`} value={r.amount} maxLength={60} onChange={(e) => setIng(r.key, { amount: e.target.value })} placeholder="e.g. 1/2 gallon" className={`${fieldClass} py-2`} />
+                <input id={`amt-${r.key}`} value={r.amount} maxLength={60} onChange={(e) => setIng(r.key, { amount: e.target.value })} onKeyDown={(e) => nextIngredient(e, r.key)} placeholder="e.g. 1/2 gallon" className={`${fieldClass} py-2`} />
               </div>
               <div className="col-start-1 row-start-1 space-y-1 sm:col-start-2">
                 <label htmlFor={`item-${r.key}`} className={`${eyebrow} ${i === 0 ? "" : "sm:sr-only"}`}>
                   Ingredient<span className="sr-only"> {i + 1}</span>
                 </label>
-                <input id={`item-${r.key}`} value={r.item} maxLength={120} onChange={(e) => setIng(r.key, { item: e.target.value })} placeholder="e.g. whole milk" className={`${fieldClass} py-2`} />
+                <input id={`item-${r.key}`} value={r.item} maxLength={120} onChange={(e) => setIng(r.key, { item: e.target.value })} onKeyDown={(e) => nextIngredient(e, r.key)} placeholder="e.g. whole milk" className={`${fieldClass} py-2`} />
               </div>
               <button type="button" aria-label={`Remove ingredient ${i + 1}`} title="Remove" onClick={() => setIngs((x) => x.filter((y) => y.key !== r.key))} className={`col-start-2 row-start-1 self-end sm:col-start-3 ${removeBtn}`}>
                 <span aria-hidden>×</span>
@@ -125,6 +156,7 @@ export function ManualRecipeForm({
 
       <fieldset className="space-y-3" aria-describedby={err.steps ? "steps-error" : undefined}>
         <legend className="font-ls-serif text-3xl leading-tight">Steps</legend>
+        <p className="text-[15px] text-ls-muted">Press Enter for the next step, Shift+Enter for a new line.</p>
         <ol className="space-y-4">
           {steps.map((s, i) => (
             <li key={s.key} className="flex gap-3">
@@ -135,13 +167,13 @@ export function ManualRecipeForm({
                 <label htmlFor={`step-${s.key}`} className="sr-only">
                   Step {i + 1}
                 </label>
-                <textarea id={`step-${s.key}`} rows={2} value={s.text} maxLength={2000} onChange={(e) => setStep(s.key, { text: e.target.value })} placeholder={i === 0 ? "e.g. Heat the milk until it steams. Don't let it boil." : "Next step"} className={fieldClass} />
+                <textarea id={`step-${s.key}`} rows={2} value={s.text} maxLength={2000} onChange={(e) => setStep(s.key, { text: e.target.value })} onKeyDown={(e) => nextStep(e, s.key)} placeholder={i === 0 ? "e.g. Heat the milk until it steams. Don't let it boil." : "Next step"} className={fieldClass} />
                 {s.showWhy ? (
                   <div className="space-y-1">
                     <label htmlFor={`why-${s.key}`} className={eyebrow}>
                       Why it works <span className="normal-case tracking-normal">(optional)</span>
                     </label>
-                    <input id={`why-${s.key}`} value={s.why} maxLength={1000} onChange={(e) => setStep(s.key, { why: e.target.value })} placeholder="e.g. Boiling can scorch the milk" className={`${fieldClass} py-2`} />
+                    <input id={`why-${s.key}`} value={s.why} maxLength={1000} onChange={(e) => setStep(s.key, { why: e.target.value })} onKeyDown={(e) => nextStep(e, s.key)} placeholder="e.g. Boiling can scorch the milk" className={`${fieldClass} py-2`} />
                   </div>
                 ) : (
                   <button type="button" onClick={() => setStep(s.key, { showWhy: true })} className={`${addBtn} text-ls-muted`}>
