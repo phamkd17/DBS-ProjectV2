@@ -524,3 +524,84 @@ export async function quickAddIdea(_prev: ActionState, formData: FormData): Prom
   revalidatePath("/");
   return { saved: true, values: { added: title } };
 }
+
+// ---------------------------------------------------------------------------
+// Add a recipe by hand, in the same format as an AI recipe (student, Nov 20).
+// No AI call. Saved straight into Recipes: an entry (stage "finished") + a ready
+// recipe. Everything is labeled as the cook's (the "Whose recipe?" name).
+// ---------------------------------------------------------------------------
+type ManualRows = {
+  ingredients: { amount: string; item: string }[];
+  steps: { text: string; why: string }[];
+};
+
+export async function createManualRecipe(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  const title = String(formData.get("title") ?? "").trim().slice(0, 120);
+  const cook_name = String(formData.get("cook_name") ?? "").trim().slice(0, 60) || null;
+  const notes = String(formData.get("notes") ?? "").slice(0, 5000);
+  let rows: ManualRows;
+  try {
+    rows = JSON.parse(String(formData.get("rows") ?? "{}"));
+    if (!Array.isArray(rows.ingredients) || !Array.isArray(rows.steps)) throw new Error("bad");
+  } catch {
+    return { error: "Something went wrong reading the recipe. Refresh and try again." };
+  }
+  const ingredients = rows.ingredients
+    .slice(0, 80)
+    .map((r) => ({ amount: String(r?.amount ?? "").trim().slice(0, 60), item: String(r?.item ?? "").trim().slice(0, 120) }))
+    .filter((r) => r.item || r.amount);
+  const steps = rows.steps
+    .slice(0, 80)
+    .map((r) => ({ text: String(r?.text ?? "").trim().slice(0, 2000), why: String(r?.why ?? "").trim().slice(0, 1000) }))
+    .filter((r) => r.text);
+
+  const fieldErrors: Record<string, string> = {};
+  if (!title) fieldErrors.title = "Give the recipe a name.";
+  if (ingredients.some((r) => !r.item)) fieldErrors.ingredients = "Every amount needs an ingredient name (or remove that row).";
+  else if (!ingredients.length) fieldErrors.ingredients = "Add at least one ingredient.";
+  if (!steps.length) fieldErrors.steps = "Add at least one step.";
+  const values = { title, cook_name: cook_name ?? "", notes };
+  if (Object.keys(fieldErrors).length) return { values, fieldErrors };
+
+  const recipe = {
+    title,
+    ingredients: ingredients.map((r) => ({
+      item: r.item,
+      amount: r.amount,
+      source: r.amount ? ("cook" as const) : ("not_stated" as const),
+      note: "",
+      from_answers: [],
+    })),
+    steps: steps.map((r) => ({
+      text: r.text,
+      from_answers: [],
+      dials: [],
+      why: r.why ? [{ source: "cook" as const, text: r.why, quote: r.why }] : [],
+    })),
+    notes: ["Added by hand (no AI)."],
+  };
+
+  const supabase = await supabaseForUser();
+  const { data: entry, error: e1 } = await supabase
+    .from("dictations")
+    .insert({ dish_name: title, cook_name, notes, stage: "finished" })
+    .select("id")
+    .single();
+  if (e1 || !entry) {
+    console.error("[createManualRecipe entry]", e1);
+    return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
+  }
+  const { data: made, error: e2 } = await supabase
+    .from("recipes")
+    .insert({ dictation_id: entry.id, status: "ready", recipe, model: "manual", prompt_version: null })
+    .select("id")
+    .single();
+  if (e2 || !made) {
+    console.error("[createManualRecipe recipe]", e2);
+    await supabase.from("dictations").delete().eq("id", entry.id); // don't leave a half-saved entry
+    return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
+  }
+  revalidatePath("/");
+  redirect(`/r/${made.id}`);
+}
