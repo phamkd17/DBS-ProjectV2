@@ -168,8 +168,19 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(topTabs.getByRole("link", { name: "Ideas" })).toHaveAttribute("aria-current", "page");
   await check(page, "home", { keyboard: true });
 
-  // One start button per tab: Ideas → "+ New idea", Development → "+ Cook's words".
-  await expect(page.locator("main").getByRole("link", { name: "+ New idea" })).toHaveCount(1); // no duplicate
+  // Ideas tab: a quick-add box instead of a button and a separate page.
+  const quick = page.getByRole("textbox", { name: "New idea" });
+  await quick.press("Enter");
+  await expect(page.getByText(/Type the idea first/)).toBeVisible();
+  await quick.fill(`${IDEA} (quick)`);
+  await quick.press("Enter");
+  await expect(page.getByText(`Added “${IDEA} (quick)”`, { exact: false })).toBeVisible();
+  await expect(page.locator("main").getByText(`${IDEA} (quick)`, { exact: true })).toBeVisible(); // in the list
+  await expect(quick).toHaveValue(""); // ready for the next one
+  await expect(quick).toBeFocused();
+  await check(page, "ideas-quick-add", { keyboard: true });
+  await expect(page.locator("main").getByRole("link", { name: "+ New idea" })).toHaveCount(0); // the box replaces it
+  // Development tab: "+ Cook's words".
   await page.goto("/?tab=development");
   await expect(page.locator("main").getByRole("link", { name: "+ Cook's words" })).toBeVisible();
 
@@ -219,7 +230,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(formView.getByLabel("Idea", { exact: true })).toHaveValue(""); // fresh form
   await check(page, "idea-saved-add-another", { keyboard: true });
   await page.goto("/?tab=ideas");
-  await expect(page.locator("main").getByRole("link", { name: "+ New idea" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "New idea" })).toBeVisible(); // quick-add on the Ideas tab
   await page.goto(ideaUrl);
   await expect(page.locator("main").filter({ visible: true }).getByRole("status")).toHaveCount(0); // not again
   await expect(page.getByRole("link", { name: /example\.com\/onions/ })).toBeVisible();
@@ -281,6 +292,13 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // Scope to <main>: Next keeps hidden copies of past pages, and its screen-reader
   // route announcer still holds the old title.
   await expect(page.locator("main").getByText(`${IDEA} (renamed)`, { exact: true }).filter({ visible: true })).toHaveCount(0);
+  // Remove the quick-added idea too.
+  await page.goto("/?tab=ideas");
+  await page.locator("main").getByText(`${IDEA} (quick)`, { exact: true }).first().click();
+  await page.waitForURL(/\/d\//);
+  page.once("dialog", (d) => d.accept());
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete", exact: true }).click();
+  await page.waitForURL((u) => u.pathname === "/");
   // Also remove the second idea from the "Save and add another" check.
   await page.goto("/?tab=ideas");
   await page.locator("main").getByText(`${IDEA} #2`, { exact: true }).first().click();
