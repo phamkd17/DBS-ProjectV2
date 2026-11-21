@@ -64,7 +64,14 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     <main className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-ls-serif text-5xl leading-none">Your lab book</h1>
-        <NewMenu />
+        {/* One start button per tab, for what you do there (student, Nov 20). */}
+        {tab === "ideas" ? (
+          <LinkButton href="/ideas/new">+ New idea</LinkButton>
+        ) : tab === "development" ? (
+          <LinkButton href="/new">+ Cook&apos;s words</LinkButton>
+        ) : (
+          <NewMenu />
+        )}
       </div>
 
       {error && <ErrorNote>We couldn&apos;t load your lab book. Refresh the page to try again.</ErrorNote>}
@@ -79,11 +86,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               <span className="font-medium text-ls-ink">{TABS[tab].label}</span>
               {items.length ? ` · ${items.length}` : ""} · {TABS[tab].blurb}
             </p>
-            {tab === "ideas" && (
-              <LinkButton href="/ideas/new" variant="secondary">
-                + New idea
-              </LinkButton>
-            )}
           </div>
 
           {items.length === 0 ? (
@@ -153,14 +155,6 @@ function FirstRun() {
         Start with one dish
       </h2>
       <HowItWorks headingLevel={3} />
-      <div className="flex flex-wrap gap-3">
-        <LinkButton href="/ideas/new" variant="secondary">
-          Save an idea
-        </LinkButton>
-        <LinkButton href="/new" variant="secondary">
-          Add the cook&apos;s words
-        </LinkButton>
-      </div>
     </section>
   );
 }
