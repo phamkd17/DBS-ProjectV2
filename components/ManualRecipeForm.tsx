@@ -14,7 +14,12 @@ const removeBtn = `grid size-11 shrink-0 cursor-pointer place-items-center text-
 const addBtn = `min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`;
 
 /** Type a recipe in yourself, in the same shape as an AI recipe: ingredients, then numbered steps with an optional "why". */
-export function ManualRecipeForm() {
+export function ManualRecipeForm({
+  from,
+}: {
+  /** Writing the recipe for an existing entry (from Development): prefilled, and saved onto it. */
+  from?: { id: string; title: string; cook_name: string; notes: string };
+} = {}) {
   // Stable per-component ids, so server and browser render the same ids.
   const uid = useId().replace(/:/g, "");
   const next = useRef(3);
@@ -30,7 +35,7 @@ export function ManualRecipeForm() {
     setEdited({});
     return createManualRecipe(prev, fd);
   }, {});
-  const v = state.values ?? {};
+  const v = state.values ?? (from ? { title: from.title, cook_name: from.cook_name, notes: from.notes } : {});
   const all = state.fieldErrors ?? {};
   const err = Object.fromEntries(Object.entries(all).filter(([f]) => !edited[f]));
   const touch = (f: string) => setEdited((e) => (e[f] ? e : { ...e, [f]: true }));
@@ -45,6 +50,7 @@ export function ManualRecipeForm() {
 
   return (
     <form action={action} className="space-y-8">
+      {from && <input type="hidden" name="dictation_id" value={from.id} />}
       <input
         type="hidden"
         name="rows"
@@ -173,7 +179,7 @@ export function ManualRecipeForm() {
           {pending && <Spinner />}
           {pending ? "Saving…" : "Save recipe"}
         </Button>
-        <Link href="/?tab=finished" className={`min-h-11 px-3 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
+        <Link href={from ? `/d/${from.id}` : "/?tab=finished"} className={`min-h-11 px-3 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
           Cancel
         </Link>
       </div>
