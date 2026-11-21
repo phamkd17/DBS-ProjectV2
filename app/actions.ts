@@ -650,3 +650,15 @@ export async function discardDraft(recipeId: string): Promise<void> {
   revalidatePath("/", "layout");
   redirect(`/d/${recipe.dictation_id}`);
 }
+
+// ---------------------------------------------------------------------------
+// Delete the cook's words (student, Nov 21). The entry, its idea notes, and
+// any finished recipe stay. Nothing is kept: no copy of the old words.
+// ---------------------------------------------------------------------------
+export async function deleteWords(dictationId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { error } = await supabase.from("dictations").update({ transcript: null }).eq("id", dictationId);
+  if (error) console.error("[deleteWords]", error);
+  revalidatePath("/", "layout");
+}

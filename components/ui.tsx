@@ -137,13 +137,11 @@ export function Transcript({
   text,
   cookName,
   open = false,
-  original,
   editedAt,
 }: {
   text: string;
   cookName?: string | null;
   open?: boolean;
-  original?: string | null;
   editedAt?: string | null;
 }) {
   return (
@@ -164,16 +162,6 @@ export function Transcript({
       <p className="whitespace-pre-wrap border-t border-ls-border px-4 py-4 font-ls-serif text-lg leading-relaxed">
         {text}
       </p>
-      {original && original !== text && (
-        <details className="border-t border-ls-border">
-          <summary
-            className={`flex min-h-11 cursor-pointer items-center px-4 py-3 text-[15px] text-ls-muted hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
-          >
-            See the original words
-          </summary>
-          <p className="whitespace-pre-wrap px-4 pb-4 font-ls-serif text-lg leading-relaxed text-ls-muted">{original}</p>
-        </details>
-      )}
     </details>
   );
 }

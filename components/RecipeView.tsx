@@ -9,14 +9,13 @@ type Props = {
   /** Omit to render the words elsewhere (e.g. the owner's editable copy). */
   transcript?: string;
   cookName?: string | null;
-  original?: string | null;
   editedAt?: string | null;
   /** Owner's own recipe: amounts get a pencil to edit them. Omit for read-only (shared links). */
   editableRecipeId?: string;
 };
 
 /** The finished recipe: ingredients, steps, the why labeled by source, and her words. */
-export function RecipeView({ recipe, transcript, cookName, original, editedAt, editableRecipeId }: Props) {
+export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId }: Props) {
   return (
     <SourcesScope>
     <article className="space-y-10">
@@ -79,7 +78,7 @@ export function RecipeView({ recipe, transcript, cookName, original, editedAt, e
 
       {transcript !== undefined && (
         <section aria-label="Original dictation">
-          <Transcript text={transcript} cookName={cookName} original={original} editedAt={editedAt} />
+          <Transcript text={transcript} cookName={cookName} editedAt={editedAt} />
         </section>
       )}
     </article>

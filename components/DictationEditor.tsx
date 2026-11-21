@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { NewDictationForm } from "@/app/new/NewDictationForm";
+import { deleteWords } from "@/app/actions";
+import { ConfirmSubmit } from "./ConfirmSubmit";
 import type { DictationRow } from "@/lib/types";
 import { Button, eyebrow, SourceBadge, Transcript } from "./ui";
 
@@ -10,6 +12,8 @@ type Props = {
   open?: boolean;
   /** Make "Add the cook's words" the page's primary action (when it's the next step). */
   addIsPrimary?: boolean;
+  /** Offer "Delete their words" (off while the AI questions are open, since they need the words). */
+  canDelete?: boolean;
   /** Next step (e.g. the AI panel): hidden while editing, so Save is the only main action. */
   children?: ReactNode;
 };
@@ -18,7 +22,7 @@ type Props = {
  * The "Cook · Their words" section. Shows the words (editable in place), or, if
  * there are none yet, a way to add them. The database keeps the first version.
  */
-export function DictationEditor({ dictation: d, open = false, addIsPrimary = false, children }: Props) {
+export function DictationEditor({ dictation: d, open = false, addIsPrimary = false, canDelete = true, children }: Props) {
   const [editing, setEditing] = useState(false);
   const editBtn = useRef<HTMLButtonElement>(null);
   const wasEditing = useRef(false);
@@ -34,7 +38,7 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
       <section aria-label={hasWords ? "Edit their words" : "Add the cook's words"} className="space-y-4 border border-ls-ink bg-ls-surface p-5">
         <p className="text-[15px] text-ls-muted">
           {hasWords
-            ? "The first version is always kept, so you can see the original later."
+            ? "Change anything, or add what's missing."
             : "Type how the cook makes it, or tap the microphone on your keyboard to dictate: the ingredients, then each step."}
         </p>
         <NewDictationForm dictation={d} onSaved={() => setEditing(false)} onCancel={() => setEditing(false)} />
@@ -49,11 +53,17 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
           <Transcript
             text={d.transcript!}
             cookName={d.cook_name}
-            original={d.original_transcript}
             editedAt={d.edited_at}
             open={open}
           />
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-x-2">
+            {canDelete && (
+              <form action={deleteWords.bind(null, d.id)}>
+                <ConfirmSubmit variant="danger" message="Delete the cook's words? Your idea notes and any recipe made from them stay. This can't be undone.">
+                  Delete their words
+                </ConfirmSubmit>
+              </form>
+            )}
             <Button ref={editBtn} variant="quiet" onClick={() => setEditing(true)}>
               Edit their words
             </Button>

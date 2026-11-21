@@ -67,7 +67,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
           </div>
         </div>
         <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
-        <DictationEditor dictation={dictation} />
+        <DictationEditor dictation={dictation} canDelete={false} />
         <QuestionsForm recipeId={recipe.id} questions={questions ?? []} cookName={dictation.cook_name} />
       </main>
     );
