@@ -15,6 +15,7 @@ import type { Answer, AnswerSource } from "@/lib/ai/schema";
 import { supabaseForUser } from "@/lib/supabase/server";
 import {
   isStage,
+  STARTER_SECTIONS,
   toQuestion,
   type ActionState,
   type DictationRow,
@@ -711,4 +712,64 @@ export async function deleteWords(dictationId: string): Promise<void> {
   const { error } = await supabase.from("dictations").update({ transcript: null }).eq("id", dictationId);
   if (error) console.error("[deleteWords]", error);
   revalidatePath("/", "layout");
+}
+
+// ---------------------------------------------------------------------------
+// Sections for the Recipes tab (student, Nov 21; issue #8). Your own list
+// (create, delete); a recipe can be in several. Deleting a section never
+// deletes recipes, only the links. RLS checks both ends of every link.
+// ---------------------------------------------------------------------------
+const UUID = /^[0-9a-f-]{36}$/i;
+
+/** Add a section. With `attach` (an entry id), also put that entry in it. */
+export async function addSection(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  const name = String(formData.get("name") ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
+  const attach = String(formData.get("attach") ?? "");
+  if (!name) return { fieldErrors: { name: "Name the section, like “Desserts”." } };
+  const supabase = await supabaseForUser();
+  const { data, error } = await supabase.from("sections").insert({ name }).select("id").single();
+  if (error) {
+    if (error.code === "23505") return { values: { name }, fieldErrors: { name: `You already have a section called “${name}”.` } };
+    console.error("[addSection]", error);
+    return { values: { name }, error: "Couldn't add the section. Try again." };
+  }
+  if (UUID.test(attach)) {
+    const { error: linkError } = await supabase.from("entry_sections").insert({ dictation_id: attach, section_id: data.id });
+    if (linkError) console.error("[addSection link]", linkError);
+  }
+  revalidatePath("/", "layout");
+  return { saved: true, values: { added: name } };
+}
+
+/** Add the starter sections (lib/types.ts). Skips ones you already have. */
+export async function addStarterSections(): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  for (const name of STARTER_SECTIONS) {
+    const { error } = await supabase.from("sections").insert({ name });
+    if (error && error.code !== "23505") console.error("[addStarterSections]", error);
+  }
+  revalidatePath("/", "layout");
+}
+
+export async function deleteSection(sectionId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { error } = await supabase.from("sections").delete().eq("id", sectionId);
+  if (error) console.error("[deleteSection]", error);
+  revalidatePath("/", "layout");
+}
+
+/** Put an entry in a section, or take it out. */
+export async function setInSection(dictationId: string, sectionId: string, on: boolean): Promise<{ ok: boolean }> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { error } = on
+    ? await supabase.from("entry_sections").insert({ dictation_id: dictationId, section_id: sectionId })
+    : await supabase.from("entry_sections").delete().eq("dictation_id", dictationId).eq("section_id", sectionId);
+  const ok = !error || error.code === "23505"; // already in it = fine
+  if (!ok) console.error("[setInSection]", error);
+  revalidatePath("/", "layout");
+  return { ok };
 }
