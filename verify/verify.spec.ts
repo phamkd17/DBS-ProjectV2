@@ -282,7 +282,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.getByRole("button", { name: "New" }).click();
   await page.getByRole("link", { name: /^Dictation/ }).click();
   await page.getByRole("button", { name: /Save their words/ }).click();
-  await expect(page.getByText(/Paste or dictate/)).toBeVisible();
+  await expect(page.getByText(/Type, paste, or dictate/)).toBeVisible();
   await check(page, "new-empty-error", { keyboard: true });
 
   await page.getByLabel("The cook's words").fill(YOGURT);

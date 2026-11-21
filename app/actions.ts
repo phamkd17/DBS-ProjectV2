@@ -52,7 +52,7 @@ export async function createDictation(_prev: ActionState, formData: FormData): P
   const values = { transcript, dish_name: dish_name ?? "", cook_name: cook_name ?? "" };
 
   if (!transcript.trim()) {
-    return { values, fieldErrors: { transcript: "Paste or dictate the cook's words here first." } };
+    return { values, fieldErrors: { transcript: "Type, paste, or dictate the cook's words here first." } };
   }
   if (transcript.length > MAX_TRANSCRIPT) {
     return {

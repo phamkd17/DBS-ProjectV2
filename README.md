@@ -16,7 +16,7 @@ who said it → send it by link; the recipient saves a copy to their own lab boo
 1. **Ideas:** tap **New → Idea** to save what inspires you: a name, a note, a
    link. Use **Save and add another** to jot down several in a row.
 2. **Development:** open an idea and tap **Move to Development**. Add the
-   cook's words: have them say the ingredients, then each step (the phone's 🎤
+   cook's words: type or dictate the ingredients, then each step (the phone's 🎤
    works). Tick **I'm ready** and tap **Create recipe with AI**. Answer what
    you know, or tap **Use suggestion**.
 3. **Finished:** the recipe is ready to cook. Tap the 🧪 icon on a step for
