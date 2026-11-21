@@ -5,7 +5,8 @@ import { NewDictationForm } from "@/app/new/NewDictationForm";
 import { deleteWords } from "@/app/actions";
 import { ConfirmSubmit } from "./ConfirmSubmit";
 import type { DictationRow } from "@/lib/types";
-import { Button, eyebrow, SourceBadge, Transcript } from "./ui";
+import Link from "next/link";
+import { Button, eyebrow, SourceBadge, textLink, Transcript } from "./ui";
 
 type Props = {
   dictation: DictationRow;
@@ -82,9 +83,16 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
             No cook&apos;s words yet. Type or dictate how they make the dish: the ingredients, then each step. The AI
             turns it into a recipe.
           </p>
-          <Button ref={editBtn} variant={addIsPrimary ? "primary" : "secondary"} onClick={() => setEditing(true)}>
-            Add the cook&apos;s words
-          </Button>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Button ref={editBtn} variant={addIsPrimary ? "primary" : "secondary"} onClick={() => setEditing(true)}>
+              Add the cook&apos;s words
+            </Button>
+            {addIsPrimary && (
+              <Link href={`/recipes/new?from=${d.id}`} className={`text-[15px] ${textLink}`}>
+                or write the recipe yourself
+              </Link>
+            )}
+          </div>
         </section>
       )}
       {children}

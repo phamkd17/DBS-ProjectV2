@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createRecipe } from "@/app/actions";
-import { AiBadge, Button, ErrorNote } from "@/components/ui";
+import { AiBadge, Button, ErrorNote, textLink } from "@/components/ui";
 import { Working } from "@/components/Working";
 import type { ActionState } from "@/lib/types";
 
@@ -58,6 +59,14 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
           {ready ? "Uses one AI request." : "Tick the box above when you're ready."}
         </p>
       </div>
+      {/* No AI needed? Write the recipe yourself, in the same format. */}
+      <p className="border-t border-ls-border pt-4 text-[15px] text-ls-muted">
+        Or{" "}
+        <Link href={`/recipes/new?from=${dictationId}`} className={`text-ls-ink ${textLink}`}>
+          write the recipe yourself
+        </Link>
+        , no AI.
+      </p>
     </form>
   );
 }
