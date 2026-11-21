@@ -5,6 +5,7 @@ import { SignUpButton } from "@clerk/nextjs";
 import { supabaseForUser } from "@/lib/supabase/server";
 import { Button, ErrorNote, eyebrow, focusRing, formatDate, LinkButton } from "@/components/ui";
 import { MoveTo } from "@/components/MoveTo";
+import { QuickAddIdea } from "@/components/QuickAddIdea";
 import { HowItWorks } from "@/components/HowItWorks";
 import { NewMenu } from "@/components/NewMenu";
 import type { DictationRow, RecipeStatus } from "@/lib/types";
@@ -65,9 +66,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-ls-serif text-5xl leading-none">Your lab book</h1>
         {/* One start button per tab, for what you do there (student, Nov 20). */}
-        {tab === "ideas" ? (
-          <LinkButton href="/ideas/new">+ New idea</LinkButton>
-        ) : tab === "development" ? (
+        {tab === "ideas" ? null : tab === "development" ? (
           <LinkButton href="/new">+ Cook&apos;s words</LinkButton>
         ) : (
           <NewMenu />
@@ -77,7 +76,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       {error && <ErrorNote>We couldn&apos;t load your lab book. Refresh the page to try again.</ErrorNote>}
 
       {rows.length === 0 && !error ? (
-        <FirstRun />
+        <>
+          {tab === "ideas" && <QuickAddIdea />}
+          <FirstRun />
+        </>
       ) : (
         <>
 
@@ -87,6 +89,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               {items.length ? ` · ${items.length}` : ""} · {TABS[tab].blurb}
             </p>
           </div>
+
+          {tab === "ideas" && <QuickAddIdea />}
 
           {items.length === 0 ? (
             <p className="border border-dashed border-ls-border p-6 text-[15px] text-ls-muted">{TABS[tab].empty}</p>

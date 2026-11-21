@@ -506,3 +506,21 @@ export async function updateIngredients(
   revalidatePath(`/r/${recipeId}`);
   return { saved: true };
 }
+
+// ---------------------------------------------------------------------------
+// Quick-add an idea from the Ideas tab: just a name, Enter, and it's in the
+// list (student, Nov 20). Notes and a link can be added later with the pencil.
+// ---------------------------------------------------------------------------
+export async function quickAddIdea(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  const title = String(formData.get("title") ?? "").trim().slice(0, 120);
+  if (!title) return { fieldErrors: { title: "Type the idea first, like “Caramelized onion crunch”." } };
+  const supabase = await supabaseForUser();
+  const { error } = await supabase.from("dictations").insert({ dish_name: title });
+  if (error) {
+    console.error("[quickAddIdea]", error);
+    return { values: { title }, error: "Couldn't add it. Try again." };
+  }
+  revalidatePath("/");
+  return { saved: true, values: { added: title } };
+}
