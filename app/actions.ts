@@ -602,14 +602,43 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
   };
 
   const supabase = await supabaseForUser();
-  const { data: entry, error: e1 } = await supabase
-    .from("dictations")
-    .insert({ dish_name: title, cook_name, notes, stage: "finished" })
-    .select("id")
-    .single();
-  if (e1 || !entry) {
-    console.error("[createManualRecipe entry]", e1);
-    return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
+  // Written for an existing entry (from Development), or a brand-new one (from Recipes).
+  const fromId = String(formData.get("dictation_id") ?? "") || null;
+  let entry: { id: string } | null = null;
+  let createdEntry = false;
+  if (fromId) {
+    // RLS: only your own entry comes back.
+    const { data: own } = await supabase.from("dictations").select("id").eq("id", fromId).maybeSingle();
+    if (!own) return { values, error: "We couldn't find that item in your lab book." };
+    const { data: existing } = await supabase
+      .from("recipes")
+      .select("id")
+      .eq("dictation_id", fromId)
+      .neq("status", "failed")
+      .limit(1)
+      .maybeSingle();
+    if (existing) return { values, error: "This item already has a recipe. Discard its AI questions first, or edit the recipe." };
+    const { error: eu } = await supabase
+      .from("dictations")
+      .update({ dish_name: title, cook_name, notes, stage: "finished" })
+      .eq("id", fromId);
+    if (eu) {
+      console.error("[createManualRecipe update entry]", eu);
+      return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
+    }
+    entry = own;
+  } else {
+    const { data: made, error: e1 } = await supabase
+      .from("dictations")
+      .insert({ dish_name: title, cook_name, notes, stage: "finished" })
+      .select("id")
+      .single();
+    if (e1 || !made) {
+      console.error("[createManualRecipe entry]", e1);
+      return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
+    }
+    entry = made;
+    createdEntry = true;
   }
   const { data: made, error: e2 } = await supabase
     .from("recipes")
@@ -618,7 +647,7 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
     .single();
   if (e2 || !made) {
     console.error("[createManualRecipe recipe]", e2);
-    await supabase.from("dictations").delete().eq("id", entry.id); // don't leave a half-saved entry
+    if (createdEntry) await supabase.from("dictations").delete().eq("id", entry.id); // don't leave a half-saved entry
     return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
   }
   revalidatePath("/");
