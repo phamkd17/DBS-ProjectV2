@@ -625,3 +625,28 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   p5, #13 progress line, #14 nutrition, labeled cut-first), then #15 What
   Changed + demo prep. Labels: stuck-point, security, feature, ai, polish,
   docs, cut-first. **Student:** "Create them in this order."
+
+## Nov 20 — Issues #1–#4: where my cousin got stuck (branch `stuck-points`)
+
+### V3. Stuck points fixed
+- **Student:** "yes" (start with #1–#4 on one branch); "Be sure to commit often."
+- **Baseline first:** `npm run words` counts visible words on the main screens:
+  v1 = landing 81, empty lab book 99, new idea 34, new dictation 86 (**300**).
+- **#1:** the landing page is the headline + `HowItWorks` (3 steps, icons) + one
+  button, with no paragraph.
+- **#2:** `createIdea` → `/d/[id]?saved=1` → `SavedBanner` ("✓ Saved to Ideas" +
+  **Add another idea** as the one primary; "Move to Development" drops to
+  secondary). The flag is stripped from the URL, so it shows once.
+- **#3:** **Save and add another** (`intent=another`) → a fresh form with "Saved
+  “X” to Ideas. Add the next one." (a key resets the form); **+ New idea** on the
+  Ideas tab and on idea pages.
+- **#4:** a **?** in the header opens a native `<dialog>` (Escape closes,
+  focus returns); one-line tab hints and empty states; shorter intros and AI
+  copy; dropped duplicate tips; README "How to use it". After: landing 50,
+  empty lab book 39, new idea 25, new dictation 32 (**146**, under half).
+- **Verify** covers each one (the dialog opens/closes with focus return; Saved
+  banner; shown once; add-another clears the form; + New idea), 0 axe
+  violations at 390/1440. Test fixes: exact name matching (#2 contains #1's
+  name; the rename step), and cleanup of the second idea. `npm run verify` now
+  runs only `verify.spec.ts`; the word count is `npm run words`.
+- Renamed the V1 remote to `v1-repo` (the name "v1" clashed with the tag).
