@@ -695,3 +695,11 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   mismatch). The Recipes tab's button is now **+ New recipe**; the unused New
   menu was removed. Hand-typed recipes hide the cook's-words section. Verify ✓
   (errors, save, format, no words section, delete).
+- A way to quit the AI questions. **Options:** both / save only / discard only.
+  **Chosen:** both. `saveAnswersForLater` saves the non-empty answers (no AI
+  call) → `/?tab=development`; untouched questions stay open. `discardDraft`
+  deletes a draft recipe (questions cascade; a ready recipe can't be
+  discarded this way) → back to the entry, where Create recipe shows again.
+  "Save for later" submits the questions form via `form` + `formAction`.
+  Verify ✓: the answer persists after save; after discard the draft URL is gone
+  and the recipe can be recreated (dev cache, 0 Gemini calls).
