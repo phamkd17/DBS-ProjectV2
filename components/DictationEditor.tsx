@@ -38,7 +38,7 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
       <section aria-label={hasWords ? "Edit their words" : "Add the cook's words"} className="space-y-4 border border-ls-ink bg-ls-surface p-5">
         <p className="text-[15px] text-ls-muted">
           {hasWords
-            ? "Change anything, or add what's missing."
+            ? "Change anything, or clear it all to delete the words."
             : "Type how the cook makes it, or tap the microphone on your keyboard to dictate: the ingredients, then each step."}
         </p>
         <NewDictationForm dictation={d} onSaved={() => setEditing(false)} onCancel={() => setEditing(false)} />
