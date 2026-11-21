@@ -371,13 +371,34 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(page.getByRole("status")).toBeVisible();
   await check(page, "creating-loading");
   await waitForAi(page, () => page.waitForURL(/\/r\//, { timeout: 4 * 60_000 }));
-  const recipeUrl = page.url();
+  let recipeUrl = page.url();
   await expect(page.getByRole("heading", { name: /questions/i })).toBeVisible();
   await check(page, "questions", { keyboard: true });
 
-  await page.goto("/?tab=development");
+  // ---- Quit the questions: Save for later keeps typed answers ----
+  const qv = page.locator("main").filter({ visible: true });
+  await qv.getByPlaceholder("Your answer").first().fill("Saved for later (verify)");
+  await qv.getByRole("button", { name: "Save for later" }).click();
+  await page.waitForURL(/tab=development/);
   await check(page, "home-development-tab");
   await page.goto(recipeUrl);
+  await expect(page.locator("main").filter({ visible: true }).getByPlaceholder("Your answer").first()).toHaveValue("Saved for later (verify)");
+
+  // ---- Discard questions: the draft goes away, back to the cook's words ----
+  page.once("dialog", (d) => d.accept());
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Discard questions" }).click();
+  await page.waitForURL(/\/d\//);
+  await expect(page.locator("main").filter({ visible: true }).getByRole("heading", { name: "Ready to make it a recipe?" })).toBeVisible();
+  await page.goto(recipeUrl);
+  await expect(page.getByRole("heading", { name: "Not in your lab book" })).toBeVisible(); // draft is gone
+  // Create it again (the dev cache answers, no Gemini call).
+  await page.goBack();
+  await page.waitForURL(/\/d\//);
+  await page.getByLabel(/Their words are complete/).check();
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Create recipe with AI" }).click();
+  await waitForAi(page, () => page.waitForURL(/\/r\//, { timeout: 4 * 60_000 }));
+  recipeUrl = page.url();
+  await expect(page.getByRole("heading", { name: /questions/i })).toBeVisible();
 
   // ---- Answer: one suggestion, one typed, rest blank ----
   await page.getByRole("button", { name: "Use suggestion" }).first().click();
