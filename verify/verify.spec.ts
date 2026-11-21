@@ -202,11 +202,25 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await rf.getByLabel("Ingredient 1", { exact: true }).fill("whole milk");
   await rf.getByLabel("Amount 2", { exact: true }).fill("1/3 cup");
   await rf.getByLabel("Ingredient 2", { exact: true }).fill("sugar");
+  // Shortcut: Enter adds the next ingredient and moves the cursor into it (no submit).
+  await rf.getByLabel("Ingredient 2", { exact: true }).press("Enter");
+  await expect(rf.getByLabel("Ingredient 3", { exact: true })).toBeVisible();
+  await expect(page.locator(":focus")).toHaveAttribute("id", /^(amt|item)-/);
+  await expect(rf.getByText("Give the recipe a name.")).toHaveCount(0); // still on the form
+  await rf.getByLabel("Ingredient 3", { exact: true }).fill("vanilla bean");
   await rf.getByLabel("Step 1", { exact: true }).fill("Heat the milk until it steams. Don't let it boil.");
   await rf.getByRole("button", { name: "+ Why it works" }).first().click();
   await rf.getByLabel(/Why it works/).fill("Boiling can scorch the milk.");
+  // Enter in a step adds the next step; Shift+Enter is a new line in the same step.
+  await rf.getByLabel("Step 1", { exact: true }).press("Enter");
+  await expect(rf.getByLabel("Step 2", { exact: true })).toBeFocused();
+  await page.keyboard.type("Stir in the sugar.");
+  await page.keyboard.press("Shift+Enter");
+  await page.keyboard.type("Then the vanilla.");
+  await expect(rf.getByLabel("Step 3", { exact: true })).toHaveCount(0);
+  await expect(rf.getByLabel("Step 2", { exact: true })).toHaveValue("Stir in the sugar.\nThen the vanilla.");
   await rf.getByRole("button", { name: "+ Add step" }).click();
-  await rf.getByLabel("Step 2", { exact: true }).fill("Stir in the sugar.");
+  await rf.getByLabel("Remove step 3").click();
   await check(page, "manual-recipe-form", { keyboard: true });
   await rf.getByRole("button", { name: "Save recipe" }).click();
   await page.waitForURL(/\/r\//);
@@ -214,6 +228,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   const mr = page.locator("main").filter({ visible: true });
   await expect(mr.getByRole("heading", { name: MANUAL })).toBeVisible();
   await expect(mr.getByText("whole milk")).toBeVisible();
+  await expect(mr.getByText("vanilla bean")).toBeVisible();
   await expect(mr.getByRole("button", { name: "Why step 1 works" })).toBeVisible(); // same format as AI recipes
   await expect(mr.getByText("Their words")).toHaveCount(0); // no cook's-words section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
