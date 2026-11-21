@@ -307,6 +307,13 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await view.getByRole("button", { name: "Save changes" }).click();
   await expect(view.getByText("Their words, exactly as said")).toBeVisible();
   await expect(view.getByRole("heading", { name: "Ready to make it a recipe?" })).toBeVisible(); // AI step now offered
+  // Delete their words: back to "No cook's words yet", notes stay, no AI step.
+  page.once("dialog", (d) => d.accept());
+  await view.getByRole("button", { name: "Delete their words" }).click();
+  await expect(view.getByText(/No cook's words yet/)).toBeVisible();
+  await expect(view.getByRole("button", { name: "Create recipe with AI" })).toHaveCount(0);
+  await expect(view.getByText(/Dry at 200°F/)).toBeVisible(); // idea notes stay
+  await check(page, "words-deleted");
   await expect(view.getByText(/Dry at 200°F/)).toBeVisible(); // notes still there
   await check(page, "idea-with-words-added");
 
@@ -496,8 +503,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   expect(new URL(page.url()).pathname).toBe(new URL(recipeUrl).pathname);
   await expect(view.getByText(/after this recipe was made/)).toBeVisible();
   await expect(view.getByText(/Their words · edited/)).toBeVisible();
-  await view.getByText(/Their words · edited/).click(); // open the transcript
-  await expect(view.getByText("See the original words")).toBeVisible();
+  await expect(view.getByText("See the original words")).toHaveCount(0); // no original versions are kept
   await check(page, "recipe-after-edit");
 
   await page.goto("/?tab=finished");
