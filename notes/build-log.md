@@ -650,3 +650,7 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   name; the rename step), and cleanup of the second idea. `npm run verify` now
   runs only `verify.spec.ts`; the word count is `npm run words`.
 - Renamed the V1 remote to `v1-repo` (the name "v1" clashed with the tag).
+- **Student:** "I also want an option to be able to type it in." Every place
+  that asks for the cook's words now says **type or dictate**. That pushed the
+  main screens to 154 words (over the ≤150 target), so the New dictation intro
+  was trimmed back to 149.

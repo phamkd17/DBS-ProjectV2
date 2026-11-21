@@ -50,3 +50,4 @@ next-env.d.ts
 
 # dev-only Gemini response cache
 /.ai-cache/
+/verify/words-now.txt
