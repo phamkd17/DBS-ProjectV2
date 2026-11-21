@@ -406,6 +406,12 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await waitForAi(page, () => page.waitForURL(/\/r\//, { timeout: 4 * 60_000 }));
   recipeUrl = page.url();
   await expect(page.getByRole("heading", { name: /questions/i })).toBeVisible();
+  const qp = page.locator("main").filter({ visible: true });
+  await qp.getByRole("button", { name: "Edit their words" }).click();
+  await qp.getByLabel("The cook's words", { exact: true }).fill("");
+  await qp.getByRole("button", { name: "Save changes" }).click();
+  await expect(qp.getByText(/AI questions still need these words/)).toBeVisible();
+  await qp.getByRole("button", { name: "Cancel" }).click();
 
   // ---- Answer: one suggestion, one typed, rest blank ----
   await page.getByRole("button", { name: "Use suggestion" }).first().click();
@@ -505,6 +511,11 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(view.getByText(/Their words · edited/)).toBeVisible();
   await expect(view.getByText("See the original words")).toHaveCount(0); // no original versions are kept
   await check(page, "recipe-after-edit");
+  await view.getByRole("button", { name: "Edit their words" }).click();
+  await view.getByLabel("The cook's words", { exact: true }).fill("");
+  await view.getByRole("button", { name: "Save changes" }).click();
+  await expect(view.getByText(/No cook's words yet/)).toBeVisible(); // empty save = deleted
+  await expect(view.getByRole("heading", { name: "Ingredients" })).toBeVisible(); // the recipe stays
 
   await page.goto("/?tab=finished");
   await check(page, "home-finished-tab");
