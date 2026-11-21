@@ -42,6 +42,7 @@
 | Nov 15 | The cook's words are added only in Development | |
 | Nov 20 | The cook's words can be typed as well as dictated | |
 | Nov 20 | Tabs at the top of every page; rename "Finished" to **Recipes** | Cookbook, Perfected, Library |
+| Nov 20 | One start button per tab, matching what you do there: **+ New idea** (Ideas), **+ Cook's words** (Development), **New ▾** (Recipes); no duplicate start buttons | Keep only the New menu; hide New on an empty lab book |
 
 ## What the app is
 

@@ -673,3 +673,8 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   redirects to an explicit `?tab=`. The in-page tab bar was removed (it's in the
   header now), and the counts moved into the hint ("Ideas · 12 · …"). Verify ✓
   at 390/1440.
+- Streamlined the start buttons (the student found New, Save an idea, and Add the
+  cook's words redundant). Chosen: one button per tab. The first-run screen is
+  now the heading + steps only; the extra + New idea next to the hint is gone.
+  Tests point to the right tab for each button. Verify ✓; an empty account
+  shows exactly one start link.
