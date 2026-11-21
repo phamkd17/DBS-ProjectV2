@@ -6,6 +6,8 @@ import { Instrument_Serif, Jost } from "next/font/google";
 import "./globals.css";
 import { PageLoading } from "@/components/PageLoading";
 import { focusRing } from "@/components/ui";
+import { HelpButton } from "@/components/HelpButton";
+import { HowItWorks } from "@/components/HowItWorks";
 
 const serif = Instrument_Serif({ variable: "--font-instrument-serif", subsets: ["latin"], weight: "400" });
 const sans = Jost({ variable: "--font-jost", subsets: ["latin"] });
@@ -42,6 +44,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/" className={`font-ls-serif text-2xl leading-none ${focusRing}`}>
                 Culinary Lab Book
               </Link>
+              <div className="flex items-center gap-1">
+              <HelpButton>
+                <HowItWorks headingLevel={3} />
+              </HelpButton>
               <Suspense fallback={<span className="size-7" />}>
                 <Show when="signed-in">
                   <UserButton />
@@ -56,6 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   </SignInButton>
                 </Show>
               </Suspense>
+              </div>
             </div>
           </header>
           <div className="mx-auto w-full max-w-3xl flex-1 px-5 py-8">
