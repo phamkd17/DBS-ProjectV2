@@ -18,8 +18,22 @@ student's words, it's now "an app to track culinary inspiration, provides a
 platform for quickly developing recipes/iterations via voice/ai, and a place to
 store the recipes with incorporating food science.")
 
-Design, Build, Ship (MPCS 51238, Autumn 2026). v1 due **Nov 17** (core task end
-to end, tested with real users, plan for v2). v2 at the fair **Dec 1**.
+Design, Build, Ship (MPCS 51238, Autumn 2026). **This is the v2 repo**
+(`phamkd17/DBS-ProjectV2`), copied from v1 with full history; the `v1` tag marks
+v1 as submitted (Nov 17). **v2 due Dec 1, 5:30 PM**, with a demo at the fair.
+v2 brief: `~/Desktop/Design-Ship-Build-Assignments/Project/ProjectV2/Design, Build, Ship - Project v2.pdf`.
+Plan: `notes/v2-plan.md`. Requirements: live URL, commits since v1, **What
+Changed** (`notes/what-changed.md`), a **security pass** (incl. a model
+**rate limit and token cap**), the fair demo, and a project interview in week 9.
+
+## ⚠️ Shared database with v1 (decided Nov 20)
+
+v2 uses **the same Supabase project as v1** (`zsfkpztpdxcowqsjfylu`), and the
+v1 live site (dbs-project-v1-omega.vercel.app, repo DBS-ProjectV1) must keep
+working for grading. So **every v2 migration must be additive and
+backward-compatible**: add tables or nullable/defaulted columns, never rename,
+drop, or tighten anything v1's code uses. Check v1's code (`git show v1:<file>`)
+before any schema change. Never push to the `v1` remote (its push URL is disabled).
 Course focus: **AI** (model calls, tools, **evals**), held to a higher standard.
 
 - Proposal: https://dbs-projectproposal.vercel.app · repo `phamkd17/DBS-project_proposal`

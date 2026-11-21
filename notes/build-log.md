@@ -592,3 +592,24 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   leftover placeholders; replaced the stale "polish from testers (to fill in)"
   line; the schedule marks testing done (Nov 15–16, cousin); split the run-on #2
   "Done when" into three checks; tidied the open questions.
+
+---
+
+# v2 (Nov 20 → Dec 1)
+
+## Nov 20 — v2 repo
+
+### V1. A new repo for v2
+- **Student:** "I need to create a new repository for projectV2… I want to
+  continue building off this session."
+- **Options offered:** copy V1 with its history / copy the code with fresh
+  history. **Student chose:** "Copy V1 with its history." The new repo is
+  `phamkd17/DBS-ProjectV2` (public, like V1), with all v1 commits and a
+  **`v1` tag** at the submitted state. This satisfies the brief's "commits that
+  show your work since v1" (`git log v1..main`).
+- **Options offered:** new Vercel + new Supabase / new Vercel, share V1's
+  database. **Student chose:** "New Vercel, share V1's database."
+  Consequence: **v2 migrations must be additive** so v1's live site keeps
+  working (rule added to AGENTS.md).
+- Safety: the `v1` remote's push URL is disabled in this folder.
+- Started `notes/what-changed.md` (a brief requirement).
