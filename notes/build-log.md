@@ -906,3 +906,15 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Restarted the dev server with a clean `.next` (globals.css changed; the
   stale-CSS guard passed). Verify ✓: 44 screens, axe clean at 390/1440, and the
   landing page still fits one screen.
+
+## Nov 27 — "Show sources" removed
+- Student: "I do not need it." I pushed back once. Removing it also hides the
+  "Suggested" tag, which is the visible form of rules 3–4 and part of the AI
+  honesty story. I offered to keep only that tag. The student chose removing
+  the switch and all labels.
+- `SourcesScope` keeps `data-sources="hidden"` with no switch, so `.src-only`
+  content (labels, legend, history notes, "what the app changed") never shows.
+  The labels stay in the recipe JSON (pipeline, evals, shared copies
+  unchanged), so restoring them is a one-component change. AGENTS.md rule 4
+  notes the change. Verify updated: no switch, edits saved, labels hidden.
+  Axe clean.

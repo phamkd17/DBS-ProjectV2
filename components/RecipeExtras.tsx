@@ -5,35 +5,15 @@ import type { Recipe } from "@/lib/ai/schema";
 import { eyebrow, focusRing } from "./ui";
 
 // ---------------------------------------------------------------------------
-// "Show sources": the recipe is calm by default. Turning this on reveals the
-// labels (Grandma / Family answer / Suggested / Food science) and the history
-// notes, via [data-sources] on the wrapper and the .src-only class.
+// Source labels (Grandma / Family answer / Suggested / Food science) and the
+// history notes are marked .src-only and hidden. The student removed the
+// "Show sources" switch (Nov 27).
 // ---------------------------------------------------------------------------
 export function SourcesScope({ children }: { children: ReactNode }) {
-  const [show, setShow] = useState(false);
+  // The "Show sources" switch was removed (student, Nov 27: not needed). The
+  // labels are still saved with every recipe; they're just never shown.
   return (
-    <div data-sources={show ? "shown" : "hidden"} className="group/sources space-y-2">
-      <div className="flex justify-end">
-        <button
-          type="button"
-          role="switch"
-          aria-checked={show}
-          onClick={() => setShow((s) => !s)}
-          className={`inline-flex min-h-11 cursor-pointer items-center gap-3 px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-muted hover:text-ls-ink ${focusRing}`}
-        >
-          <span
-            aria-hidden
-            className={`relative h-5 w-9 shrink-0 rounded-full border border-ls-ink transition-colors ${show ? "bg-ls-ink" : "bg-ls-surface"}`}
-          >
-            <span
-              className={`absolute top-1/2 left-[3px] size-3 -translate-y-1/2 rounded-full transition-transform duration-150 motion-reduce:transition-none ${
-                show ? "translate-x-4 bg-ls-surface" : "bg-ls-ink"
-              }`}
-            />
-          </span>
-          Show sources
-        </button>
-      </div>
+    <div data-sources="hidden" className="group/sources">
       {children}
     </div>
   );

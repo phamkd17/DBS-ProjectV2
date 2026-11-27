@@ -613,10 +613,10 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await waitForAi(page, () =>
     page.getByRole("heading", { name: "Ingredients" }).waitFor({ timeout: 4 * 60_000 })
   );
-  // Calm by default: no source labels until "Show sources".
+  // No source labels and no "Show sources" switch (student, Nov 27).
   const main = page.locator("main").filter({ visible: true });
   await expect(main.getByText("Where each part came from:")).toBeHidden();
-  await expect(main.getByRole("switch", { name: "Show sources" })).toHaveAttribute("aria-checked", "false");
+  await expect(main.getByRole("switch", { name: "Show sources" })).toHaveCount(0);
   await check(page, "recipe-finished", { keyboard: true });
 
   // Science icon: opens "Why it works" for that step only.
@@ -646,16 +646,12 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.getByRole("button", { name: "Save ingredients" }).click();
 
   const list = page.locator("main").filter({ visible: true });
-  // Labels and history are behind "Show sources".
-  await list.getByRole("switch", { name: "Show sources" }).click();
-  await expect(list.getByText("Where each part came from:")).toBeVisible();
+  // The edits are saved; labels and history are kept in the data but not shown.
   const changed = list.getByRole("listitem").filter({ hasText: "2 cups (verify)" });
   await expect(changed).toBeVisible();
-  await expect(changed.getByText("Family answer").first()).toBeVisible(); // relabeled: no longer the cook's amount
-  await expect(changed.getByText(/Changed from|Amount added/)).toBeVisible(); // the old amount is kept
-  const added = list.getByRole("listitem").filter({ hasText: "salt (verify)" });
-  await expect(added.getByText(/Added on/)).toBeVisible();
-  await expect(list.getByText(new RegExp(`Removed “[^”]*${removedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`))).toBeVisible();
+  await expect(changed.getByText("Family answer")).toBeHidden();
+  await expect(list.getByRole("listitem").filter({ hasText: "salt (verify)" })).toBeVisible();
+  await expect(list.getByRole("listitem").filter({ hasText: removedName })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Edit ingredients" })).toBeFocused();
   await expect(page.getByRole("button", { name: /^Edit amount of / })).toHaveCount(0); // one pencil, not one per row
 

@@ -66,7 +66,11 @@ own lab book.
 3. **Unknown → suggestion.** If no one knows, offer a suggestion the user
    accepts or edits. It stays labeled **Suggested**, never shown as the cook's.
 4. **Label every why by source:** `cook` (her quote), `user_answer`,
-   `suggested`, `food_science`.
+   `suggested`, `food_science`. Changed by the student on Nov 27: the labels
+   are still **stored** with every recipe (the AI output and evals keep them),
+   but the UI no longer shows them ("Show sources" removed). Rule 3's
+   "Suggested" tag is therefore not displayed. The student chose this after
+   being told it drops the visible honesty label.
 5. Capture and recipe creation are **separate moments**. Capture asks nothing.
 
 ## Lab-book entries (decided Nov 15)
