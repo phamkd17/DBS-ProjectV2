@@ -146,8 +146,8 @@ export function Spinner() {
 export function KitchenNotesTip({ id }: { id?: string }) {
   return (
     <p id={id} className="border-l-2 border-ls-rule pl-3 text-[15px] text-ls-muted">
-      <span className="font-medium text-ls-ink">Tip:</span> include amounts and as much detail as you can, like times and
-      temperatures. The more detail, the better the recipe.
+      <span className="font-medium text-ls-ink">Tip:</span> Include amounts and as much detail as you can, such as cooking
+      times and temperatures. The more detail, the better the recipe.
     </p>
   );
 }

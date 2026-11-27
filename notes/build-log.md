@@ -840,3 +840,6 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Tip trimmed at the student's request: "include amounts and as much detail as
   you can, like times and temperatures. The more detail, the better the recipe."
   Verify ✓.
+- Grammar pass on the tip (student's request): "Tip: Include amounts and as
+  much detail as you can, such as cooking times and temperatures. The more
+  detail, the better the recipe."
