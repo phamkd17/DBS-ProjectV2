@@ -137,7 +137,7 @@ export function EditableTitle({
 }
 
 // ---------------------------------------------------------------------------
-// Idea notes: heading + pencil. For ideas also edits the link; for a dictation
+// Inspiration (first called "Idea notes"; renamed by the student, Nov 27): heading + pencil. For ideas also edits the link; for a dictation
 // in Ideas, the notes are its words (they become the cook's words in Development).
 // ---------------------------------------------------------------------------
 export function EditableNotes({
@@ -162,16 +162,16 @@ export function EditableNotes({
     <section aria-labelledby={`notes-${id}`} className="space-y-3 border-y border-ls-ink py-4">
       <div className="flex items-center justify-between gap-3">
         <h2 id={`notes-${id}`} className={eyebrow}>
-          Idea notes
+          Inspiration
         </h2>
-        {!editing && <PencilButton ref={pencil} label="Edit idea notes" onClick={() => setEditing(true)} />}
+        {!editing && <PencilButton ref={pencil} label="Edit inspiration" onClick={() => setEditing(true)} />}
       </div>
 
       {editing ? (
         <form action={action} className="space-y-4">
           <div className="space-y-1.5">
             <label htmlFor={`note-${id}`} className="sr-only">
-              Idea notes
+              Inspiration
             </label>
             <textarea
               id={`note-${id}`}
@@ -223,7 +223,7 @@ export function EditableNotes({
           {note ? (
             <p className="max-w-prose whitespace-pre-wrap text-[17px] leading-relaxed">{note}</p>
           ) : (
-            <p className="text-[15px] text-ls-muted">No notes yet. Tap the pencil to add some.</p>
+            <p className="text-[15px] text-ls-muted">Nothing yet. Tap the pencil to note what inspired it.</p>
           )}
           {link && (
             <p className="text-[15px]">

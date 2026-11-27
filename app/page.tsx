@@ -20,7 +20,7 @@ type Row = DictationRow & {
 const TABS = {
   ideas: {
     label: "Ideas",
-    blurb: "Notes, photos, and links to come back to.",
+    blurb: "Inspiration, photos, and links to come back to.",
     empty: "No ideas yet.",
   },
   development: {

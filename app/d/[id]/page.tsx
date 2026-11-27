@@ -69,7 +69,7 @@ export default async function DictationPage({ params, searchParams }: PageProps<
         </p>
       </div>
 
-      {/* Idea notes stay in every stage. */}
+      {/* Inspiration (idea notes) stays in every stage. */}
       <EditableNotes kind="dictation" id={d.id} note={d.notes} link={d.link} />
 
       {/* Photos stay with the entry in every stage, like the notes. */}

@@ -379,7 +379,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.getByRole("button", { name: "Save idea" }).click();
   await expect(page.getByText(/Give the idea a short name/)).toBeVisible();
   await page.getByLabel("Idea", { exact: true }).fill(IDEA);
-  await page.getByLabel(/Note/).fill("Had it on pho. Crunchy and sweet. Try drying in a low oven?");
+  await page.getByLabel(/Inspiration/).fill("Had it on pho. Crunchy and sweet. Try drying in a low oven?");
   await page.getByLabel(/Link/).fill("javascript:alert(1)");
   await page.getByRole("button", { name: "Save idea" }).click();
   await expect(page.getByText(/doesn't look like a web link/)).toBeVisible();
@@ -427,13 +427,13 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(view.getByRole("heading", { level: 1 })).toContainText("(renamed)");
   await expect(view.getByRole("button", { name: "Edit title" })).toBeFocused(); // focus returns
 
-  // Pencil on Idea notes.
-  await view.getByRole("button", { name: "Edit idea notes" }).click();
-  await view.getByRole("textbox", { name: "Idea notes" }).fill("Had it on pho. Crunchy and sweet. Dry at 200°F for 2 hours?");
+  // Pencil on Inspiration.
+  await view.getByRole("button", { name: "Edit inspiration" }).click();
+  await view.getByRole("textbox", { name: "Inspiration" }).fill("Had it on pho. Crunchy and sweet. Dry at 200°F for 2 hours?");
   await check(page, "idea-notes-editing", { keyboard: true });
   await view.getByRole("button", { name: "Save", exact: true }).click();
   await expect(view.getByText(/Dry at 200°F/)).toBeVisible();
-  await expect(view.getByRole("button", { name: "Edit idea notes" })).toBeFocused();
+  await expect(view.getByRole("button", { name: "Edit inspiration" })).toBeFocused();
   expect(page.url()).toBe(ideaUrl);
 
   await page.goto("/?tab=ideas");
@@ -523,8 +523,8 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // Wait for the real page, not the loading skeleton.
   await expect(view.getByRole("heading", { name: "Ready to make it a recipe?" })).toBeVisible();
   await expect(view.getByRole("link", { name: "Development" }).first()).toBeVisible(); // breadcrumb
-  // Idea notes and the cook's words are separate sections.
-  await expect(view.getByRole("heading", { name: "Idea notes" })).toBeVisible();
+  // Inspiration and the kitchen notes are separate sections.
+  await expect(view.getByRole("heading", { name: "Inspiration" })).toBeVisible();
   await expect(view.getByText("Kitchen notes, exactly as written")).toBeVisible();
   await check(page, "dictation", { keyboard: true });
 

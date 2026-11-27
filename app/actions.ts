@@ -36,10 +36,10 @@ function friendlyModelError(err: unknown): string {
   if (err instanceof RateLimitError) return err.message;
   if (err instanceof ModelError) {
     console.error("[model]", err.message, err.detail ?? "");
-    return "The recipe helper couldn't finish. Your notes are saved. Try again in a minute.";
+    return "The recipe helper couldn't finish. Your kitchen notes are saved. Try again in a minute.";
   }
   console.error("[unexpected]", err);
-  return "Something went wrong. Your notes are saved. Try again.";
+  return "Something went wrong. Your kitchen notes are saved. Try again.";
 }
 
 // ---------------------------------------------------------------------------
@@ -73,7 +73,7 @@ export async function createDictation(_prev: ActionState, formData: FormData): P
 
   if (error || !data) {
     console.error("[createDictation]", error);
-    return { values, error: "Couldn't save just now. Your notes are still here. Try again." };
+    return { values, error: "Couldn't save just now. Your kitchen notes are still here. Try again." };
   }
   revalidatePath("/");
   redirect(`/d/${data.id}`);
@@ -447,7 +447,7 @@ export async function updateNotes(
       : await supabase.from("dictations").update({ notes: note, link }).eq("id", id);
   if (error) {
     console.error("[updateNotes]", error);
-    return { values, error: "Couldn't save your notes. What you typed is still here. Try again." };
+    return { values, error: "Couldn't save your inspiration. What you typed is still here. Try again." };
   }
   revalidatePath("/", "layout");
   return { saved: true };

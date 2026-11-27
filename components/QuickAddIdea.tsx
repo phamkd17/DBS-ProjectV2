@@ -116,7 +116,7 @@ export function QuickAddIdea() {
           <span className="text-ls-error">{state.error}</span>
         ) : state.saved ? (
           <span className="text-ls-muted">
-            <span aria-hidden className="text-ls-success">✓ </span>Added “{state.values?.added}”. Add another, or open it to add notes.
+            <span aria-hidden className="text-ls-success">✓ </span>Added “{state.values?.added}”. Add another, or open it to add more.
           </span>
         ) : null}
       </p>

@@ -65,7 +65,7 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
             </Button>
             {canDelete && (
               <form action={deleteWords.bind(null, d.id)}>
-                <ConfirmSubmit variant="danger" message="Delete the kitchen notes? Your idea notes and any recipe made from them stay. This can't be undone.">
+                <ConfirmSubmit variant="danger" message="Delete the kitchen notes? Your inspiration and any recipe made from them stay. This can't be undone.">
                   Delete kitchen notes
                 </ConfirmSubmit>
               </form>

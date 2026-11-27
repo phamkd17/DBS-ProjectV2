@@ -50,7 +50,7 @@ export function IdeaForm({
 
       <div className="space-y-1.5">
         <label htmlFor="note" className="block text-[17px] font-medium">
-          Note <span className={eyebrow}>Optional</span>
+          Inspiration <span className={eyebrow}>Optional</span>
         </label>
         <textarea
           id="note"
