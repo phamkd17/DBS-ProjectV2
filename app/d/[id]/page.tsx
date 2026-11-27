@@ -63,7 +63,7 @@ export default async function DictationPage({ params, searchParams }: PageProps<
             </Link>
           )}
         </div>
-        <EditableTitle kind="dictation" id={d.id} title={d.dish_name ?? ""} placeholder="Untitled" />
+        <EditableTitle kind="dictation" id={d.id} title={d.dish_name ?? ""} placeholder={photos.length ? "Photo idea" : "Untitled"} />
         <p className={eyebrow}>
           {d.cook_name ? `${d.cook_name} · ` : ""}Saved {formatDate(d.created_at)}
         </p>

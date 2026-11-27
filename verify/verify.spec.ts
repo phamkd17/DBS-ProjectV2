@@ -26,6 +26,12 @@ const YOGURT =
 const report: string[] = ["# Verify report", "", `Run: ${new Date().toISOString()}`, ""];
 let n = 0;
 
+/** The image really loaded (not a broken or still-loading signed URL). */
+async function expectLoaded(img: import("@playwright/test").Locator) {
+  await expect(img).toBeVisible();
+  await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+}
+
 async function check(page: Page, name: string, opts: { keyboard?: boolean } = {}) {
   n += 1;
   const id = `${String(n).padStart(2, "0")}-${name}`;
@@ -172,7 +178,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // Ideas tab: a quick-add box instead of a button and a separate page.
   const quick = page.getByRole("textbox", { name: "New idea" });
   await quick.press("Enter");
-  await expect(page.getByText(/Type the idea first/)).toBeVisible();
+  await expect(page.getByText(/Type the idea or add a photo first/)).toBeVisible();
   await quick.fill(`${IDEA} (quick)`);
   await quick.press("Enter");
   await expect(page.getByText(`Added “${IDEA} (quick)”`, { exact: false })).toBeVisible();
@@ -180,6 +186,55 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(quick).toHaveValue(""); // ready for the next one
   await expect(quick).toBeFocused();
   await check(page, "ideas-quick-add", { keyboard: true });
+
+  // ---- Ideas: text, a photo, or both (issue #7) ----
+  const quickForm = page.locator("main").filter({ visible: true }).locator("form").filter({ has: quick });
+  const quickFile = quickForm.locator('input[type="file"]');
+  await quickFile.setInputFiles("verify/fixtures/not-a-photo.jpg");
+  await expect(quickForm.getByText("Couldn't open that photo.", { exact: false })).toBeVisible(); // not an image
+  await quickFile.setInputFiles("verify/fixtures/onions.jpg");
+  await expect(quickForm.getByRole("img", { name: "The photo you chose" })).toBeVisible(); // preview
+  await expect(quickForm.getByRole("button", { name: "Change photo" })).toBeVisible();
+  await check(page, "ideas-quick-add-photo", { keyboard: true });
+  await quickForm.getByRole("button", { name: "Add", exact: true }).click(); // photo only, no text
+  await expect(quickForm.getByText("Added “Photo idea”", { exact: false })).toBeVisible();
+  await expect(quickForm.getByRole("img", { name: "The photo you chose" })).toHaveCount(0); // ready for the next one
+  const ideasList = page.locator("main").filter({ visible: true }).locator("ul").first();
+  const photoCard = ideasList.getByRole("link", { name: /Photo idea/ }).first(); // newest first
+  await expectLoaded(photoCard.locator("img")); // thumbnail
+  await quick.fill(`${IDEA} (photo)`);
+  await quickFile.setInputFiles("verify/fixtures/onions.jpg");
+  await expect(quickForm.getByRole("img", { name: "The photo you chose" })).toBeVisible();
+  await quick.press("Enter"); // text + photo
+  await expect(quickForm.getByText(`Added “${IDEA} (photo)”`, { exact: false })).toBeVisible();
+  await expectLoaded(ideasList.getByRole("link", { name: /\(photo\)/ }).first().locator("img"));
+  await check(page, "ideas-with-photos");
+  // The photo-only idea: open it, see the photo, add one more, delete one, then delete the idea (and its files).
+  await photoCard.click();
+  await page.waitForURL(/\/d\//);
+  const pv = page.locator("main").filter({ visible: true });
+  const photosBox = pv.getByRole("region", { name: "Photos" });
+  await expectLoaded(photosBox.getByRole("img", { name: "Photo 1" }));
+  await expect(pv.getByRole("heading", { level: 1 })).toContainText("Photo idea"); // same name as in the list
+  await photosBox.locator('input[type="file"]').setInputFiles("verify/fixtures/onions.jpg");
+  await expectLoaded(photosBox.getByRole("img", { name: "Photo 2" }));
+  await check(page, "idea-photos", { keyboard: true });
+  page.once("dialog", (d) => d.accept());
+  await photosBox.getByRole("button", { name: "Delete photo 2" }).click();
+  await expect(photosBox.getByRole("img", { name: "Photo 2" })).toHaveCount(0);
+  await expect(photosBox.getByRole("img", { name: "Photo 1" })).toBeVisible();
+  page.once("dialog", (d) => d.accept());
+  await pv.getByRole("button", { name: "Delete", exact: true }).click();
+  await page.waitForURL((u) => u.pathname === "/");
+  // The text + photo idea: delete it too (leaves nothing behind in Storage).
+  await page.goto("/?tab=ideas");
+  await page.locator("main").filter({ visible: true }).getByRole("link", { name: new RegExp(`\\(photo\\)`) }).first().click();
+  await page.waitForURL(/\/d\//);
+  await expect(page.locator("main").filter({ visible: true }).getByRole("region", { name: "Photos" }).getByRole("img", { name: "Photo 1" })).toBeVisible();
+  page.once("dialog", (d) => d.accept());
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete", exact: true }).click();
+  await page.waitForURL((u) => u.pathname === "/");
+  await page.goto("/?tab=ideas");
   await expect(page.locator("main").getByRole("link", { name: "+ New idea" })).toHaveCount(0); // the box replaces it
   // Development tab: "+ Cook's words".
   await page.goto("/?tab=development");
