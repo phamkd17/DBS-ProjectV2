@@ -62,6 +62,7 @@
 | Nov 27 | No date on list rows; tapping a list thumbnail **zooms in on the photo** (the name still opens the item); a normal pointer, not a magnifying-glass cursor | |
 | Nov 27 | **Compact idea and recipe pages** too | |
 | Nov 27 | In lists, **tags go on the same line as the name**, and fewer text styles (name, small label, preview) | |
+| Nov 27 | Each tab's header is **just the tab's name** (no "Your lab book", no count or description line) | Tab name + one line; keep "Your lab book" without the line |
 
 ## What the app is
 

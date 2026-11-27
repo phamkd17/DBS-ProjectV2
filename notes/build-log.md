@@ -888,3 +888,7 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   the eyebrow style (max half the width, truncated). The separate tags line
   (15px Ink) and meta line are gone, leaving two lines and three styles: serif
   name, eyebrow label, muted preview. Verify ✓.
+- Tab header (the student's example of "too much going on": a huge "Your lab
+  book" plus a mixed Ink/muted "Recipes · 2 · Ready to cook…" line). The h1 is
+  now the tab's name (4xl/5xl) with the start button beside it. Removed the
+  count/description line and the `blurb` text. Verify ✓.
