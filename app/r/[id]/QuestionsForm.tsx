@@ -55,7 +55,7 @@ export function QuestionsForm({
     <form id="questions-form" action={action} className="space-y-5">
       <p className="text-[15px] text-ls-muted" aria-live="polite">
         {questions.length === 0
-          ? "No questions this time. Their words had everything a new cook needs."
+          ? "No questions this time. The kitchen notes had everything a new cook needs."
           : `${answered} of ${questions.length} answered. Leave any blank if nobody knows. It will show as “not stated”.`}
       </p>
 

@@ -77,7 +77,7 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
       )}
 
       {transcript !== undefined && (
-        <section aria-label="Original dictation">
+        <section aria-label="Kitchen notes">
           <Transcript text={transcript} cookName={cookName} editedAt={editedAt} />
         </section>
       )}

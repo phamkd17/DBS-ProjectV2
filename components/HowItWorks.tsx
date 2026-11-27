@@ -3,7 +3,7 @@
 
 const STEPS = [
   { tab: "Ideas", line: "Save what inspires you", Icon: BulbIcon },
-  { tab: "Development", line: "Type or dictate it. The AI asks what's missing", Icon: MicIcon },
+  { tab: "Development", line: "Dictate or paste kitchen notes. The AI asks what's missing", Icon: MicIcon },
   { tab: "Recipes", line: "Cook it, keep it, or send it", Icon: BookIcon },
 ];
 

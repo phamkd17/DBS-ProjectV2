@@ -36,10 +36,10 @@ function friendlyModelError(err: unknown): string {
   if (err instanceof RateLimitError) return err.message;
   if (err instanceof ModelError) {
     console.error("[model]", err.message, err.detail ?? "");
-    return "The recipe helper couldn't finish. Your words are saved. Try again in a minute.";
+    return "The recipe helper couldn't finish. Your notes are saved. Try again in a minute.";
   }
   console.error("[unexpected]", err);
-  return "Something went wrong. Your words are saved. Try again.";
+  return "Something went wrong. Your notes are saved. Try again.";
 }
 
 // ---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ export async function createDictation(_prev: ActionState, formData: FormData): P
   const values = { transcript, dish_name: dish_name ?? "", cook_name: cook_name ?? "" };
 
   if (!transcript.trim()) {
-    return { values, fieldErrors: { transcript: "Type, paste, or dictate the cook's words here first." } };
+    return { values, fieldErrors: { transcript: "Dictate or paste the kitchen notes here first." } };
   }
   if (transcript.length > MAX_TRANSCRIPT) {
     return {
@@ -73,7 +73,7 @@ export async function createDictation(_prev: ActionState, formData: FormData): P
 
   if (error || !data) {
     console.error("[createDictation]", error);
-    return { values, error: "Couldn't save just now. Your words are still here. Try again." };
+    return { values, error: "Couldn't save just now. Your notes are still here. Try again." };
   }
   revalidatePath("/");
   redirect(`/d/${data.id}`);
@@ -106,7 +106,7 @@ export async function updateDictation(dictationId: string, _prev: ActionState, f
     if (draft) {
       return {
         values,
-        fieldErrors: { transcript: "The AI questions still need these words. Finish or discard the questions first." },
+        fieldErrors: { transcript: "The AI questions still need these notes. Finish or discard the questions first." },
       };
     }
   }
@@ -136,7 +136,7 @@ export async function createRecipe(dictationId: string, _prev: ActionState): Pro
     .eq("id", dictationId)
     .single<DictationRow>();
   if (!dictation) return { error: "We couldn't find that dictation in your lab book." };
-  if (!dictation.transcript) return { error: "Add the cook's words first. The AI makes the recipe from them." };
+  if (!dictation.transcript) return { error: "Add kitchen notes first. The AI makes the recipe from them." };
   // The AI step only runs from Development (the UI hides it elsewhere; this enforces it).
   if (dictation.stage !== "development") {
     return { error: "Move this to Development first, then create the recipe." };

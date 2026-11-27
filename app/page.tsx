@@ -25,7 +25,7 @@ const TABS = {
   },
   development: {
     label: "Development",
-    blurb: "Add the cook's words and make the recipe.",
+    blurb: "Add kitchen notes and make the recipe.",
     empty: "Nothing in development yet.",
   },
   finished: {
@@ -78,7 +78,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <h1 className="font-ls-serif text-5xl leading-none">Your lab book</h1>
         {/* One start button per tab, for what you do there (student, Nov 20). */}
         {tab === "ideas" ? null : tab === "development" ? (
-          <LinkButton href="/new">+ Cook&apos;s words</LinkButton>
+          <LinkButton href="/new">+ Kitchen notes</LinkButton>
         ) : (
           <LinkButton href="/recipes/new">+ New recipe</LinkButton>
         )}
@@ -171,7 +171,7 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: s
     : d.stage === "development"
       ? d.transcript
         ? "Create recipe"
-        : "Add the cook's words"
+        : "Add kitchen notes"
       : null;
   const preview = d.notes || d.transcript;
   return (

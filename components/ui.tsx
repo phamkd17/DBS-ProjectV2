@@ -139,9 +139,19 @@ export function Spinner() {
 }
 
 // ---------------------------------------------------------------------------
-// Her words
+// Kitchen notes (the rough instructions the AI turns into a recipe; first
+// called "the cook's words"). Renamed by the student, Nov 27.
 // ---------------------------------------------------------------------------
-/** Her words, exactly as saved. Never edited. */
+/** The tip shown wherever kitchen notes are added. Draft wording: for the student to review. */
+export function KitchenNotesTip({ id }: { id?: string }) {
+  return (
+    <p id={id} className="border-l-2 border-ls-rule pl-3 text-[15px] text-ls-muted">
+      <span className="font-medium text-ls-ink">Tip:</span> include amounts (2 cups flour, 1 tsp salt) and as much detail as
+      you can: times, temperatures, what it should look like. The more detail, the better the recipe.
+    </p>
+  );
+}
+/** The kitchen notes, exactly as saved. */
 export function Transcript({
   text,
   cookName,
@@ -161,7 +171,7 @@ export function Transcript({
         <span className="flex items-center gap-3">
           <SourceBadge source="cook" cookName={cookName} />
           <span className="text-[15px]">
-            {editedAt ? `Their words · edited ${formatDate(editedAt)}` : "Their words, exactly as said"}
+            {editedAt ? `Kitchen notes · edited ${formatDate(editedAt)}` : "Kitchen notes, exactly as written"}
           </span>
         </span>
         <span aria-hidden className="text-sm text-ls-muted transition-transform group-open:rotate-180">

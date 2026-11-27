@@ -17,7 +17,7 @@ export function StartDeveloping({ dictationId, primary = true }: { dictationId: 
       <h2 id="start-dev" className="font-ls-serif text-3xl leading-tight">
         Ready to develop it?
       </h2>
-      <p className="text-[15px] text-ls-muted">Add the cook&apos;s words there, then make the recipe.</p>
+      <p className="text-[15px] text-ls-muted">Add kitchen notes there, then make the recipe.</p>
       {/* Secondary right after saving, so "Add another idea" stays the one primary action. */}
       <Button
         variant={primary ? "primary" : "secondary"}

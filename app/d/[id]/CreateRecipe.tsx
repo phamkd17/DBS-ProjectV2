@@ -20,7 +20,7 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
     return (
       <Working
         messages={[
-          "Reading their words…",
+          "Reading the kitchen notes…",
           "Writing a first draft…",
           "Looking for anything a new cook couldn't figure out…",
           "Almost done…",
@@ -46,7 +46,7 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
           onChange={(e) => setReady(e.target.checked)}
           className="size-5 shrink-0 cursor-pointer accent-ls-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ls-ink"
         />
-        Their words are complete. I&apos;m ready.
+        The kitchen notes are complete. I&apos;m ready.
       </label>
 
       {state.error && <ErrorNote>{state.error}</ErrorNote>}

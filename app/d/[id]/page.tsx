@@ -79,7 +79,7 @@ export default async function DictationPage({ params, searchParams }: PageProps<
         <TagPicker dictationId={d.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
       )}
 
-      {/* Cook · Their words: added only in Development (shown anywhere once they exist). */}
+      {/* Kitchen notes: added only in Development (shown anywhere once they exist). */}
       {d.stage === "development" || d.transcript ? (
         <DictationEditor dictation={d} open addIsPrimary={d.stage === "development"}>
           {d.stage === "development" ? (

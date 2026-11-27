@@ -11,7 +11,7 @@ export function SaveCopy({ token, signedIn }: { token: string; signedIn: boolean
     <form action={action} className="space-y-4 border border-ls-ink bg-ls-surface p-5">
       <p className="max-w-prose text-[15px] leading-relaxed text-ls-muted">
         {signedIn
-          ? "Save your own copy. It keeps their words and every label, and you can send it on."
+          ? "Save your own copy. It keeps the kitchen notes and every label, and you can send it on."
           : "Sign in (or sign up, it's free) to save your own copy to a lab book."}
       </p>
       {state.error && <ErrorNote>{state.error}</ErrorNote>}

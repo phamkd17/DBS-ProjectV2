@@ -251,9 +251,9 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.waitForURL((u) => u.pathname === "/");
   await page.goto("/?tab=ideas");
   await expect(page.locator("main").getByRole("link", { name: "+ New idea" })).toHaveCount(0); // the box replaces it
-  // Development tab: "+ Cook's words".
+  // Development tab: "+ Kitchen notes".
   await page.goto("/?tab=development");
-  await expect(page.locator("main").getByRole("link", { name: "+ Cook's words" })).toBeVisible();
+  await expect(page.locator("main").getByRole("link", { name: "+ Kitchen notes" })).toBeVisible();
 
   // ---- Ideas: create, validate, move, delete ----
   // ---- Recipes tab: add a recipe by hand (same format as AI recipes, no AI) ----
@@ -300,7 +300,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(mr.getByText("whole milk")).toBeVisible();
   await expect(mr.getByText("vanilla bean")).toBeVisible();
   await expect(mr.getByRole("button", { name: "Why step 1 works" })).toBeVisible(); // same format as AI recipes
-  await expect(mr.getByText("Their words")).toHaveCount(0); // no cook's-words section on hand-typed recipes
+  await expect(mr.getByText(/Kitchen notes/)).toHaveCount(0); // no kitchen-notes section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
 
   // ---- Tags (Recipes tab): type to add, several per recipe, filter, delete (the recipe stays) ----
@@ -413,8 +413,8 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // In Ideas there's no cook's-words box, only "Move to Development".
   const ideaView = page.locator("main").filter({ visible: true });
   await expect(ideaView.getByRole("heading", { name: "Ready to develop it?" })).toBeVisible();
-  await expect(ideaView.getByText(/No cook's words yet/)).toHaveCount(0);
-  await expect(ideaView.getByRole("button", { name: "Add the cook's words" })).toHaveCount(0);
+  await expect(ideaView.getByText(/Nothing yet\. Dictate or paste rough instructions/)).toHaveCount(0);
+  await expect(ideaView.getByRole("button", { name: "Add kitchen notes" })).toHaveCount(0);
 
   // Edit in place: same page, no navigation.
   // Next keeps hidden copies of earlier pages (e.g. the New idea form), so act on the visible <main>.
@@ -446,22 +446,22 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(page.getByRole("listitem").filter({ has: page.getByText(`${IDEA} (renamed)`, { exact: true }), visible: true })).toBeVisible();
   await check(page, "home-development-moved-idea");
 
-  // In Development, the idea keeps its notes and offers "Add the cook's words".
+  // In Development, the idea keeps its notes and offers "Add kitchen notes".
   await page.goto(ideaUrl);
   await expect(view.getByText(/Dry at 200°F/)).toBeVisible(); // notes kept after the move
-  await expect(view.getByText(/No cook's words yet/)).toBeVisible();
+  await expect(view.getByText(/Nothing yet\. Dictate or paste rough instructions/)).toBeVisible();
   await expect(view.getByRole("button", { name: "Create recipe with AI" })).toHaveCount(0);
   await check(page, "idea-in-development-no-words", { keyboard: true });
-  await view.getByRole("button", { name: "Add the cook's words" }).click();
-  await view.getByLabel("The cook's words", { exact: true }).fill("You slice the onions thin and cook them low for an hour until deep brown, then dry them in the oven.");
-  await view.getByLabel(/Whose words/).fill("Auntie");
+  await view.getByRole("button", { name: "Add kitchen notes" }).click();
+  await view.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill("You slice the onions thin and cook them low for an hour until deep brown, then dry them in the oven.");
+  await view.getByLabel(/Whose recipe/).fill("Auntie");
   await view.getByRole("button", { name: "Save changes" }).click();
-  await expect(view.getByText("Their words, exactly as said")).toBeVisible();
+  await expect(view.getByText("Kitchen notes, exactly as written")).toBeVisible();
   await expect(view.getByRole("heading", { name: "Ready to make it a recipe?" })).toBeVisible(); // AI step now offered
   // Delete their words: back to "No cook's words yet", notes stay, no AI step.
   page.once("dialog", (d) => d.accept());
-  await view.getByRole("button", { name: "Delete their words" }).click();
-  await expect(view.getByText(/No cook's words yet/)).toBeVisible();
+  await view.getByRole("button", { name: "Delete kitchen notes" }).click();
+  await expect(view.getByText(/Nothing yet\. Dictate or paste rough instructions/)).toBeVisible();
   await expect(view.getByRole("button", { name: "Create recipe with AI" })).toHaveCount(0);
   await expect(view.getByText(/Dry at 200°F/)).toBeVisible(); // idea notes stay
   await check(page, "words-deleted");
@@ -508,16 +508,16 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
 
   // ---- Capture ----
   await page.goto("/?tab=development");
-  await page.locator("main").getByRole("link", { name: "+ Cook's words" }).click();
+  await page.locator("main").getByRole("link", { name: "+ Kitchen notes" }).click();
   await page.waitForURL(/\/new$/);
-  await page.getByRole("button", { name: /Save their words/ }).click();
-  await expect(page.getByText(/Type, paste, or dictate/)).toBeVisible();
+  await page.getByRole("button", { name: /Save kitchen notes/ }).click();
+  await expect(page.getByText(/Dictate or paste the kitchen notes here first/)).toBeVisible();
   await check(page, "new-empty-error", { keyboard: true });
 
-  await page.getByLabel("The cook's words").fill(YOGURT);
+  await page.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill(YOGURT);
   await page.getByLabel(/Dish name/).fill(DISH);
-  await page.getByLabel(/Whose words/).fill("Grandma");
-  await page.getByRole("button", { name: /Save their words/ }).click();
+  await page.getByLabel(/Whose recipe/).fill("Grandma");
+  await page.getByRole("button", { name: /Save kitchen notes/ }).click();
   await page.waitForURL(/\/d\//);
   // A new dictation starts in Development (adding the cook's words is Development work).
   // Wait for the real page, not the loading skeleton.
@@ -525,7 +525,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(view.getByRole("link", { name: "Development" }).first()).toBeVisible(); // breadcrumb
   // Idea notes and the cook's words are separate sections.
   await expect(view.getByRole("heading", { name: "Idea notes" })).toBeVisible();
-  await expect(view.getByText("Their words, exactly as said")).toBeVisible();
+  await expect(view.getByText("Kitchen notes, exactly as written")).toBeVisible();
   await check(page, "dictation", { keyboard: true });
 
   await page.goto("/?tab=development");
@@ -539,7 +539,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // The AI step stays off until the user confirms they're ready.
   const createBtn = view.getByRole("button", { name: "Create recipe with AI" });
   await expect(createBtn).toBeDisabled();
-  await page.getByLabel(/Their words are complete/).check();
+  await page.getByLabel(/kitchen notes are complete/).check();
   await expect(createBtn).toBeEnabled();
   await check(page, "dictation-ready-to-create", { keyboard: true });
   await createBtn.click();
@@ -569,16 +569,16 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // Create it again (the dev cache answers, no Gemini call).
   await page.goBack();
   await page.waitForURL(/\/d\//);
-  await page.getByLabel(/Their words are complete/).check();
+  await page.getByLabel(/kitchen notes are complete/).check();
   await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Create recipe with AI" }).click();
   await waitForAi(page, () => page.waitForURL(/\/r\//, { timeout: 4 * 60_000 }));
   recipeUrl = page.url();
   await expect(page.getByRole("heading", { name: /questions/i })).toBeVisible();
   const qp = page.locator("main").filter({ visible: true });
-  await qp.getByRole("button", { name: "Edit their words" }).click();
-  await qp.getByLabel("The cook's words", { exact: true }).fill("");
+  await qp.getByRole("button", { name: "Edit kitchen notes" }).click();
+  await qp.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill("");
   await qp.getByRole("button", { name: "Save changes" }).click();
-  await expect(qp.getByText(/AI questions still need these words/)).toBeVisible();
+  await expect(qp.getByText(/AI questions still need these notes/)).toBeVisible();
   await qp.getByRole("button", { name: "Cancel" }).click();
 
   // ---- Answer: one suggestion, one typed, rest blank ----
@@ -670,19 +670,19 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
 
   // ---- Edit their words after the recipe exists (no AI call) ----
   await page.goto(recipeUrl);
-  await view.getByRole("button", { name: "Edit their words" }).click();
-  await view.getByLabel("The cook's words").fill(`${YOGURT} oh and let the milk cool down first`);
+  await view.getByRole("button", { name: "Edit kitchen notes" }).click();
+  await view.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill(`${YOGURT} oh and let the milk cool down first`);
   await check(page, "recipe-words-edit-in-place", { keyboard: true });
   await view.getByRole("button", { name: "Save changes" }).click();
   expect(new URL(page.url()).pathname).toBe(new URL(recipeUrl).pathname);
   await expect(view.getByText(/after this recipe was made/)).toBeVisible();
-  await expect(view.getByText(/Their words · edited/)).toBeVisible();
+  await expect(view.getByText(/Kitchen notes · edited/)).toBeVisible();
   await expect(view.getByText("See the original words")).toHaveCount(0); // no original versions are kept
   await check(page, "recipe-after-edit");
-  await view.getByRole("button", { name: "Edit their words" }).click();
-  await view.getByLabel("The cook's words", { exact: true }).fill("");
+  await view.getByRole("button", { name: "Edit kitchen notes" }).click();
+  await view.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill("");
   await view.getByRole("button", { name: "Save changes" }).click();
-  await expect(view.getByText(/No cook's words yet/)).toBeVisible(); // empty save = deleted
+  await expect(view.getByText(/Nothing yet\. Dictate or paste rough instructions/)).toBeVisible(); // empty save = deleted
   await expect(view.getByRole("heading", { name: "Ingredients" })).toBeVisible(); // the recipe stays
 
   await page.goto("/?tab=finished");

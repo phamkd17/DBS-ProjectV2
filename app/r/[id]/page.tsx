@@ -46,8 +46,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
           </p>
           <h1 className="font-ls-serif text-5xl leading-none">A few questions first</h1>
           <p className="max-w-prose text-[17px] leading-relaxed text-ls-muted">
-            These are things a new cook couldn&apos;t figure out from {dictation.cook_name ? `${dictation.cook_name}'s` : "the"}{" "}
-            words. Answer what you know.
+            These are things a new cook couldn&apos;t figure out from the kitchen notes. Answer what you know.
           </p>
           {/* Leave the questions: keep answers for later, or throw the AI draft away. */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
@@ -63,7 +62,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
             <form action={discardDraft.bind(null, recipe.id)}>
               <ConfirmSubmit
                 variant="danger"
-                message="Discard these questions and the AI draft? Your answers will be lost. You can edit the cook's words and create the recipe again."
+                message="Discard these questions and the AI draft? Your answers will be lost. You can edit the kitchen notes and create the recipe again."
               >
                 Discard questions
               </ConfirmSubmit>
@@ -103,7 +102,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       {dictation.edited_at && dictation.edited_at > recipe.updated_at && (
         <p role="note" className="border-l-2 border-ls-ink bg-ls-surface px-4 py-3 text-[15px]">
-          Their words were edited on {formatDate(dictation.edited_at)}, after this recipe was made, so the recipe may
+          The kitchen notes were edited on {formatDate(dictation.edited_at)}, after this recipe was made, so the recipe may
           not match them anymore.
         </p>
       )}
@@ -118,9 +117,9 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
         <TagPicker dictationId={dictation.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
       )}
 
-      {/* Hand-typed recipes (model "manual") have no cook's words to show or add. */}
+      {/* Hand-typed recipes (model "manual") have no kitchen notes to show or add. */}
       {(recipe.model !== "manual" || dictation.transcript) && (
-        <section aria-label="Original dictation" className="space-y-3">
+        <section aria-label="Kitchen notes" className="space-y-3">
           <DictationEditor dictation={dictation} />
         </section>
       )}
@@ -159,7 +158,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
       <form action={deleteDictation.bind(null, dictation.id)} className="border-t border-ls-border pt-4">
         <ConfirmSubmit
           variant="danger"
-          message="Delete this recipe and the words it came from? Links you've sent will stop working. This can't be undone."
+          message="Delete this recipe and the kitchen notes it came from? Links you've sent will stop working. This can't be undone."
         >
           Delete this recipe
         </ConfirmSubmit>
