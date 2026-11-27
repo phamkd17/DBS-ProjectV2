@@ -134,7 +134,7 @@ export function StepExtras({
           {cookWhy.map((w, j) => (
             <div key={`c${j}`} className="space-y-0.5">
               <p className="text-[13px] font-medium text-ls-muted">{who}&apos;s reason</p>
-              <q className="font-ls-serif text-lg italic">{w.quote}</q>
+              <q className="text-[17px] italic">{w.quote}</q>
             </div>
           ))}
           {otherWhy.map((w, j) => (

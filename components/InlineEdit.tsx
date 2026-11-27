@@ -164,6 +164,10 @@ export function EditableNotes({
         <h2 id={`notes-${id}`} className={eyebrow}>
           Inspiration
         </h2>
+        {/* Empty: one line, not a heading plus a sentence (compact, Nov 27). */}
+        {!editing && !note && !link && (
+          <p className="min-w-0 flex-1 truncate text-[15px] text-ls-muted">Nothing yet</p>
+        )}
         {!editing && <PencilButton ref={pencil} label="Edit inspiration" onClick={() => setEditing(true)} />}
       </div>
 
@@ -223,7 +227,7 @@ export function EditableNotes({
           {note ? (
             <p className="max-w-prose whitespace-pre-wrap text-[17px] leading-relaxed">{note}</p>
           ) : (
-            <p className="text-[15px] text-ls-muted">Nothing yet. Tap the pencil to note what inspired it.</p>
+            null
           )}
           {link && (
             <p className="text-[15px]">

@@ -477,7 +477,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await view.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill("You slice the onions thin and cook them low for an hour until deep brown, then dry them in the oven.");
   await view.getByLabel(/Whose recipe/).fill("Auntie");
   await view.getByRole("button", { name: "Save changes" }).click();
-  await expect(view.getByText("Kitchen notes, exactly as written")).toBeVisible();
+  await expect(view.getByText("Kitchen notes", { exact: true })).toBeVisible();
   await expect(view.getByRole("heading", { name: "Ready to make it a recipe?" })).toBeVisible(); // AI step now offered
   // Delete their words: back to "No cook's words yet", notes stay, no AI step.
   page.once("dialog", (d) => d.accept());
@@ -546,7 +546,11 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(view.getByRole("link", { name: "Development" }).first()).toBeVisible(); // breadcrumb
   // Inspiration and the kitchen notes are separate sections.
   await expect(view.getByRole("heading", { name: "Inspiration" })).toBeVisible();
-  await expect(view.getByText("Kitchen notes, exactly as written")).toBeVisible();
+  await expect(view.getByText("Kitchen notes", { exact: true })).toBeVisible();
+  // Long kitchen notes show a few lines and "Show all" (compact).
+  await view.getByRole("button", { name: "Show all" }).click();
+  await expect(view.getByRole("button", { name: "Show less" })).toHaveAttribute("aria-expanded", "true");
+  await view.getByRole("button", { name: "Show less" }).click();
   await check(page, "dictation", { keyboard: true });
 
   await page.goto("/?tab=development");

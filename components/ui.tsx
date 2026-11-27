@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import type { Source } from "@/lib/ai/schema";
+import { ClampText } from "./ClampText";
 
 // Line & Stone building blocks (from Assignment 2's design system).
 
@@ -171,16 +172,16 @@ export function Transcript({
         <span className="flex items-center gap-3">
           <SourceBadge source="cook" cookName={cookName} />
           <span className="text-[15px]">
-            {editedAt ? `Kitchen notes · edited ${formatDate(editedAt)}` : "Kitchen notes, exactly as written"}
+            {editedAt ? `Kitchen notes · edited ${formatDate(editedAt)}` : "Kitchen notes"}
           </span>
         </span>
         <span aria-hidden className="text-sm text-ls-muted transition-transform group-open:rotate-180">
           ▾
         </span>
       </summary>
-      <p className="whitespace-pre-wrap border-t border-ls-border px-4 py-4 font-ls-serif text-lg leading-relaxed">
-        {text}
-      </p>
+      <div className="border-t border-ls-border px-4 pt-3 pb-1">
+        <ClampText text={text} className="text-[17px] leading-relaxed" />
+      </div>
     </details>
   );
 }

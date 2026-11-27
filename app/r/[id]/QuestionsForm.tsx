@@ -69,7 +69,7 @@ export function QuestionsForm({
                 {String(i + 1).padStart(2, "0")} · {KIND_LABEL[q.kind]}
               </p>
               {q.quote && (
-                <blockquote className="border-l-2 border-src-cook-ink bg-src-cook px-4 py-2 font-ls-serif text-lg italic text-src-cook-ink">
+                <blockquote className="border-l-2 border-src-cook-ink bg-src-cook px-4 py-2 text-[17px] italic text-src-cook-ink">
                   “{q.quote}”
                 </blockquote>
               )}

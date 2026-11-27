@@ -54,9 +54,23 @@ export function EntryPhotos({
 
   return (
     <section aria-labelledby={`photos-${dictationId}`} aria-busy={adding || !!removing} className="space-y-3">
-      <h2 id={`photos-${dictationId}`} className={eyebrow}>
-        Photos
-      </h2>
+      {/* No photos yet: the heading and "Add a photo" share one line (compact, Nov 27). */}
+      <div className="flex items-center justify-between gap-3">
+        <h2 id={`photos-${dictationId}`} className={eyebrow}>
+          Photos
+        </h2>
+        {photos.length === 0 && (
+          <button
+            type="button"
+            onClick={() => fileInput.current?.click()}
+            disabled={adding}
+            className={`-my-2 inline-flex min-h-11 cursor-pointer items-center gap-2 px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] disabled:cursor-wait ${textLink}`}
+          >
+            {adding ? <Spinner /> : <CameraIcon className="size-5" />}
+            {adding ? "Adding photo…" : "Add a photo"}
+          </button>
+        )}
+      </div>
       {photos.length > 0 && (
         <ul className="flex flex-wrap items-start gap-3">
           {photos.map((p, i) => (
@@ -99,17 +113,7 @@ export function EntryPhotos({
         </ul>
       )}
       <input ref={fileInput} type="file" accept="image/*" hidden aria-label="Photo" onChange={(e) => choose(e.target.files?.[0])} />
-      {photos.length === 0 ? (
-        <button
-          type="button"
-          onClick={() => fileInput.current?.click()}
-          disabled={adding}
-          className={`inline-flex min-h-11 cursor-pointer items-center gap-2 px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] disabled:cursor-wait ${textLink}`}
-        >
-          {adding ? <Spinner /> : <CameraIcon className="size-5" />}
-          {adding ? "Adding photo…" : "Add a photo"}
-        </button>
-      ) : photos.length >= max ? (
+      {photos.length >= max ? (
         <p className="text-[15px] text-ls-muted">That&apos;s the most photos for one idea ({max}).</p>
       ) : null}
       {error && (

@@ -57,7 +57,7 @@ export default async function DictationPage({ params, searchParams }: PageProps<
               {STAGE_LABEL[d.stage]}
             </Link>
             {" · "}
-            {d.cook_name ? `${d.cook_name} · ` : ""}Saved {formatDate(d.created_at)}
+            {d.cook_name ? `${d.cook_name} · ` : ""}{formatDate(d.created_at)}
           </p>
           {/* Issue #3: another idea is always one tap away. */}
           {d.stage === "ideas" && !justSaved && (
