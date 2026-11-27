@@ -206,13 +206,22 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(quickForm.getByRole("img", { name: "The photo you chose" })).toHaveCount(0); // ready for the next one
   const ideasList = page.locator("main").filter({ visible: true }).locator("ul").first();
   const photoCard = ideasList.getByRole("link", { name: /Photo idea/ }).first(); // newest first
-  await expectLoaded(photoCard.locator("img")); // thumbnail
+  const photoThumb = ideasList.getByRole("button", { name: "Zoom in on the photo of Photo idea" }).first();
+  await expectLoaded(photoThumb.locator("img")); // thumbnail
+  // Tapping the thumbnail zooms in (it doesn't open the item).
+  const listUrl = page.url();
+  await photoThumb.click();
+  await expect(page.getByRole("dialog", { name: "Photo 1 of 1" })).toBeVisible();
+  await expectLoaded(page.getByRole("dialog").getByRole("img", { name: "Photo 1, full size" }));
+  expect(page.url()).toBe(listUrl);
+  await page.keyboard.press("Escape");
+  await expect(photoThumb).toBeFocused();
   await quick.fill(`${IDEA} (photo)`);
   await quickFile.setInputFiles("verify/fixtures/onions.jpg");
   await expect(quickForm.getByRole("img", { name: "The photo you chose" })).toBeVisible();
   await quick.press("Enter"); // text + photo
   await expect(quickForm.getByText(`Added “${IDEA} (photo)”`, { exact: false })).toBeVisible();
-  await expectLoaded(ideasList.getByRole("link", { name: /\(photo\)/ }).first().locator("img"));
+  await expectLoaded(ideasList.getByRole("button", { name: /Zoom in on the photo of .*\(photo\)/ }).first().locator("img"));
   await check(page, "ideas-with-photos");
   // The photo-only idea: open it, see the photo, add one more, delete one, then delete the idea (and its files).
   await photoCard.click();

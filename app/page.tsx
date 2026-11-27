@@ -7,6 +7,7 @@ import { Button, chipClass, ErrorNote, eyebrow, focusRing, LinkButton, textLink 
 import { QuickAddIdea } from "@/components/QuickAddIdea";
 import { HowItWorks } from "@/components/HowItWorks";
 import { photosFor } from "@/lib/photos";
+import { ZoomThumb } from "@/components/PhotoViewer";
 import type { DictationRow, RecipeStatus, TagRow } from "@/lib/types";
 
 type Row = DictationRow & {
@@ -67,9 +68,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const tag = tab === "finished" ? tags.find((t) => t.id === tagParam) : undefined;
   const items = tag ? byTab[tab].filter((d) => d.entry_sections.some((l) => l.section_id === tag.id)) : byTab[tab];
   const tagNames = new Map(tags.map((t) => [t.id, t.name]));
-  // First photo of each item, as a thumbnail.
-  const thumbs = new Map<string, string>();
-  for (const p of await photosFor(supabase, items.map((d) => d.id))) if (!thumbs.has(p.dictation_id)) thumbs.set(p.dictation_id, p.url);
+  // Each item's photos: the first is the thumbnail; tapping it zooms in on all of them.
+  const thumbs = new Map<string, { url: string }[]>();
+  for (const p of await photosFor(supabase, items.map((d) => d.id))) thumbs.set(p.dictation_id, [...(thumbs.get(p.dictation_id) ?? []), { url: p.url }]);
 
   return (
     <main className="space-y-5">
@@ -159,7 +160,7 @@ function TagFilter({ tags, current }: { tags: TagRow[]; current?: string }) {
   );
 }
 
-function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: string }) {
+function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: { url: string }[] }) {
   const r = d.recipes[0];
   const title = r?.recipe?.title || d.dish_name || (d.stage === "ideas" ? (thumb ? "Photo idea" : "Untitled idea") : "Untitled");
   const href = r ? `/r/${r.id}` : `/d/${d.id}`;
@@ -177,10 +178,10 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: s
   // Compact rows (student, Nov 27): name, one meta line, one preview line.
   // "Move to" lives on each item's page, not repeated on every row.
   return (
-    <li>
+    <li className="flex items-center gap-3">
       <Link
         href={href}
-        className={`group flex items-center justify-between gap-4 px-1 py-3 transition-colors hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
+        className={`group flex min-w-0 flex-1 items-center justify-between gap-4 px-1 py-3 transition-colors hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
       >
         <div className="min-w-0 space-y-0.5">
           <p className="truncate font-ls-serif text-xl leading-tight">{title}</p>
@@ -189,16 +190,14 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: s
           {tags.length > 0 && <p className="truncate text-[15px] text-ls-ink">{tags.join(" · ")}</p>}
           {preview && <p className="truncate text-[15px] text-ls-muted">{preview}</p>}
         </div>
-        {thumb && (
-          // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private Storage
-          <img src={thumb} alt="" className="h-auto max-h-12 w-auto max-w-20 shrink-0 border border-ls-ink" />
-        )}
         {next && (
           <span className="shrink-0 text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 group-hover:decoration-ls-ink">
             {next}
           </span>
         )}
       </Link>
+      {/* Tapping the photo zooms in on it; tapping the name opens the item (student, Nov 27). */}
+      {thumb && <ZoomThumb photos={thumb} title={title} />}
     </li>
   );
 }
