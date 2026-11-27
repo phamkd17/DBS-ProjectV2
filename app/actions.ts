@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { draftRecipe, finalizeRecipe, ModelError, RateLimitError } from "@/lib/ai/pipeline";
 import type { Answer, AnswerSource } from "@/lib/ai/schema";
 import { supabaseForUser } from "@/lib/supabase/server";
+import { deletePhotos, MAX_PHOTOS_PER_ENTRY, readPhoto, savePhoto } from "@/lib/photos";
 import {
   isStage,
   STARTER_TAGS,
@@ -302,6 +303,7 @@ export async function saveSharedCopy(token: string, _prev: ActionState): Promise
 export async function deleteDictation(dictationId: string): Promise<void> {
   await requireUser();
   const supabase = await supabaseForUser();
+  await deletePhotos(supabase, { dictationId }); // the files too, not just the rows
   const { error } = await supabase.from("dictations").delete().eq("id", dictationId);
   if (error) console.error("[deleteDictation]", error);
   revalidatePath("/");
@@ -532,17 +534,52 @@ export async function updateIngredients(
 // list (student, Nov 20). Notes and a link can be added later with the pencil.
 // ---------------------------------------------------------------------------
 export async function quickAddIdea(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireUser();
+  const userId = await requireUser();
   const title = String(formData.get("title") ?? "").trim().slice(0, 120);
-  if (!title) return { fieldErrors: { title: "Type the idea first, like “Caramelized onion crunch”." } };
+  // Text, a photo, or both (student, Nov 27).
+  const file = formData.get("photo");
+  const hasPhoto = file instanceof File && file.size > 0;
+  if (!title && !hasPhoto) return { fieldErrors: { title: "Type the idea or add a photo first." } };
+  const photo = hasPhoto ? await readPhoto(file) : null;
+  if (photo && !photo.ok) return { values: { title }, fieldErrors: { photo: photo.error } };
+
   const supabase = await supabaseForUser();
-  const { error } = await supabase.from("dictations").insert({ dish_name: title });
-  if (error) {
+  const { data, error } = await supabase.from("dictations").insert({ dish_name: title || null }).select("id").single();
+  if (error || !data) {
     console.error("[quickAddIdea]", error);
     return { values: { title }, error: "Couldn't add it. Try again." };
   }
   revalidatePath("/");
-  return { saved: true, values: { added: title } };
+  const added = title || "Photo idea";
+  if (photo?.ok && !(await savePhoto(supabase, userId, data.id, photo)).ok) {
+    return { saved: true, values: { added }, error: "The idea is saved, but the photo didn't upload. Open the idea to try again." };
+  }
+  return { saved: true, values: { added } };
+}
+
+// ---------------------------------------------------------------------------
+// Photos on an entry (issue #7): add one more, or delete one.
+// ---------------------------------------------------------------------------
+export async function addPhoto(dictationId: string, formData: FormData): Promise<{ error?: string }> {
+  const userId = await requireUser();
+  const photo = await readPhoto(formData.get("photo"));
+  if (!photo.ok) return { error: photo.error };
+  const supabase = await supabaseForUser();
+  // RLS: only your own entry comes back, and the insert re-checks it.
+  const { data: entry } = await supabase.from("dictations").select("id").eq("id", dictationId).maybeSingle();
+  if (!entry) return { error: "Couldn't find this idea." };
+  const { count } = await supabase.from("entry_photos").select("id", { count: "exact", head: true }).eq("dictation_id", dictationId);
+  if ((count ?? 0) >= MAX_PHOTOS_PER_ENTRY) return { error: `Up to ${MAX_PHOTOS_PER_ENTRY} photos each. Delete one to add another.` };
+  if (!(await savePhoto(supabase, userId, dictationId, photo)).ok) return { error: "The photo didn't upload. Try again." };
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function deletePhoto(photoId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  await deletePhotos(supabase, { ids: [photoId] });
+  revalidatePath("/", "layout");
 }
 
 // ---------------------------------------------------------------------------
