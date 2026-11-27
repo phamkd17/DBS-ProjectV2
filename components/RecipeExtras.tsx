@@ -12,7 +12,7 @@ import { eyebrow, focusRing } from "./ui";
 export function SourcesScope({ children }: { children: ReactNode }) {
   const [show, setShow] = useState(false);
   return (
-    <div data-sources={show ? "shown" : "hidden"} className="group/sources space-y-10">
+    <div data-sources={show ? "shown" : "hidden"} className="group/sources space-y-2">
       <div className="flex justify-end">
         <button
           type="button"

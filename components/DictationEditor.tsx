@@ -59,14 +59,15 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
             open={open}
           />
           {/* Edit first (the common action); Delete second, so it never sits above Edit when they wrap. */}
-          <div className="flex flex-wrap justify-end gap-x-2">
-            <Button ref={editBtn} variant="quiet" onClick={() => setEditing(true)}>
-              Edit kitchen notes
+          {/* Short labels so both fit on one line; the full names are for screen readers. */}
+          <div className="flex flex-wrap justify-end gap-x-1">
+            <Button ref={editBtn} variant="quiet" aria-label="Edit kitchen notes" onClick={() => setEditing(true)}>
+              Edit
             </Button>
             {canDelete && (
               <form action={deleteWords.bind(null, d.id)}>
-                <ConfirmSubmit variant="danger" message="Delete the kitchen notes? Your inspiration and any recipe made from them stay. This can't be undone.">
-                  Delete kitchen notes
+                <ConfirmSubmit variant="danger" aria-label="Delete kitchen notes" message="Delete the kitchen notes? Your inspiration and any recipe made from them stay. This can't be undone.">
+                  Delete
                 </ConfirmSubmit>
               </form>
             )}

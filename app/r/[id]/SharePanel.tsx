@@ -11,8 +11,8 @@ export function SharePanel({ recipeId, url, title }: { recipeId: string; url: st
   const toggle = (on: boolean) => start(() => setSharing(recipeId, on));
 
   return (
-    <section aria-labelledby="send" className="space-y-4 border border-ls-ink bg-ls-surface p-5">
-      <h2 id="send" className="font-ls-serif text-3xl leading-tight">
+    <section aria-labelledby="send" className="space-y-3 border border-ls-ink bg-ls-surface p-4">
+      <h2 id="send" className="font-ls-serif text-2xl leading-tight">
         Send this recipe
       </h2>
 

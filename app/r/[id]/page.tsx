@@ -91,7 +91,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
   const shareUrl = recipe.share_token ? `${origin}/s/${recipe.share_token}` : null;
 
   return (
-    <main className="space-y-10">
+    <main className="space-y-6">
       <p className={eyebrow}>
         <Link href={`/?tab=${dictation.stage}`} className={textLink}>
           {STAGE_LABEL[dictation.stage]}
@@ -153,16 +153,18 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       <SharePanel recipeId={recipe.id} url={shareUrl} title={recipe.recipe.title} />
 
-      <MoveTo kind="dictation" id={dictation.id} current={dictation.stage} />
-
-      <form action={deleteDictation.bind(null, dictation.id)} className="border-t border-ls-border pt-4">
-        <ConfirmSubmit
-          variant="danger"
-          message="Delete this recipe and the kitchen notes it came from? Links you've sent will stop working. This can't be undone."
-        >
-          Delete this recipe
-        </ConfirmSubmit>
-      </form>
+      {/* Move to and Delete share one line at the bottom (compact, student Nov 27). */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 border-t border-ls-border pt-2">
+        <MoveTo kind="dictation" id={dictation.id} current={dictation.stage} />
+        <form action={deleteDictation.bind(null, dictation.id)} className="-mr-3">
+          <ConfirmSubmit
+            variant="danger"
+            message="Delete this recipe and the kitchen notes it came from? Links you've sent will stop working. This can't be undone."
+          >
+            Delete recipe
+          </ConfirmSubmit>
+        </form>
+      </div>
 
     </main>
   );

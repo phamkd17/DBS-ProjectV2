@@ -387,7 +387,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.goto(manualUrl);
   await expect(mr.getByRole("heading", { name: MANUAL })).toBeVisible(); // deleting a tag keeps the recipe
   page.once("dialog", (d) => d.accept());
-  await mr.getByRole("button", { name: "Delete this recipe" }).click();
+  await mr.getByRole("button", { name: "Delete recipe" }).click();
   await page.waitForURL((u) => u.pathname === "/");
   await page.goto(manualUrl);
   await expect(page.getByRole("heading", { name: "Not in your lab book" })).toBeVisible();
@@ -507,7 +507,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
 
   // Delete it (this removes the item too).
   page.once("dialog", (d) => d.accept());
-  await wr.getByRole("button", { name: "Delete this recipe" }).click();
+  await wr.getByRole("button", { name: "Delete recipe" }).click();
   await page.waitForURL((u) => u.pathname === "/");
   // Scope to <main>: Next keeps hidden copies of past pages, and its screen-reader
   // route announcer still holds the old title.
@@ -716,7 +716,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   // ---- Clean up: delete this run's recipe (exercises the confirm dialog) ----
   await page.goto(recipeUrl);
   page.once("dialog", (d) => d.accept());
-  await page.getByRole("button", { name: "Delete this recipe" }).click();
+  await page.getByRole("button", { name: "Delete recipe" }).click();
   await page.waitForURL((u) => u.pathname === "/");
   await page.goto(recipeUrl);
   await expect(page.getByRole("heading", { name: "Not in your lab book" })).toBeVisible();
