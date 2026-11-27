@@ -30,9 +30,9 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
   }
 
   return (
-    <form action={action} aria-labelledby="ai-step" className="space-y-4 border border-ls-ink bg-ls-surface p-5">
+    <form action={action} aria-labelledby="ai-step" className="space-y-3 border border-ls-ink bg-ls-surface p-4">
       <AiBadge />
-      <h2 id="ai-step" className="font-ls-serif text-3xl leading-tight">
+      <h2 id="ai-step" className="font-ls-serif text-2xl leading-tight">
         Ready to make it a recipe?
       </h2>
       <p className="max-w-prose text-[15px] leading-relaxed text-ls-muted">

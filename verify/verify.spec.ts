@@ -257,7 +257,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(photosBox.getByRole("img", { name: "Photo 2" })).toHaveCount(0);
   await expect(photosBox.getByRole("img", { name: "Photo 1" })).toBeVisible();
   page.once("dialog", (d) => d.accept());
-  await pv.getByRole("button", { name: "Delete", exact: true }).click();
+  await pv.getByRole("button", { name: "Delete idea", exact: true }).click();
   await page.waitForURL((u) => u.pathname === "/");
   // The text + photo idea: delete it too (leaves nothing behind in Storage).
   await page.goto("/?tab=ideas");
@@ -265,7 +265,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.waitForURL(/\/d\//);
   await expect(page.locator("main").filter({ visible: true }).getByRole("region", { name: "Photos" }).getByRole("img", { name: "Photo 1" })).toBeVisible();
   page.once("dialog", (d) => d.accept());
-  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete", exact: true }).click();
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete idea", exact: true }).click();
   await page.waitForURL((u) => u.pathname === "/");
   await page.goto("/?tab=ideas");
   await expect(page.locator("main").getByRole("link", { name: "+ New idea" })).toHaveCount(0); // the box replaces it
@@ -517,14 +517,14 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.locator("main").getByText(`${IDEA} (quick)`, { exact: true }).first().click();
   await page.waitForURL(/\/d\//);
   page.once("dialog", (d) => d.accept());
-  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete", exact: true }).click();
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete idea", exact: true }).click();
   await page.waitForURL((u) => u.pathname === "/");
   // Also remove the second idea from the "Save and add another" check.
   await page.goto("/?tab=ideas");
   await page.locator("main").getByText(`${IDEA} #2`, { exact: true }).first().click();
   await page.waitForURL(/\/d\//);
   page.once("dialog", (d) => d.accept());
-  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete", exact: true }).click();
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Delete idea", exact: true }).click();
   await page.waitForURL((u) => u.pathname === "/");
 
   // ---- Capture ----

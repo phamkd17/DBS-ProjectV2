@@ -73,7 +73,7 @@ export function DictationEditor({ dictation: d, open = false, addIsPrimary = fal
           </div>
         </div>
       ) : (
-        <section aria-labelledby={`words-${d.id}`} className="space-y-3 border border-dashed border-ls-border p-5">
+        <section aria-labelledby={`words-${d.id}`} className="space-y-3 border border-dashed border-ls-border p-4">
           <h2 id={`words-${d.id}`} className={eyebrow}>
             Kitchen notes
           </h2>

@@ -12,9 +12,9 @@ import { AiBadge, Button, Spinner } from "./ui";
 export function StartDeveloping({ dictationId, primary = true }: { dictationId: string; primary?: boolean }) {
   const [pending, start] = useTransition();
   return (
-    <section aria-labelledby="start-dev" className="space-y-4 border border-ls-border bg-ls-surface p-5">
+    <section aria-labelledby="start-dev" className="space-y-3 border border-ls-border bg-ls-surface p-4">
       <AiBadge>AI recipe step</AiBadge>
-      <h2 id="start-dev" className="font-ls-serif text-3xl leading-tight">
+      <h2 id="start-dev" className="font-ls-serif text-2xl leading-tight">
         Ready to develop it?
       </h2>
       <p className="text-[15px] text-ls-muted">Add kitchen notes there, then make the recipe.</p>

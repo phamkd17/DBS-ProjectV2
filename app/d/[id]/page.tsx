@@ -47,14 +47,17 @@ export default async function DictationPage({ params, searchParams }: PageProps<
       : [{ data: null }, { data: null }];
 
   return (
-    <main className="space-y-8">
+    <main className="space-y-5">
       {justSaved && <SavedBanner />}
-      <div className="space-y-3">
+      {/* Compact (student, Nov 27): the date rides on the breadcrumb line. */}
+      <div className="space-y-1">
         <div className="flex items-center justify-between gap-3">
           <p className={eyebrow}>
             <Link href={`/?tab=${d.stage}`} className={textLink}>
               {STAGE_LABEL[d.stage]}
             </Link>
+            {" · "}
+            {d.cook_name ? `${d.cook_name} · ` : ""}Saved {formatDate(d.created_at)}
           </p>
           {/* Issue #3: another idea is always one tap away. */}
           {d.stage === "ideas" && !justSaved && (
@@ -64,9 +67,6 @@ export default async function DictationPage({ params, searchParams }: PageProps<
           )}
         </div>
         <EditableTitle kind="dictation" id={d.id} title={d.dish_name ?? ""} placeholder={photos.length ? "Photo idea" : "Untitled"} />
-        <p className={eyebrow}>
-          {d.cook_name ? `${d.cook_name} · ` : ""}Saved {formatDate(d.created_at)}
-        </p>
       </div>
 
       {/* Inspiration (idea notes) stays in every stage. */}
@@ -94,13 +94,16 @@ export default async function DictationPage({ params, searchParams }: PageProps<
         <StartDeveloping dictationId={d.id} primary={!justSaved} />
       )}
 
-      <MoveTo kind="dictation" id={d.id} current={d.stage} hide={d.stage === "development" ? [] : ["development"]} />
-
-      <form action={deleteDictation.bind(null, d.id)} className="border-t border-ls-border pt-4">
-        <ConfirmSubmit variant="danger" message="Delete this, with its notes, words, and any recipe made from them? This can't be undone.">
-          Delete
-        </ConfirmSubmit>
-      </form>
+      {/* Move to and Delete share one line at the bottom. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 border-t border-ls-border pt-2">
+        <MoveTo kind="dictation" id={d.id} current={d.stage} hide={d.stage === "development" ? [] : ["development"]} />
+        <form action={deleteDictation.bind(null, d.id)} className="-mr-3">
+          {/* Named, so it isn't mistaken for a photo's Delete. */}
+          <ConfirmSubmit variant="danger" message="Delete this idea, with its inspiration, photos, kitchen notes, and any recipe made from them? This can't be undone.">
+            {d.stage === "ideas" ? "Delete idea" : "Delete"}
+          </ConfirmSubmit>
+        </form>
+      </div>
     </main>
   );
 }

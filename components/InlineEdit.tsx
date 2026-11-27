@@ -127,7 +127,7 @@ export function EditableTitle({
   }
 
   return (
-    <h1 className="font-ls-serif text-5xl leading-none">
+    <h1 className="font-ls-serif text-4xl leading-tight sm:text-5xl">
       <span className={title ? "" : "text-ls-muted"}>{title || placeholder}</span>
       <span className="ml-1 inline-block align-middle">
         <PencilButton ref={pencil} label="Edit title" onClick={() => setEditing(true)} />
@@ -159,7 +159,7 @@ export function EditableNotes({
   const err = state.fieldErrors ?? {};
 
   return (
-    <section aria-labelledby={`notes-${id}`} className="space-y-3 border-y border-ls-ink py-4">
+    <section aria-labelledby={`notes-${id}`} className="space-y-2 border-y border-ls-ink py-3">
       <div className="flex items-center justify-between gap-3">
         <h2 id={`notes-${id}`} className={eyebrow}>
           Inspiration
