@@ -5,7 +5,7 @@ import { eyebrow, focusRing } from "./ui";
 
 /**
  * Tap a photo to see it large on the same page (student, Nov 27): a native
- * <dialog>, so Escape, a tap outside, or × closes it and focus returns to the
+ * <dialog>, so a tap anywhere (except the buttons), Escape, or × closes it and focus returns to the
  * photo you tapped. Previous/Next and the arrow keys move between photos.
  */
 export function usePhotoViewer(photos: { url: string }[]) {
@@ -21,7 +21,8 @@ export function usePhotoViewer(photos: { url: string }[]) {
         ref={ref}
         aria-label={`Photo ${shown + 1} of ${photos.length}`}
         onClick={(e) => {
-          if (e.target === e.currentTarget) ref.current?.close(); // tap outside the photo
+          // Tap anywhere to close, on the photo or outside it (student, Nov 27); the buttons still work.
+          if (!(e.target as HTMLElement).closest("button")) ref.current?.close();
         }}
         onKeyDown={(e) => {
           if (photos.length > 1 && e.key === "ArrowRight") step(1);

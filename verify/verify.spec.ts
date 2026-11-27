@@ -248,6 +248,10 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(photosBox.getByRole("button", { name: "Open photo 2" })).toBeFocused(); // focus comes back
+  // Tapping anywhere, even on the photo, closes it.
+  await photosBox.getByRole("button", { name: "Open photo 1" }).click();
+  await page.getByRole("dialog").getByRole("img", { name: "Photo 1, full size" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   page.once("dialog", (d) => d.accept());
   await photosBox.getByRole("button", { name: "Delete photo 2" }).click();
   await expect(photosBox.getByRole("img", { name: "Photo 2" })).toHaveCount(0);
