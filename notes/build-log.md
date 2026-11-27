@@ -866,3 +866,12 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Photo viewer: a tap anywhere closes it, even on the photo (the student's
   request). Taps on the Previous, Next, and × buttons are excluded with
   `closest("button")`. Verify ✓ (clicking the photo closes it).
+- Compact idea page (the student's request). Section gap 32 → 20px, title
+  5xl → 4xl on phones, and the "Saved …" date moved onto the breadcrumb line.
+  Inspiration padding is tighter. Photos are max 112px tall (144px wider) with
+  a dashed camera tile to add more. The text "Add a photo" link only shows
+  when there are none. The AI panels are p-4 with 2xl headings, and Move to +
+  Delete share one footer line. At 390px: 1205 → 857px (idea with photos),
+  1231 → 962px (Development, no notes). With a photo's Delete just above, the
+  footer button now says "Delete idea" so the two aren't confused. Verify ✓,
+  axe clean.
