@@ -778,3 +778,29 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   RLS), linking to the recipe (or the entry if it has none). "Edit tags" links
   are now "All tags". Verify ✓ (the tag's region lists the recipe; an unused
   tag says "No recipes yet").
+
+## Nov 27 — Photos on ideas (issue #7, first part)
+- Student's request: add an idea as text, a photo, or both.
+- Storage: a **private** `photos` bucket (2MB cap, JPEG/PNG/WebP only). Files
+  live at `<user id>/<entry id>/<random>`; Storage RLS only allows your own
+  folder (read, add, delete; no update). `entry_photos` records them; its insert
+  policy checks the entry is yours and the path starts with your folder for
+  that entry (`starts_with`, not LIKE, because Clerk ids contain `_`). Tested
+  in the DB (rolled back): own folder ok; another user's folder, entry, or a
+  `_`-wildcard path blocked; another user sees 0 files; anon sees nothing.
+- Photos are shown with **1-hour signed URLs** made on the server, never public
+  links. Not shared through recipe links.
+- Phone photos are 3–12MB, but server actions are capped at 1MB. The browser
+  shrinks each photo (longest side 1600px, JPEG under 900KB, keeps rotation)
+  before upload. The server checks the real file bytes (magic numbers), not
+  the name. "Not a photo" gives a friendly error. HEIC on desktop Chrome can't
+  be decoded, so it gets the same message.
+- Deleting a photo or an entry deletes the files too (`deletePhotos`), so
+  nothing is left in Storage. Checked after verify: 0 files, 0 rows left.
+- Quick-add: the camera button opens the picker (camera on phones), shows a
+  preview with "Remove photo", and Enter or Add saves. A photo-only idea is
+  called "Photo idea" everywhere. Up to 6 photos per idea.
+- Verify ✓ (axe clean). Screenshot review: photos looked blank because the
+  shot was taken before they loaded, so verify now waits until each image has
+  really loaded (naturalWidth > 0). That also proves the signed URLs work.
+  Cleaned up old verify test ideas.
