@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { SignUpButton } from "@clerk/nextjs";
 import { supabaseForUser } from "@/lib/supabase/server";
-import { Button, chipClass, ErrorNote, eyebrow, focusRing, formatDate, LinkButton, textLink } from "@/components/ui";
+import { Button, chipClass, ErrorNote, eyebrow, focusRing, LinkButton, textLink } from "@/components/ui";
 import { QuickAddIdea } from "@/components/QuickAddIdea";
 import { HowItWorks } from "@/components/HowItWorks";
 import { photosFor } from "@/lib/photos";
@@ -173,6 +173,7 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: s
         : "Add kitchen notes"
       : null;
   const preview = d.notes || d.transcript;
+  const meta = [d.cook_name, d.copied_from && "from a link", d.link && "has a link"].filter(Boolean);
   // Compact rows (student, Nov 27): name, one meta line, one preview line.
   // "Move to" lives on each item's page, not repeated on every row.
   return (
@@ -183,12 +184,8 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: s
       >
         <div className="min-w-0 space-y-0.5">
           <p className="truncate font-ls-serif text-xl leading-tight">{title}</p>
-          <p className={`truncate ${eyebrow}`}>
-            {d.cook_name ? `${d.cook_name} · ` : ""}
-            {formatDate(d.created_at)}
-            {d.copied_from ? " · from a link" : ""}
-            {d.link ? " · has a link" : ""}
-          </p>
+          {/* No date in the list (student, Nov 27); the item's page still shows it. */}
+          {meta.length > 0 && <p className={`truncate ${eyebrow}`}>{meta.join(" · ")}</p>}
           {tags.length > 0 && <p className="truncate text-[15px] text-ls-ink">{tags.join(" · ")}</p>}
           {preview && <p className="truncate text-[15px] text-ls-muted">{preview}</p>}
         </div>
