@@ -8,8 +8,9 @@ import { CameraIcon } from "./CameraIcon";
 import { Button, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
 /**
- * Type an idea, add a photo, or both; press Enter and it appears in the list.
- * No separate page (student, Nov 20; photos Nov 27).
+ * Type an idea, add a photo, or both, plus what inspired it, all in one step;
+ * press Enter (in the name) or Add and it appears in the list. No separate page
+ * (student, Nov 20; photos and inspiration Nov 27).
  */
 export function QuickAddIdea() {
   const form = useRef<HTMLFormElement>(null);
@@ -90,6 +91,19 @@ export function QuickAddIdea() {
           {pending ? <Spinner /> : "Add"}
         </Button>
       </div>
+
+      <label htmlFor="quick-inspiration" className="sr-only">
+        Inspiration (optional)
+      </label>
+      <textarea
+        id="quick-inspiration"
+        name="note"
+        rows={2}
+        maxLength={5000}
+        defaultValue={state.error && !state.saved ? state.values?.note : undefined}
+        placeholder="Inspiration (optional): where you had it, what you loved"
+        className={`${fieldClass} block`}
+      />
 
       {photo && (
         <div className="flex items-center gap-3 pt-1">

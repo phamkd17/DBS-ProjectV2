@@ -536,21 +536,23 @@ export async function updateIngredients(
 export async function quickAddIdea(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const userId = await requireUser();
   const title = String(formData.get("title") ?? "").trim().slice(0, 120);
+  // Inspiration in the same step (student, Nov 27: fewer taps).
+  const note = String(formData.get("note") ?? "").trim().slice(0, 5000);
   // Text, a photo, or both (student, Nov 27).
   const file = formData.get("photo");
   const hasPhoto = file instanceof File && file.size > 0;
-  if (!title && !hasPhoto) return { fieldErrors: { title: "Type the idea or add a photo first." } };
+  if (!title && !note && !hasPhoto) return { fieldErrors: { title: "Type the idea or add a photo first." } };
   const photo = hasPhoto ? await readPhoto(file) : null;
-  if (photo && !photo.ok) return { values: { title }, fieldErrors: { photo: photo.error } };
+  if (photo && !photo.ok) return { values: { title, note }, fieldErrors: { photo: photo.error } };
 
   const supabase = await supabaseForUser();
-  const { data, error } = await supabase.from("dictations").insert({ dish_name: title || null }).select("id").single();
+  const { data, error } = await supabase.from("dictations").insert({ dish_name: title || null, notes: note }).select("id").single();
   if (error || !data) {
     console.error("[quickAddIdea]", error);
-    return { values: { title }, error: "Couldn't add it. Try again." };
+    return { values: { title, note }, error: "Couldn't add it. Try again." };
   }
   revalidatePath("/");
-  const added = title || "Photo idea";
+  const added = title || (hasPhoto ? "Photo idea" : "Untitled idea");
   if (photo?.ok && !(await savePhoto(supabase, userId, data.id, photo)).ok) {
     return { saved: true, values: { added }, error: "The idea is saved, but the photo didn't upload. Open the idea to try again." };
   }

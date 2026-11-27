@@ -180,10 +180,15 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await quick.press("Enter");
   await expect(page.getByText(/Type the idea or add a photo first/)).toBeVisible();
   await quick.fill(`${IDEA} (quick)`);
+  // Inspiration in the same step (no second page, no pencil).
+  const quickInspiration = page.getByRole("textbox", { name: "Inspiration (optional)" });
+  await quickInspiration.fill("Had it at the night market. Silky, not too sweet.");
   await quick.press("Enter");
   await expect(page.getByText(`Added “${IDEA} (quick)”`, { exact: false })).toBeVisible();
   await expect(page.locator("main").getByText(`${IDEA} (quick)`, { exact: true })).toBeVisible(); // in the list
   await expect(quick).toHaveValue(""); // ready for the next one
+  await expect(quickInspiration).toHaveValue("");
+  await expect(page.locator("main").getByText("Had it at the night market. Silky, not too sweet.")).toBeVisible(); // saved with it
   await expect(quick).toBeFocused();
   await check(page, "ideas-quick-add", { keyboard: true });
 
