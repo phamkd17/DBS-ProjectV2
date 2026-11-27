@@ -54,6 +54,7 @@
 | Nov 21 | Call them **Tags** instead of sections (a recipe can have several), and add them by **typing**: Enter adds a tag, my existing tags narrow as I type, a new name makes a new tag, × removes it | Keep "sections" with tap-only chips |
 | Nov 21 | A way to **see all tags**: the Tags page ("All tags") lists every tag with its recipes under it | A Tags tab in the top bar; a "See all tags" button in a recipe's tag box |
 | Nov 27 | An idea can be **text, a photo, or both**: a camera button in the Ideas quick-add box; more photos (up to 6) can be added on the idea | |
+| Nov 27 | Tapping a photo **opens it large on the same page** (not a new tab), and thumbnails show the **whole photo, never cropped** | |
 
 ## What the app is
 

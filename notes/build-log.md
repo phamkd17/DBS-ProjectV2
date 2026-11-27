@@ -804,3 +804,11 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   shot was taken before they loaded, so verify now waits until each image has
   really loaded (naturalWidth > 0). That also proves the signed URLs work.
   Cleaned up old verify test ideas.
+- Student: zoom in on tap instead of opening a new tab, and don't crop
+  thumbnails. The viewer is a native `<dialog>` (like the "?" guide): Escape,
+  a tap outside, or × closes it, and focus returns to the thumbnail.
+  Previous/Next and the arrow keys move between photos. The photo fits the
+  screen (`object-contain`, max 100dvh minus the bars). Thumbnails changed
+  from `object-cover` to `object-contain` on Plaster. Verify adds a tall
+  portrait photo and covers open, arrows, Next, Escape, focus return, and no
+  new tab. Axe clean.
