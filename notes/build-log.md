@@ -918,3 +918,18 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   unchanged), so restoring them is a one-component change. AGENTS.md rule 4
   notes the change. Verify updated: no switch, edits saved, labels hidden.
   Axe clean.
+
+## Nov 27 — Compact Development page
+- Found in the screenshot review: after the Figtree switch, text that used
+  `font-ls-serif` for a "reading" style (the kitchen notes, quotes in Why it
+  works, the questions' blockquote) became **semibold**, because
+  `.font-ls-serif` now means heading. Those are now plain 17px (quotes keep
+  italic).
+- Kitchen notes: `ClampText` shows 6 lines plus "Show all" / "Show less"
+  (`aria-expanded`), only when the text overflows. The header is now just
+  "Kitchen notes" (was "…, exactly as written").
+- Empty Inspiration is one line ("INSPIRATION  Nothing yet  ✎"). With no
+  photos, "Add a photo" sits on the Photos heading line. The breadcrumb drops
+  "Saved" so it fits on one line.
+- At 390px: 1658 → 1226px (with long notes), and 1231 → 995px with no notes.
+  Verify ✓ (Show all/less), axe clean.

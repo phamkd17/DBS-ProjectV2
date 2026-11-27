@@ -60,7 +60,7 @@
 | Nov 27 | Add the inspiration **in the same step** as the idea: an Inspiration box is always shown under the name in the quick-add (fewer taps) | Box appears as you type; a "+ Inspiration" button |
 | Nov 27 | **Compact lists**: "Move to" is no longer repeated under every item (it stays on each item's page); rows show just the name, date, and one preview line | A ⋯ menu per row; select several, then move |
 | Nov 27 | No date on list rows; tapping a list thumbnail **zooms in on the photo** (the name still opens the item); a normal pointer, not a magnifying-glass cursor | |
-| Nov 27 | **Compact idea and recipe pages** too | |
+| Nov 27 | **Compact idea, recipe, and Development pages** too | |
 | Nov 27 | In lists, **tags go on the same line as the name**, and fewer text styles (name, small label, preview) | |
 | Nov 27 | Each tab's header is **just the tab's name** (no "Your lab book", no count or description line) | Tab name + one line; keep "Your lab book" without the line |
 | Nov 27 | **Remove "Show sources"** and every source label from the recipe page (labels are still saved with each recipe, just not shown), including the "Suggested" tag | Remove the switch but keep a small "Suggested" tag (recommended, to keep AI suggestions distinguishable) |
