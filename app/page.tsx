@@ -183,11 +183,15 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: {
         href={href}
         className={`group flex min-w-0 flex-1 items-center justify-between gap-4 px-1 py-3 transition-colors hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
       >
+        {/* Two lines, three styles (student, Nov 27): the name with its tags and cook
+            beside it in the small label style, then one line of preview. No date. */}
         <div className="min-w-0 space-y-0.5">
-          <p className="truncate font-ls-serif text-xl leading-tight">{title}</p>
-          {/* No date in the list (student, Nov 27); the item's page still shows it. */}
-          {meta.length > 0 && <p className={`truncate ${eyebrow}`}>{meta.join(" · ")}</p>}
-          {tags.length > 0 && <p className="truncate text-[15px] text-ls-ink">{tags.join(" · ")}</p>}
+          <p className="flex min-w-0 items-baseline gap-x-3">
+            <span className="truncate font-ls-serif text-xl leading-tight">{title}</span>
+            {[...tags, ...meta].length > 0 && (
+              <span className={`shrink-0 truncate ${eyebrow} max-w-[50%]`}>{[...tags, ...meta].join(" · ")}</span>
+            )}
+          </p>
           {preview && <p className="truncate text-[15px] text-ls-muted">{preview}</p>}
         </div>
         {next && (
