@@ -81,6 +81,7 @@
 | Nov 14 | Scarlet-leaning red (`#ae1f2e`) as the main action color instead of Aegean blue | Scarlet, Crimson, Garnet, Burgundy, Oxblood (`notes/design/red-swatches*.html`) |
 | Nov 15 | Separate starting cards for an idea and for the cook's words | |
 | Nov 20 | Less text and minimal scrolling: the landing page fits on one screen | |
+| Nov 27 | **One font, Figtree**, instead of Instrument Serif + Jost (the two felt like they conflicted) | Six pairings (`notes/design/font-options.html`), then eight one-font options (`font-options-2.html`); Inter and Manrope were close |
 
 ## v2 decisions
 

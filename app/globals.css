@@ -28,8 +28,10 @@
   --color-src-suggested: #e1e7f4; /* AI suggestion: Aegean tint */
   --color-src-suggested-ink: #23449a;
 
-  --font-ls-serif: var(--font-instrument-serif), Georgia, serif;
-  --font-ls-sans: var(--font-jost), system-ui, sans-serif;
+  /* One font, Figtree (student, Nov 27; was Instrument Serif + Jost). "ls-serif"
+     is kept as the heading token so headings stay one class. */
+  --font-ls-serif: var(--font-figtree), system-ui, sans-serif;
+  --font-ls-sans: var(--font-figtree), system-ui, sans-serif;
 }
 
 html {
@@ -39,6 +41,12 @@ html {
 
 body {
   font-family: var(--font-ls-sans);
+}
+
+/* Headings: the same font, in semibold, slightly tightened. */
+.font-ls-serif {
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
 @keyframes ls-progress {

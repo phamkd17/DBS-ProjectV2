@@ -117,8 +117,10 @@ From Assignment 2 (`~/Desktop/Design-Ship-Build-Assignments/Assignment2/DBS-Assi
 - Limestone page, Plaster surfaces, Ink text and lines, Slate secondary text.
 - **Scarlet `#ae1f2e` = the one primary action per screen, nothing else.**
   (Student swapped it for A2's Aegean blue on Nov 14; see `notes/design/red-swatches-2.html`.)
-- Instrument Serif for headings, Jost for body and UI. Small uppercase tracked
-  labels (`eyebrow`). Square corners, 1px hairlines, no shadows.
+- **One font: Figtree** (student, Nov 27; was Instrument Serif + Jost, which
+  felt like they conflicted; see `notes/design/font-options-2.html`). Headings
+  use `font-ls-serif` = Figtree semibold. Keep to a few sizes. Small uppercase
+  tracked labels (`eyebrow`). Square corners, 1px hairlines, no shadows.
 - Source labels have one look each: cook = ochre, food science = Cypress tint,
   suggested = blue tint, family answer = ink outline, not stated = dashed.
 - Don't introduce Tailwind default palettes (stone, sky, amber…) or rounded cards.

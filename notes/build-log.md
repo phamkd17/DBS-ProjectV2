@@ -892,3 +892,17 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   book" plus a mixed Ink/muted "Recipes · 2 · Ready to cook…" line). The h1 is
   now the tab's name (4xl/5xl) with the start button beside it. Removed the
   count/description line and the `blurb` text. Verify ✓.
+
+## Nov 27 — One font: Figtree
+- The student felt the condensed Instrument Serif and geometric Jost conflicted.
+  Previewed six pairings, then eight one-font options (static HTML in
+  `notes/design/`, screenshotted to check the fonts load). The student liked
+  Inter, then Manrope and Figtree. I recommended one font, not two similar sans
+  together, and Figtree for reading steps on a phone. The student chose it.
+- `next/font` loads Figtree only. Both tokens (`--font-ls-serif`,
+  `--font-ls-sans`) point to it, so headings keep one class. `.font-ls-serif`
+  sets semibold and -0.015em tracking. Clerk's appearance font is updated too.
+  AGENTS.md style rule updated.
+- Restarted the dev server with a clean `.next` (globals.css changed; the
+  stale-CSS guard passed). Verify ✓: 44 screens, axe clean at 390/1440, and the
+  landing page still fits one screen.
