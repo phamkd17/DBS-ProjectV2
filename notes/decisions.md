@@ -55,6 +55,7 @@
 | Nov 21 | A way to **see all tags**: the Tags page ("All tags") lists every tag with its recipes under it | A Tags tab in the top bar; a "See all tags" button in a recipe's tag box |
 | Nov 27 | An idea can be **text, a photo, or both**: a camera button in the Ideas quick-add box; more photos (up to 6) can be added on the idea | |
 | Nov 27 | Tapping a photo **opens it large on the same page** (not a new tab), and thumbnails show the **whole photo, never cropped**, at its own shape with no empty bars around it | Square boxes with bars (tried first) |
+| Nov 27 | "The cook's words" become **Kitchen notes** everywhere: recipes are developed by dictating or pasting rough instructions. A tip asks for amounts and detail, since more detail makes a better recipe | Rough instructions; Rough draft; How it's made |
 
 ## What the app is
 

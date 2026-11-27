@@ -817,3 +817,19 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   phones, 224px wider), width auto, and the border hugs the photo. The list
   thumbnail is max 64×96. On a narrow photo the overlaid × covered half of it,
   so Delete moved below each photo as a text button. Verify ✓, axe clean.
+
+## Nov 27 — "Kitchen notes"
+- The student didn't like the cook's-words wording and picked **Kitchen notes**
+  from four options. Recipe development = dictate or paste rough
+  instructions. Renamed in every UI string, error message, confirm dialog, and
+  the AI step ("The kitchen notes are complete. I'm ready."). The COOK badge was
+  dropped from the empty box heading. It stays on the notes themselves and on
+  recipe parts, where it's the source label (rule 4).
+- `KitchenNotesTip` (draft): "include amounts (2 cups flour, 1 tsp salt) and as
+  much detail as you can: times, temperatures, what it should look like." It
+  shows in the empty box and under the field label (`aria-describedby`). The
+  placeholder example now has amounts and temperatures.
+- Code names (`transcript`, `DictationEditor`) and the AI prompt are unchanged;
+  reframing the prompt is #12 and needs an eval run.
+- The page title "Kitchen notes" repeated the field label, so it's now "New
+  kitchen notes". Verify ✓, axe clean.
