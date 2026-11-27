@@ -848,3 +848,9 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   in the inspiration box is a new line. An idea with only inspiration is
   "Untitled idea". The box clears after saving and keeps what you typed on an
   error. Verify ✓ (saved with the idea and shown in the list), axe clean.
+- Compact list rows (the student's pick of three): removed the per-row `MoveTo`
+  (moving is on `/d` and `/r`). Name text-2xl → text-xl, padding pt-4/pb-1 +
+  a MoveTo line → py-3, preview 2 lines → 1 (truncate), thumbnail max 48×80,
+  and tags on their own line in Recipes. Each row is about half as tall. Verify
+  updated: rows have no Move buttons, and an idea moves from its own page.
+  Axe clean.

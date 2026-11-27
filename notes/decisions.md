@@ -58,6 +58,7 @@
 | Nov 27 | "The cook's words" become **Kitchen notes** everywhere: recipes are developed by dictating or pasting rough instructions. A tip asks for amounts and detail, since more detail makes a better recipe | Rough instructions; Rough draft; How it's made |
 | Nov 27 | "Idea notes" become **Inspiration**, so they aren't confused with kitchen notes; the tip is shortened to amounts, times, and temperatures | |
 | Nov 27 | Add the inspiration **in the same step** as the idea: an Inspiration box is always shown under the name in the quick-add (fewer taps) | Box appears as you type; a "+ Inspiration" button |
+| Nov 27 | **Compact lists**: "Move to" is no longer repeated under every item (it stays on each item's page); rows show just the name, date, and one preview line | A ⋯ menu per row; select several, then move |
 
 ## What the app is
 
