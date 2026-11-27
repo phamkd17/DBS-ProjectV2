@@ -812,3 +812,8 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   from `object-cover` to `object-contain` on Plaster. Verify adds a tall
   portrait photo and covers open, arrows, Next, Escape, focus return, and no
   new tab. Axe clean.
+- Student didn't like the empty bars from `object-contain` in square boxes.
+  Thumbnails now keep each photo's own shape: the same max height (176px on
+  phones, 224px wider), width auto, and the border hugs the photo. The list
+  thumbnail is max 64×96. On a narrow photo the overlaid × covered half of it,
+  so Delete moved below each photo as a text button. Verify ✓, axe clean.
