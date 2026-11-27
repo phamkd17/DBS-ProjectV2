@@ -863,3 +863,6 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   unchanged, and Escape returns focus to the thumbnail.
 - The student disliked the magnifying-glass cursor, so it's `cursor-pointer`
   everywhere.
+- Photo viewer: a tap anywhere closes it, even on the photo (the student's
+  request). Taps on the Previous, Next, and × buttons are excluded with
+  `closest("button")`. Verify ✓ (clicking the photo closes it).
