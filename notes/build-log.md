@@ -843,3 +843,8 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Grammar pass on the tip (student's request): "Tip: Include amounts and as
   much detail as you can, such as cooking times and temperatures. The more
   detail, the better the recipe."
+- Quick-add now has an always-visible Inspiration textarea (the student's pick
+  of three) saved to `notes` with the idea. Enter in the name still saves; Enter
+  in the inspiration box is a new line. An idea with only inspiration is
+  "Untitled idea". The box clears after saving and keeps what you typed on an
+  error. Verify ✓ (saved with the idea and shown in the list), axe clean.
