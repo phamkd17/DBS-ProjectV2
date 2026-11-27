@@ -833,3 +833,10 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   reframing the prompt is #12 and needs an eval run.
 - The page title "Kitchen notes" repeated the field label, so it's now "New
   kitchen notes". Verify ✓, axe clean.
+- "Idea notes" → **Inspiration** (my suggestion, the student's call): the
+  heading, pencil ("Edit inspiration"), field labels, and empty state ("Nothing
+  yet. Tap the pencil to note what inspired it."). Errors that meant the
+  transcript now say "kitchen notes". The `notes` column is unchanged.
+- Tip trimmed at the student's request: "include amounts and as much detail as
+  you can, like times and temperatures. The more detail, the better the recipe."
+  Verify ✓.
