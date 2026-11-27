@@ -445,8 +445,11 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   const ideaRow = page.getByRole("listitem").filter({ has: page.getByText(`${IDEA} (renamed)`, { exact: true }), visible: true });
   await expect(ideaRow).toBeVisible();
   await check(page, "home-ideas-with-idea");
-  await ideaRow.getByRole("button", { name: "Development" }).click();
-  await expect(ideaRow).toHaveCount(0); // it leaves the Ideas tab once moved
+  await expect(ideaRow.getByRole("button", { name: "Development" })).toHaveCount(0); // no "Move to" on every row
+  await ideaRow.getByRole("link").click(); // moving happens on the item's page
+  await page.waitForURL(/\/d\//);
+  await page.locator("main").filter({ visible: true }).getByRole("button", { name: "Move to Development" }).click();
+  await expect(page.locator("main").filter({ visible: true }).getByRole("link", { name: "Development" }).first()).toBeVisible();
   await page.goto("/?tab=development");
   await expect(page.getByRole("listitem").filter({ has: page.getByText(`${IDEA} (renamed)`, { exact: true }), visible: true })).toBeVisible();
   await check(page, "home-development-moved-idea");

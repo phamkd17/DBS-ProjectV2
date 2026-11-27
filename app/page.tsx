@@ -4,7 +4,6 @@ import { auth } from "@clerk/nextjs/server";
 import { SignUpButton } from "@clerk/nextjs";
 import { supabaseForUser } from "@/lib/supabase/server";
 import { Button, chipClass, ErrorNote, eyebrow, focusRing, formatDate, LinkButton, textLink } from "@/components/ui";
-import { MoveTo } from "@/components/MoveTo";
 import { QuickAddIdea } from "@/components/QuickAddIdea";
 import { HowItWorks } from "@/components/HowItWorks";
 import { photosFor } from "@/lib/photos";
@@ -174,38 +173,35 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: s
         : "Add kitchen notes"
       : null;
   const preview = d.notes || d.transcript;
+  // Compact rows (student, Nov 27): name, one meta line, one preview line.
+  // "Move to" lives on each item's page, not repeated on every row.
   return (
-    <li className="pb-1">
+    <li>
       <Link
         href={href}
-        className={`group block px-1 pt-4 pb-1 transition-colors hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
+        className={`group flex items-center justify-between gap-4 px-1 py-3 transition-colors hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 space-y-1">
-            <p className="truncate font-ls-serif text-2xl leading-tight">{title}</p>
-            <p className={eyebrow}>
-              {d.cook_name ? `${d.cook_name} · ` : ""}
-              {formatDate(d.created_at)}
-              {d.copied_from ? " · from a link" : ""}
-              {d.link ? " · has a link" : ""}
-            </p>
-            {tags.length > 0 && <p className="text-[15px] text-ls-ink">{tags.join(" · ")}</p>}
-          </div>
-          {thumb && (
-            // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private Storage
-            <img src={thumb} alt="" className="h-auto max-h-16 w-auto max-w-24 shrink-0 border border-ls-ink" />
-          )}
-          {next && (
-            <span className="shrink-0 pt-1 text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 group-hover:decoration-ls-ink">
-              {next}
-            </span>
-          )}
+        <div className="min-w-0 space-y-0.5">
+          <p className="truncate font-ls-serif text-xl leading-tight">{title}</p>
+          <p className={`truncate ${eyebrow}`}>
+            {d.cook_name ? `${d.cook_name} · ` : ""}
+            {formatDate(d.created_at)}
+            {d.copied_from ? " · from a link" : ""}
+            {d.link ? " · has a link" : ""}
+          </p>
+          {tags.length > 0 && <p className="truncate text-[15px] text-ls-ink">{tags.join(" · ")}</p>}
+          {preview && <p className="truncate text-[15px] text-ls-muted">{preview}</p>}
         </div>
-        {preview && <p className="mt-2 line-clamp-2 text-[15px] text-ls-muted">{preview}</p>}
+        {thumb && (
+          // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private Storage
+          <img src={thumb} alt="" className="h-auto max-h-12 w-auto max-w-20 shrink-0 border border-ls-ink" />
+        )}
+        {next && (
+          <span className="shrink-0 text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 group-hover:decoration-ls-ink">
+            {next}
+          </span>
+        )}
       </Link>
-      <div className="px-1">
-        <MoveTo kind="dictation" id={d.id} current={d.stage} />
-      </div>
     </li>
   );
 }
