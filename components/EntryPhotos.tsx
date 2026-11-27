@@ -63,28 +63,27 @@ export function EntryPhotos({
         Photos
       </h2>
       {photos.length > 0 && (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <ul className="flex flex-wrap items-start gap-3">
           {photos.map((p, i) => (
-            <li key={p.id} className={`relative ${removing === p.id ? "opacity-40" : ""}`}>
+            <li key={p.id} className={`max-w-full ${removing === p.id ? "opacity-40" : ""}`}>
               <button
                 type="button"
                 onClick={() => open(i)}
                 aria-label={`Open photo ${i + 1}`}
-                className={`block w-full cursor-zoom-in border border-ls-ink bg-ls-surface transition-colors hover:bg-white ${focusRing}`}
+                className={`block max-w-full cursor-zoom-in border border-ls-ink transition-opacity hover:opacity-90 active:opacity-80 ${focusRing}`}
               >
-                {/* Whole photo, never cropped (student, Nov 27). */}
+                {/* Whole photo at its own shape: never cropped, no empty bars (student, Nov 27). */}
                 {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private Storage */}
-                <img src={p.url} alt={`Photo ${i + 1}`} className="aspect-square w-full object-contain" />
+                <img src={p.url} alt={`Photo ${i + 1}`} className="block h-auto max-h-44 w-auto max-w-full sm:max-h-56" />
               </button>
               <button
                 type="button"
                 aria-label={`Delete photo ${i + 1}`}
-                title="Delete photo"
                 onClick={() => remove(p.id, i + 1)}
                 disabled={!!removing}
-                className={`absolute top-0 right-0 grid size-11 cursor-pointer place-items-center border-b border-l border-ls-ink bg-ls-surface text-xl text-ls-ink hover:bg-white hover:text-ls-error active:bg-ls-ink/[0.08] ${focusRing}`}
+                className={`mt-1 min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-error underline decoration-ls-error/40 underline-offset-4 hover:decoration-ls-error active:opacity-80 ${focusRing}`}
               >
-                <span aria-hidden>×</span>
+                Delete
               </button>
             </li>
           ))}

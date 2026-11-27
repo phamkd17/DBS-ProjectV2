@@ -193,7 +193,7 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: s
           </div>
           {thumb && (
             // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private Storage
-            <img src={thumb} alt="" className="size-16 shrink-0 border border-ls-ink bg-ls-surface object-contain" />
+            <img src={thumb} alt="" className="h-auto max-h-16 w-auto max-w-24 shrink-0 border border-ls-ink" />
           )}
           {next && (
             <span className="shrink-0 pt-1 text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 group-hover:decoration-ls-ink">
