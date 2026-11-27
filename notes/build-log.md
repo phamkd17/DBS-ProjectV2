@@ -875,3 +875,12 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   1231 → 962px (Development, no notes). With a photo's Delete just above, the
   footer button now says "Delete idea" so the two aren't confused. Verify ✓,
   axe clean.
+- Compact recipe page. Section gap 40 → 24px. Title 5xl/6xl → 4xl/5xl.
+  Ingredients/Steps/Changes headings 3xl → 2xl. Step rows py-5 → py-3 with a
+  2xl number. Show sources sits right above the title (gap 40 → 8px). The Send
+  panel is p-4 with a 2xl heading. The kitchen-notes buttons show "Edit" and
+  "Delete" (the accessible names stay "Edit/Delete kitchen notes" and contain
+  the visible text), so they fit on one line on the idea page too. Footer:
+  Move to + "Delete recipe" (was "Delete this recipe"). The same RecipeView
+  serves shared links, so they're compact too. At 390px: 2967 → 2534px. Verify
+  ✓, axe clean.

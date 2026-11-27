@@ -60,7 +60,7 @@
 | Nov 27 | Add the inspiration **in the same step** as the idea: an Inspiration box is always shown under the name in the quick-add (fewer taps) | Box appears as you type; a "+ Inspiration" button |
 | Nov 27 | **Compact lists**: "Move to" is no longer repeated under every item (it stays on each item's page); rows show just the name, date, and one preview line | A ⋯ menu per row; select several, then move |
 | Nov 27 | No date on list rows; tapping a list thumbnail **zooms in on the photo** (the name still opens the item); a normal pointer, not a magnifying-glass cursor | |
-| Nov 27 | **Compact idea page** too | |
+| Nov 27 | **Compact idea and recipe pages** too | |
 
 ## What the app is
 
