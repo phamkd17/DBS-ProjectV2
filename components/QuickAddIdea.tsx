@@ -94,7 +94,7 @@ export function QuickAddIdea() {
       {photo && (
         <div className="flex items-center gap-3 pt-1">
           {/* eslint-disable-next-line @next/next/no-img-element -- a local preview (blob: URL) */}
-          <img src={photo.url} alt="The photo you chose" className="size-16 border border-ls-ink object-cover" />
+          <img src={photo.url} alt="The photo you chose" className="size-16 border border-ls-ink bg-ls-surface object-contain" />
           <button
             type="button"
             onClick={() => setPhoto(null)}

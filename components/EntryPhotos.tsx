@@ -21,6 +21,14 @@ export function EntryPhotos({
   const [adding, startAdd] = useTransition();
   const [removing, setRemoving] = useState<string | null>(null);
   const [, startRemove] = useTransition();
+  // Tap a photo to see it large, in place (no new tab).
+  const viewer = useRef<HTMLDialogElement>(null);
+  const [shown, setShown] = useState(0);
+  const open = (i: number) => {
+    setShown(i);
+    viewer.current?.showModal();
+  };
+  const step = (d: number) => setShown((i) => (i + d + photos.length) % photos.length);
 
   const choose = (file: File | undefined) => {
     if (!file) return;
@@ -58,11 +66,16 @@ export function EntryPhotos({
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {photos.map((p, i) => (
             <li key={p.id} className={`relative ${removing === p.id ? "opacity-40" : ""}`}>
-              <a href={p.url} target="_blank" rel="noreferrer" className={`block ${focusRing}`}>
+              <button
+                type="button"
+                onClick={() => open(i)}
+                aria-label={`Open photo ${i + 1}`}
+                className={`block w-full cursor-zoom-in border border-ls-ink bg-ls-surface transition-colors hover:bg-white ${focusRing}`}
+              >
+                {/* Whole photo, never cropped (student, Nov 27). */}
                 {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private Storage */}
-                <img src={p.url} alt={`Photo ${i + 1}`} className="aspect-square w-full border border-ls-ink object-cover" />
-                <span className="sr-only"> (opens full size)</span>
-              </a>
+                <img src={p.url} alt={`Photo ${i + 1}`} className="aspect-square w-full object-contain" />
+              </button>
               <button
                 type="button"
                 aria-label={`Delete photo ${i + 1}`}
@@ -96,6 +109,54 @@ export function EntryPhotos({
           {error}
         </p>
       )}
+
+      <dialog
+        ref={viewer}
+        aria-label={`Photo ${shown + 1} of ${photos.length}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) viewer.current?.close(); // tap outside the photo
+        }}
+        onKeyDown={(e) => {
+          if (photos.length > 1 && e.key === "ArrowRight") step(1);
+          if (photos.length > 1 && e.key === "ArrowLeft") step(-1);
+        }}
+        className="m-auto max-h-none max-w-none border border-ls-ink bg-ls-bg p-0 text-ls-ink backdrop:bg-ls-ink/80"
+      >
+        {photos[shown] && (
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between gap-3 border-b border-ls-border px-3">
+              <p className={eyebrow}>
+                Photo {shown + 1} of {photos.length}
+              </p>
+              <button
+                type="button"
+                autoFocus
+                aria-label="Close"
+                onClick={() => viewer.current?.close()}
+                className={`-mr-3 grid size-11 cursor-pointer place-items-center text-2xl text-ls-muted hover:bg-ls-ink/[0.06] hover:text-ls-ink ${focusRing}`}
+              >
+                <span aria-hidden>×</span>
+              </button>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private Storage */}
+            <img
+              src={photos[shown].url}
+              alt={`Photo ${shown + 1}, full size`}
+              className="block max-h-[calc(100dvh-8rem)] w-auto max-w-[calc(100vw-2rem)] object-contain"
+            />
+            {photos.length > 1 && (
+              <div className="flex justify-between border-t border-ls-border">
+                <button type="button" onClick={() => step(-1)} className={`min-h-11 cursor-pointer px-4 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] hover:bg-ls-ink/[0.06] ${focusRing}`}>
+                  ← Previous
+                </button>
+                <button type="button" onClick={() => step(1)} className={`min-h-11 cursor-pointer px-4 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] hover:bg-ls-ink/[0.06] ${focusRing}`}>
+                  Next →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </dialog>
     </section>
   );
 }

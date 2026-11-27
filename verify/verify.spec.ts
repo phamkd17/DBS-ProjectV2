@@ -216,9 +216,24 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   const photosBox = pv.getByRole("region", { name: "Photos" });
   await expectLoaded(photosBox.getByRole("img", { name: "Photo 1" }));
   await expect(pv.getByRole("heading", { level: 1 })).toContainText("Photo idea"); // same name as in the list
-  await photosBox.locator('input[type="file"]').setInputFiles("verify/fixtures/onions.jpg");
+  await photosBox.locator('input[type="file"]').setInputFiles("verify/fixtures/tall.jpg"); // portrait: shown whole, not cropped
   await expectLoaded(photosBox.getByRole("img", { name: "Photo 2" }));
   await check(page, "idea-photos", { keyboard: true });
+  // Tap a photo: it opens large in place (no new tab); arrows move between photos; Escape closes.
+  const pages = page.context().pages().length;
+  await photosBox.getByRole("button", { name: "Open photo 2" }).click();
+  const viewer = page.getByRole("dialog", { name: "Photo 2 of 2" });
+  await expect(viewer).toBeVisible();
+  await expectLoaded(viewer.getByRole("img", { name: "Photo 2, full size" }));
+  expect(page.context().pages().length).toBe(pages);
+  await check(page, "photo-viewer");
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("dialog", { name: "Photo 1 of 2" })).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Next →" }).click();
+  await expect(page.getByRole("dialog", { name: "Photo 2 of 2" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(photosBox.getByRole("button", { name: "Open photo 2" })).toBeFocused(); // focus comes back
   page.once("dialog", (d) => d.accept());
   await photosBox.getByRole("button", { name: "Delete photo 2" }).click();
   await expect(photosBox.getByRole("img", { name: "Photo 2" })).toHaveCount(0);
