@@ -884,3 +884,7 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   Move to + "Delete recipe" (was "Delete this recipe"). The same RecipeView
   serves shared links, so they're compact too. At 390px: 2967 → 2534px. Verify
   ✓, axe clean.
+- List rows (the student's request): tags and the cook sit on the name's line in
+  the eyebrow style (max half the width, truncated). The separate tags line
+  (15px Ink) and meta line are gone, leaving two lines and three styles: serif
+  name, eyebrow label, muted preview. Verify ✓.
