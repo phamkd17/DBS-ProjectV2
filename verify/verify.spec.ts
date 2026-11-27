@@ -166,7 +166,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.goto("/");
   await clerk.signIn({ page, emailAddress: TEST_EMAIL });
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Your lab book" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible(); // the open tab's name
   // Tabs at the top of every page; the open section is marked.
   const topTabs = page.getByRole("navigation", { name: "Lab book sections" });
   await expect(topTabs.getByRole("link", { name: "Recipes" })).toBeVisible();

@@ -20,17 +20,14 @@ type Row = DictationRow & {
 const TABS = {
   ideas: {
     label: "Ideas",
-    blurb: "Inspiration, photos, and links to come back to.",
     empty: "No ideas yet.",
   },
   development: {
     label: "Development",
-    blurb: "Add kitchen notes and make the recipe.",
     empty: "Nothing in development yet.",
   },
   finished: {
     label: "Recipes",
-    blurb: "Ready to cook, keep, or send.",
     empty: "No recipes yet.",
   },
 } as const;
@@ -75,7 +72,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   return (
     <main className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-ls-serif text-5xl leading-none">Your lab book</h1>
+        {/* The tab's name is the title, nothing under it (student, Nov 27). */}
+        <h1 className="font-ls-serif text-4xl leading-tight sm:text-5xl">{TABS[tab].label}</h1>
         {/* One start button per tab, for what you do there (student, Nov 20). */}
         {tab === "ideas" ? null : tab === "development" ? (
           <LinkButton href="/new">+ Kitchen notes</LinkButton>
@@ -93,13 +91,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </>
       ) : (
         <>
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[15px] text-ls-muted">
-              <span className="font-medium text-ls-ink">{TABS[tab].label}</span>
-              {items.length ? ` · ${items.length}` : ""} · {TABS[tab].blurb}
-            </p>
-          </div>
 
           {tab === "ideas" && <QuickAddIdea />}
 
