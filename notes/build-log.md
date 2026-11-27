@@ -854,3 +854,12 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   and tags on their own line in Recipes. Each row is about half as tall. Verify
   updated: rows have no Move buttons, and an idea moves from its own page.
   Axe clean.
+- No date on list rows (the item page still has it). The meta line only shows
+  when there's a cook, "from a link", or "has a link".
+- List thumbnails zoom in: the viewer moved into `components/PhotoViewer.tsx`
+  (`usePhotoViewer`, `ZoomThumb`), shared with the idea page. The thumbnail is
+  its own button next to the row link (not nested inside it), and it opens all
+  of that item's photos. Verify: tapping it opens "Photo 1 of 1", the URL is
+  unchanged, and Escape returns focus to the thumbnail.
+- The student disliked the magnifying-glass cursor, so it's `cursor-pointer`
+  everywhere.
