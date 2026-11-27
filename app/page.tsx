@@ -7,6 +7,7 @@ import { Button, chipClass, ErrorNote, eyebrow, focusRing, formatDate, LinkButto
 import { MoveTo } from "@/components/MoveTo";
 import { QuickAddIdea } from "@/components/QuickAddIdea";
 import { HowItWorks } from "@/components/HowItWorks";
+import { photosFor } from "@/lib/photos";
 import type { DictationRow, RecipeStatus, TagRow } from "@/lib/types";
 
 type Row = DictationRow & {
@@ -19,7 +20,7 @@ type Row = DictationRow & {
 const TABS = {
   ideas: {
     label: "Ideas",
-    blurb: "Notes and links to come back to.",
+    blurb: "Notes, photos, and links to come back to.",
     empty: "No ideas yet.",
   },
   development: {
@@ -67,6 +68,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const tag = tab === "finished" ? tags.find((t) => t.id === tagParam) : undefined;
   const items = tag ? byTab[tab].filter((d) => d.entry_sections.some((l) => l.section_id === tag.id)) : byTab[tab];
   const tagNames = new Map(tags.map((t) => [t.id, t.name]));
+  // First photo of each item, as a thumbnail.
+  const thumbs = new Map<string, string>();
+  for (const p of await photosFor(supabase, items.map((d) => d.id))) if (!thumbs.has(p.dictation_id)) thumbs.set(p.dictation_id, p.url);
 
   return (
     <main className="space-y-5">
@@ -111,6 +115,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 <EntryCard
                   key={d.id}
                   d={d}
+                  thumb={thumbs.get(d.id)}
                   tags={tab === "finished" ? d.entry_sections.map((l) => tagNames.get(l.section_id)).filter((n): n is string => !!n).sort() : []}
                 />
               ))}
@@ -155,9 +160,9 @@ function TagFilter({ tags, current }: { tags: TagRow[]; current?: string }) {
   );
 }
 
-function EntryCard({ d, tags = [] }: { d: Row; tags?: string[] }) {
+function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: string }) {
   const r = d.recipes[0];
-  const title = r?.recipe?.title || d.dish_name || "Untitled dictation";
+  const title = r?.recipe?.title || d.dish_name || (d.stage === "ideas" ? (thumb ? "Photo idea" : "Untitled idea") : "Untitled");
   const href = r ? `/r/${r.id}` : `/d/${d.id}`;
   const next = r
     ? r.status === "ready"
@@ -186,6 +191,10 @@ function EntryCard({ d, tags = [] }: { d: Row; tags?: string[] }) {
             </p>
             {tags.length > 0 && <p className="text-[15px] text-ls-ink">{tags.join(" · ")}</p>}
           </div>
+          {thumb && (
+            // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private Storage
+            <img src={thumb} alt="" className="size-16 shrink-0 border border-ls-ink object-cover" />
+          )}
           {next && (
             <span className="shrink-0 pt-1 text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 group-hover:decoration-ls-ink">
               {next}

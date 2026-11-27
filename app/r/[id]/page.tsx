@@ -14,6 +14,8 @@ import { MoveTo } from "@/components/MoveTo";
 import { STAGE_LABEL } from "@/lib/types";
 import { SharePanel } from "./SharePanel";
 import { TagPicker } from "@/components/TagPicker";
+import { EntryPhotos } from "@/components/EntryPhotos";
+import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
 import type { TagRow } from "@/lib/types";
 
 // Pass 2 can take a while on the free tier.
@@ -76,6 +78,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
   }
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
+  const photos = await photosFor(supabase, [dictation.id]);
   // Tags (Recipes tab only): your list + which ones this recipe has.
   const [{ data: sections }, { data: links }] =
     dictation.stage === "finished"
@@ -108,6 +111,8 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
       <RecipeView recipe={recipe.recipe} cookName={dictation.cook_name} editableRecipeId={recipe.id} />
 
       <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
+
+      <EntryPhotos dictationId={dictation.id} photos={photos} max={MAX_PHOTOS_PER_ENTRY} />
 
       {dictation.stage === "finished" && (
         <TagPicker dictationId={dictation.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />

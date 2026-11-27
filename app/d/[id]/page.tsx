@@ -9,6 +9,8 @@ import { supabaseForUser } from "@/lib/supabase/server";
 import type { DictationRow } from "@/lib/types";
 import { CreateRecipe } from "./CreateRecipe";
 import { SavedBanner } from "@/components/SavedBanner";
+import { EntryPhotos } from "@/components/EntryPhotos";
+import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
 import { StartDeveloping } from "@/components/StartDeveloping";
 import { MoveTo } from "@/components/MoveTo";
 import { STAGE_LABEL, type TagRow } from "@/lib/types";
@@ -35,6 +37,7 @@ export default async function DictationPage({ params, searchParams }: PageProps<
   if (recipe) redirect(`/r/${recipe.id}`);
 
   const justSaved = saved === "1" && d.stage === "ideas";
+  const photos = await photosFor(supabase, [d.id]);
   const [{ data: sections }, { data: links }] =
     d.stage === "finished"
       ? await Promise.all([
@@ -68,6 +71,9 @@ export default async function DictationPage({ params, searchParams }: PageProps<
 
       {/* Idea notes stay in every stage. */}
       <EditableNotes kind="dictation" id={d.id} note={d.notes} link={d.link} />
+
+      {/* Photos stay with the entry in every stage, like the notes. */}
+      <EntryPhotos dictationId={d.id} photos={photos} max={MAX_PHOTOS_PER_ENTRY} />
 
       {d.stage === "finished" && (
         <TagPicker dictationId={d.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />

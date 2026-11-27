@@ -1,23 +1,54 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { quickAddIdea } from "@/app/actions";
+import { PHOTO_OPEN_ERROR, shrinkPhoto } from "@/lib/shrinkPhoto";
 import type { ActionState } from "@/lib/types";
-import { Button, fieldClass, Spinner } from "./ui";
+import { CameraIcon } from "./CameraIcon";
+import { Button, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
-/** Type an idea, press Enter, and it appears in the list. No separate page. */
+/**
+ * Type an idea, add a photo, or both; press Enter and it appears in the list.
+ * No separate page (student, Nov 20; photos Nov 27).
+ */
 export function QuickAddIdea() {
   const form = useRef<HTMLFormElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [photo, setPhoto] = useState<{ blob: Blob; url: string } | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [shrinking, setShrinking] = useState(false);
+
+  // Free the preview's memory when it changes or the box goes away.
+  useEffect(() => () => void (photo && URL.revokeObjectURL(photo.url)), [photo]);
+
   const [state, action, pending] = useActionState<ActionState, FormData>(async (prev, fd) => {
+    if (photo) fd.set("photo", photo.blob, "photo.jpg");
     const result = await quickAddIdea(prev, fd);
     if (result.saved) {
       form.current?.reset();
+      setPhoto(null);
       input.current?.focus(); // ready for the next one
     }
     return result;
   }, {});
   const err = state.fieldErrors?.title;
+  const fileErr = photoError ?? state.fieldErrors?.photo;
+
+  const choose = async (file: File | undefined) => {
+    if (!file) return;
+    setPhotoError(null);
+    setShrinking(true);
+    try {
+      const blob = await shrinkPhoto(file);
+      setPhoto({ blob, url: URL.createObjectURL(blob) });
+    } catch {
+      setPhotoError(PHOTO_OPEN_ERROR);
+    } finally {
+      setShrinking(false);
+      if (fileInput.current) fileInput.current.value = ""; // choosing the same file again still works
+    }
+  };
 
   return (
     <form ref={form} action={action} className="space-y-1.5">
@@ -31,21 +62,56 @@ export function QuickAddIdea() {
           name="title"
           maxLength={120}
           autoComplete="off"
-          defaultValue={state.error ? state.values?.title : undefined}
-          placeholder="What's the idea?"
+          defaultValue={state.error && !state.saved ? state.values?.title : undefined}
+          placeholder={photo ? "Name it (optional)" : "What's the idea?"}
           aria-invalid={!!err}
           aria-describedby={err ? "quick-idea-error" : undefined}
           className={`${fieldClass} min-w-0 flex-1`}
         />
-        <Button type="submit" disabled={pending} className="shrink-0">
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          hidden
+          aria-label="Photo"
+          onChange={(e) => choose(e.target.files?.[0])}
+        />
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          disabled={shrinking || pending}
+          aria-label={photo ? "Change photo" : "Add a photo"}
+          title={photo ? "Change photo" : "Add a photo"}
+          className={`grid w-12 shrink-0 cursor-pointer place-items-center border border-ls-ink bg-ls-surface text-ls-ink transition-colors hover:bg-white active:translate-y-px active:bg-ls-ink/[0.08] disabled:cursor-wait disabled:text-ls-muted ${focusRing}`}
+        >
+          {shrinking ? <Spinner /> : <CameraIcon />}
+        </button>
+        <Button type="submit" disabled={pending || shrinking} className="shrink-0">
           {pending ? <Spinner /> : "Add"}
         </Button>
       </div>
+
+      {photo && (
+        <div className="flex items-center gap-3 pt-1">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a local preview (blob: URL) */}
+          <img src={photo.url} alt="The photo you chose" className="size-16 border border-ls-ink object-cover" />
+          <button
+            type="button"
+            onClick={() => setPhoto(null)}
+            className={`min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}
+          >
+            Remove photo
+          </button>
+        </div>
+      )}
+
       <p aria-live="polite" className="min-h-5 text-[15px]">
         {err ? (
           <span id="quick-idea-error" className="text-ls-error">
             {err}
           </span>
+        ) : fileErr ? (
+          <span className="text-ls-error">{fileErr}</span>
         ) : state.error ? (
           <span className="text-ls-error">{state.error}</span>
         ) : state.saved ? (
