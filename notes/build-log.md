@@ -1141,3 +1141,4 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   ran under the floated dish photo. The form is now `clear-both`, so it starts
   below the photo while the heading stays beside it. Verify asserts the form's
   top is at or below the photo tile's bottom.
+- Component headings: 19px semibold Ink (was 12px uppercase), with items and step text at 16px (was 17px), so Ingredients (24) > component (19) > items (16). Space between components 12 → 24px. Verify ✓, axe clean.
