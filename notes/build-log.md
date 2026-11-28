@@ -1143,3 +1143,4 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   top is at or below the photo tile's bottom.
 - Component headings: 19px semibold Ink (was 12px uppercase), with items and step text at 16px (was 17px), so Ingredients (24) > component (19) > items (16). Space between components 12 → 24px. Verify ✓, axe clean.
 - Bulk move polish (the student's screenshots): the checkbox moved to the row's left edge (`RowCheck`, beside the step number) in all three editors. The Move bar moved from sticky-bottom (the browser's own bars covered it) to fixed at the top of the screen like a phone's selection bar, so ticking never shifts the list. Items and steps under a component heading are indented (ml-4) in the recipe view. Verify ✓, axe clean.
+- Component headings: 19px medium in Slate (`font-ls-sans`, so not the forced 600 of `font-ls-serif`). Section headings are 24px semibold Ink. The student's pick of three. Axe clean.
