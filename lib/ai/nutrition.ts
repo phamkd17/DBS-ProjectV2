@@ -20,7 +20,7 @@ import { getConfig, ModelError, RateLimitError } from "./pipeline";
 import { jsonSchemaFor, type Recipe } from "./schema";
 import { NUTRIENTS, searchFood, type Per100g, type UsdaFood } from "./usda";
 
-export const NUTRITION_PROMPT_VERSION = "n1";
+export const NUTRITION_PROMPT_VERSION = "n2";
 const MAX_ROUNDS = 5; // the last round may only report
 const MAX_SEARCHES = 40; // per estimate, to protect the USDA limit
 const MAX_GRAMS = 10_000; // one ingredient in a home recipe
@@ -101,7 +101,9 @@ Tools:
 - report_nutrition(...): your final answer. The app does all the math; never compute totals.
 
 Rules:
-1. Search for every ingredient that has an amount. Use plain USDA-style words ("milk whole", "sugar granulated", "egg whole raw", "milk sweetened condensed"). Search for several ingredients at once. If no result fits, search again with simpler words.
+1. In your first turn, search for every ingredient that has an amount, all at once (one search_food call per ingredient). Use plain USDA-style words ("milk whole", "sugar granulated", "egg whole raw", "milk sweetened condensed").
+   Search again only for an ingredient whose results don't fit, with simpler words. A result fits if it's the same kind of food; it doesn't need to be exact.
+   As soon as every ingredient has a fitting result, call report_nutrition.
 2. Pick the closest generic match. Only report an fdc_id that a search returned. Never make one up.
 3. Convert each amount to grams for the whole recipe. Use a USDA portion weight when one fits ("1 egg = 50 g"); otherwise use a standard kitchen conversion. Say how in grams_basis.
 4. Don't invent amounts. Skip an ingredient, with a short reason, when it has no amount ("salt to taste"), is removed before eating (bay leaf, bones, a marinade you throw away), or has no calories (water, ice).

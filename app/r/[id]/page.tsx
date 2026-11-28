@@ -21,6 +21,8 @@ import { loadIterations, pickIteration } from "@/lib/iterations";
 import { AllNotesProvider, AllNotesSwitch } from "@/components/RecipeExtras";
 import { recipeHasNotes } from "@/components/IngredientList";
 import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
+import { NutritionPanel } from "@/components/NutritionPanel";
+import { ingredientsKey } from "@/lib/ai/nutrition";
 import type { TagRow } from "@/lib/types";
 
 // Pass 2 can take a while on the free tier.
@@ -140,6 +142,13 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/r
           stays calm (student, Nov 28). Open it to see or edit them. */}
       {/* Notes and Send are one block, set well apart from the tags above (student, Nov 28). */}
       <div className="pt-10">
+      {/* Nutrition (issue #14): one folded row, above the notes (they share a line). */}
+      <NutritionPanel
+        recipeId={recipe.id}
+        iterationId={selected?.id ?? null}
+        nutrition={shown!.nutrition ?? null}
+        stale={!!shown!.nutrition && shown!.nutrition.for_ingredients !== ingredientsKey(shown!)}
+      />
       <details className="group border-y border-ls-ink">
         <summary
           className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}

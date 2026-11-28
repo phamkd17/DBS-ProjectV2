@@ -14,6 +14,8 @@ import { draftRecipe, finalizeRecipe, ModelError, RateLimitError } from "@/lib/a
 import type { Answer, AnswerSource } from "@/lib/ai/schema";
 import { supabaseForUser } from "@/lib/supabase/server";
 import { AiLimitError, recordAiCall } from "@/lib/ai/limits";
+import { estimateNutrition } from "@/lib/ai/nutrition";
+import { UsdaError } from "@/lib/ai/usda";
 import { deletePhotos, MAX_PHOTOS_PER_ENTRY, readPhoto, savePhoto } from "@/lib/photos";
 import {
   cleanPart,
@@ -1034,4 +1036,40 @@ export async function deleteIteration(recipeId: string, iterationId: string): Pr
   if (error) console.error("[deleteIteration]", error);
   revalidatePath(`/r/${recipeId}`);
   redirect(`/r/${recipeId}`);
+}
+
+// ---------------------------------------------------------------------------
+// Nutrition estimate (issue #14): Gemini with tools + USDA FoodData Central.
+// Only the ingredients and steps are sent. Each Gemini round counts toward the
+// per-user AI limit. The estimate is saved inside the recipe JSON being viewed
+// (the original or an iteration), so every iteration has its own.
+// ---------------------------------------------------------------------------
+export async function estimateRecipeNutrition(recipeId: string, iterationId: string | null, _prev: ActionState): Promise<ActionState> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const row = await loadRecipeJson(supabase, recipeId, iterationId);
+  if (!row?.recipe) return { error: "Recipe not found." };
+  let nutrition;
+  try {
+    ({ nutrition } = await estimateNutrition(row.recipe, () => recordAiCall(supabase, "nutrition")));
+  } catch (err) {
+    // Draft wording: for the student to review.
+    if (err instanceof AiLimitError || err instanceof RateLimitError || err instanceof UsdaError) {
+      if (err instanceof UsdaError) console.error("[usda]", err.message, err.detail ?? "");
+      return { error: err.message };
+    }
+    console.error("[nutrition]", err instanceof ModelError ? `${err.message} ${err.detail ?? ""}` : err);
+    return { error: "The nutrition estimate couldn't finish. Try again in a minute." };
+  }
+  // Reload before saving: the recipe may have been edited during the estimate.
+  // If the ingredients changed, the page shows the estimate as out of date.
+  const latest = await loadRecipeJson(supabase, recipeId, iterationId);
+  if (!latest?.recipe) return { error: "Recipe not found." };
+  const { error } = await saveRecipeJson(supabase, recipeId, iterationId, { ...latest.recipe, nutrition });
+  if (error) {
+    console.error("[nutrition save]", error);
+    return { error: "Couldn't save the estimate. Try again." };
+  }
+  revalidatePath(`/r/${recipeId}`);
+  return { saved: true };
 }

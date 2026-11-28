@@ -28,7 +28,7 @@ function inAbout(ms: number) {
 }
 
 /** Check the limit, then record this call. Throws AiLimitError (no call made) when over. */
-export async function recordAiCall(supabase: SupabaseClient, kind: "draft" | "finalize") {
+export async function recordAiCall(supabase: SupabaseClient, kind: "draft" | "finalize" | "nutrition") {
   const now = Date.now();
   const { data, error } = await supabase
     .from("ai_calls")

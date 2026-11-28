@@ -1,4 +1,5 @@
 import type { AnswerSource, Question, QuestionKind, Recipe } from "./ai/schema";
+import type { Nutrition } from "./ai/nutrition";
 
 export const STAGES = ["ideas", "development", "finished"] as const;
 export type Stage = (typeof STAGES)[number];
@@ -48,7 +49,8 @@ export type RecipeRow = {
   dictation_id: string;
   status: RecipeStatus;
   draft: (Recipe & { scan?: unknown }) | null;
-  recipe: Recipe | null;
+  /** The recipe, plus its nutrition estimate if one was made (issue #14; not part of the AI's output schema). */
+  recipe: (Recipe & { nutrition?: Nutrition }) | null;
   model: string | null;
   prompt_version: string | null;
   share_token: string | null;
