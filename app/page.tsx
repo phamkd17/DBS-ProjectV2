@@ -67,7 +67,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const tagNames = new Map(tags.map((t) => [t.id, t.name]));
   // Each item's photos: the first is the thumbnail; tapping it zooms in on all of them.
   const thumbs = new Map<string, { url: string }[]>();
-  for (const p of await photosFor(supabase, items.map((d) => d.id))) thumbs.set(p.dictation_id, [...(thumbs.get(p.dictation_id) ?? []), { url: p.url }]);
+  // The dish photo, if there is one, comes first (it's what the recipe looks like).
+  const listPhotos = (await photosFor(supabase, items.map((d) => d.id))).sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "dish" ? -1 : 1));
+  for (const p of listPhotos) thumbs.set(p.dictation_id, [...(thumbs.get(p.dictation_id) ?? []), { url: p.url }]);
 
   return (
     <main className="space-y-5">

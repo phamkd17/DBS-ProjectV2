@@ -15,6 +15,7 @@ import { STAGE_LABEL } from "@/lib/types";
 import { SharePanel } from "./SharePanel";
 import { TagPicker } from "@/components/TagPicker";
 import { EntryPhotos } from "@/components/EntryPhotos";
+import { DishPhoto } from "@/components/DishPhoto";
 import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
 import type { TagRow } from "@/lib/types";
 
@@ -77,7 +78,9 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
   }
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
-  const photos = await photosFor(supabase, [dictation.id]);
+  const allPhotos = await photosFor(supabase, [dictation.id]);
+  const dish = allPhotos.find((p) => p.kind === "dish");
+  const photos = allPhotos.filter((p) => p.kind === "idea"); // inspiration photos stay in the notes
   // Tags (Recipes tab only): your list + which ones this recipe has.
   const [{ data: sections }, { data: links }] =
     dictation.stage === "finished"
@@ -107,7 +110,12 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
         </p>
       )}
 
-      <RecipeView recipe={recipe.recipe} cookName={dictation.cook_name} editableRecipeId={recipe.id} />
+      <RecipeView
+        recipe={recipe.recipe}
+        cookName={dictation.cook_name}
+        editableRecipeId={recipe.id}
+        aside={<DishPhoto dictationId={dictation.id} photo={dish && { id: dish.id, url: dish.url }} />}
+      />
 
       {dictation.stage === "finished" && (
         <TagPicker dictationId={dictation.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />

@@ -37,7 +37,7 @@ export default async function DictationPage({ params, searchParams }: PageProps<
   if (recipe) redirect(`/r/${recipe.id}`);
 
   const justSaved = saved === "1" && d.stage === "ideas";
-  const photos = await photosFor(supabase, [d.id]);
+  const photos = (await photosFor(supabase, [d.id])).filter((p) => p.kind === "idea");
   const [{ data: sections }, { data: links }] =
     d.stage === "finished"
       ? await Promise.all([

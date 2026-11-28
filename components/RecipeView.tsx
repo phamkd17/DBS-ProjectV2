@@ -3,6 +3,7 @@ import { EditableIngredients } from "./EditableIngredients";
 import { SourcesScope, StepExtras } from "./RecipeExtras";
 import { IngredientList } from "./IngredientList";
 import { SourceBadge, Transcript } from "./ui";
+import type { ReactNode } from "react";
 
 type Props = {
   recipe: Recipe;
@@ -12,13 +13,17 @@ type Props = {
   editedAt?: string | null;
   /** Owner's own recipe: amounts get a pencil to edit them. Omit for read-only (shared links). */
   editableRecipeId?: string;
+  /** Shown to the right of the title and ingredients (the dish photo, student Nov 28). */
+  aside?: ReactNode;
 };
 
 /** The finished recipe: ingredients, steps, the why labeled by source, and her words. */
-export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId }: Props) {
+export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId, aside }: Props) {
   return (
     <SourcesScope>
     <article className="space-y-5">
+      <div className={aside ? "flex items-start gap-4 sm:gap-6" : ""}>
+      <div className="min-w-0 flex-1 space-y-5">
       <header className="space-y-2">
         <h1 className="font-ls-serif text-3xl leading-tight sm:text-4xl">{recipe.title}</h1>
         <Legend cookName={cookName} />
@@ -34,6 +39,9 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
           <IngredientList ingredients={recipe.ingredients} cookName={cookName} />
         </section>
       )}
+      </div>
+      {aside}
+      </div>
 
       <section aria-labelledby="steps" className="space-y-2">
         <h2 id="steps" className="font-ls-serif text-2xl leading-tight">
