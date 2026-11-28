@@ -77,6 +77,7 @@
 | Nov 28 | **Tags set apart** from the Notes and Send rows below, which form one block | |
 | Nov 28 | **AI limits** (#5): each person can make 20 AI requests an hour and 50 a day (a recipe is 1–2); a clear message says when they can make more; every call has a token cap | |
 | Nov 28 | **"Instructions"** instead of "Steps", with a pencil to edit each step and add, change, or remove its Why it works (food science) and Adjust to taste notes | |
+| Nov 28 | The hand-typed recipe form gets the same **Why it works** and **Adjust to taste** as the recipe editor, and each can be closed again (×) | |
 
 ## What the app is
 

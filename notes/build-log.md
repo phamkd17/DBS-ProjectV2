@@ -1094,3 +1094,11 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Verify: edit step 1, add Why + Adjust on step 2, save, open both icons, then
   remove step 1's Why. Axe clean.
 - More space between Tags and the Notes/Send block (pt-4 → pt-10, the student's request). Verify ✓.
+- Hand-typed recipe form (the student's request): each step has a list of
+  Why it works notes and Adjust to taste pairs, with + buttons and × to
+  remove (the old single "+ Why it works" couldn't be closed again). New
+  boxes autofocus. `createManualRecipe` accepts `why` as a string (older) or
+  an array, plus `dials`, all saved as the cook's own (source `cook`). The
+  Adjust to taste boxes wrap onto two lines on phones (`basis-32`) in both
+  editors. Verify: add/close a second Why, add an Adjust; the saved recipe
+  shows both icons.
