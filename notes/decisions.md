@@ -72,6 +72,7 @@
 | Nov 28 | Ingredient notes hide behind an icon like the steps; **food science and adjustments look different**: flask + green for "Why it works", sliders + blue for "Adjust to taste"; taste notes on ingredients get the sliders, other notes a plain note icon | Sliders for every ingredient note; only recolor the panels |
 | Nov 28 | One **"All notes" switch** opens or closes every note on a recipe; it sits on the breadcrumb line, and the breadcrumb is just the tab (the recipe's name is the title) | Its own row above the title |
 | Nov 28 | **Muted notes**: no blue/green; a thin gray rule and a softer open icon (the icons and headings tell food science and adjustments apart) | Tinted panels (tried first) |
+| Nov 28 | **Tags like a mobile app**: one row of small chips ending in "+ Tag" (it turns into a small box in the row); suggestions only while typing; no Add button | |
 
 ## What the app is
 

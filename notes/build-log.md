@@ -1018,3 +1018,11 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   dropping the recipe name from the breadcrumb, since it's the title right
   below, so both fit on a phone). Label: "All notes". Shared links keep their
   own switch above the recipe. Verify ✓ (opens all, closes all), axe clean.
+- Tags, mobile-app style (the student's request: less space, like tagging in
+  phone apps). The chips are 32px tall (Ink when set, with a 28px ×). The row
+  ends in a dashed "+ Tag" chip that turns into a 144px box in the row
+  (autofocus; Enter adds and stays open; Escape or tapping away empty closes
+  it and focus returns to "+ Tag"). The hint and suggestions show only while
+  it's open. No Add button. The tags block went from ~250px to ~60px when not
+  editing. Verify: the box is hidden until "+ Tag", then the existing tag flow
+  runs. Axe clean.
