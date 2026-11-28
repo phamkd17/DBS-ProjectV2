@@ -752,7 +752,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(sp.getByRole("button", { name: "Edit ingredients" })).toHaveCount(0); // shared links are read-only
   await check(sp, "shared-signed-out", { keyboard: true });
 
-  await page.getByRole("button", { name: "Turn off link" }).click();
+  await page.getByRole("button", { name: "Turn off", exact: true }).click();
   await expect(page.getByRole("button", { name: "Make a link" })).toBeVisible();
   await sp.reload();
   await expect(sp.getByRole("heading", { name: /isn.t shared anymore/ })).toBeVisible();
