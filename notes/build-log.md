@@ -1036,3 +1036,6 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Tags vs the rows below (the student's request): Notes + Send are wrapped as
   one block with `pt-4` above, and Send has only a bottom rule, so there's no
   doubled line between them. Verify ✓, axe clean.
+
+## Nov 28 — PR for compact-recipe
+- /security-review on the branch (fresh subagent): no findings ≥ 8. PR opened; merge waits for the student.
