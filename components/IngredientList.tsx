@@ -46,7 +46,9 @@ export function IngredientList({ ingredients, cookName }: { ingredients: Recipe[
         <div key={g.part || "_"} className={g.part ? `space-y-1.5 ${gi > 0 ? "pt-6" : ""}` : ""}>
           {g.part && <h3 className={partHeading}>{g.part}</h3>}
           {/* Items under a component are indented a little (student, Nov 28). */}
-          <ul className={`divide-y divide-ls-border border-y border-ls-ink ${g.part ? "ml-4" : ""}`}>
+          {/* The dark top/bottom lines sit on the first/last row (not the list), so every line
+              stops beside the dish photo the same way (student, Nov 28). */}
+          <ul className={`divide-y divide-ls-border ${g.part ? "ml-4" : ""}`}>
             {g.items.map(({ item: ing, index: i }) => {
               const { rest, history } = splitNote(ing.note);
               const line = (
@@ -57,7 +59,7 @@ export function IngredientList({ ingredients, cookName }: { ingredients: Recipe[
                 </p>
               );
               return (
-                <li key={i} className="flow-root space-y-0.5 py-2">
+                <li key={i} className="flow-root space-y-0.5 py-2 first:border-t first:border-t-ls-ink last:border-b last:border-b-ls-ink">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     {rest ? (
                       <IngredientNote note={rest} item={ing.item}>
