@@ -73,6 +73,8 @@
 | Nov 28 | One **"All notes" switch** opens or closes every note on a recipe; it sits on the breadcrumb line, and the breadcrumb is just the tab (the recipe's name is the title) | Its own row above the title |
 | Nov 28 | **Muted notes**: no blue/green; a thin gray rule and a softer open icon (the icons and headings tell food science and adjustments apart) | Tinted panels (tried first) |
 | Nov 28 | **Tags like a mobile app**: one row of small chips ending in "+ Tag" (it turns into a small box in the row); suggestions only while typing; no Add button | |
+| Nov 28 | **Send this recipe in one line**: "Send this recipe" + Make a link; once it's on, Send… / Copy link / Turn off and one short line | A Share icon at the top that opens a small window |
+| Nov 28 | **Tags set apart** from the Notes and Send rows below, which form one block | |
 
 ## What the app is
 

@@ -1028,3 +1028,11 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   runs. Axe clean.
 - Removed the "All tags" link from a recipe's Tags (the student's request). The
   Tags page is still one tap away from the Recipes tab filter row. Verify ✓.
+- Send (the student picked "one line" over a Share icon at the top): an
+  eyebrow and a compact Make a link (min-h-10). With the link on: "Send · link
+  on", Send… (`navigator.share`, falling back to copy), Copy link, Turn off,
+  the URL as a small read-only line (sr-only label "Private link"), and one
+  short sentence. ~190px → ~50px.
+- Tags vs the rows below (the student's request): Notes + Send are wrapped as
+  one block with `pt-4` above, and Send has only a bottom rule, so there's no
+  doubled line between them. Verify ✓, axe clean.
