@@ -468,13 +468,22 @@ async function loadRecipeJson(supabase: Supa, recipeId: string, iterationId: str
     const { data } = await supabase.from("recipes").select("recipe").eq("id", recipeId).single<Pick<RecipeRow, "recipe">>();
     return data;
   }
-  const { data } = await supabase.from("iterations").select("recipe").eq("id", iterationId).not("recipe", "is", null).single<Pick<RecipeRow, "recipe">>();
+  // The iteration must belong to this recipe's entry (security pass: no mixing rows).
+  const { data: base } = await supabase.from("recipes").select("dictation_id").eq("id", recipeId).maybeSingle();
+  if (!base) return null;
+  const { data } = await supabase
+    .from("iterations")
+    .select("recipe")
+    .eq("id", iterationId)
+    .eq("dictation_id", base.dictation_id)
+    .not("recipe", "is", null)
+    .single<Pick<RecipeRow, "recipe">>();
   return data;
 }
 async function saveRecipeJson(supabase: Supa, recipeId: string, iterationId: string | null, recipe: NonNullable<RecipeRow["recipe"]>) {
-  return iterationId
-    ? supabase.from("iterations").update({ recipe }).eq("id", iterationId)
-    : supabase.from("recipes").update({ recipe }).eq("id", recipeId);
+  if (!iterationId) return supabase.from("recipes").update({ recipe }).eq("id", recipeId);
+  const { data: base } = await supabase.from("recipes").select("dictation_id").eq("id", recipeId).maybeSingle();
+  return supabase.from("iterations").update({ recipe }).eq("id", iterationId).eq("dictation_id", base?.dictation_id ?? "");
 }
 
 // ---------------------------------------------------------------------------
