@@ -16,6 +16,8 @@ import { SharePanel } from "./SharePanel";
 import { TagPicker } from "@/components/TagPicker";
 import { EntryPhotos } from "@/components/EntryPhotos";
 import { DishPhoto } from "@/components/DishPhoto";
+import { AllNotesProvider, AllNotesSwitch } from "@/components/RecipeExtras";
+import { recipeHasNotes } from "@/components/IngredientList";
 import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
 import type { TagRow } from "@/lib/types";
 
@@ -94,14 +96,18 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
   const shareUrl = recipe.share_token ? `${origin}/s/${recipe.share_token}` : null;
 
   return (
+    <AllNotesProvider>
     <main className="space-y-6">
-      <p className={eyebrow}>
-        <Link href={`/?tab=${dictation.stage}`} className={textLink}>
-          {STAGE_LABEL[dictation.stage]}
-        </Link>{" "}
-        / {recipe.recipe.title}
-        {recipe.copied_from ? " · saved from a link" : ""}
-      </p>
+      {/* Breadcrumb and the "All notes" switch share one line; the recipe's name is the title below (student, Nov 28). */}
+      <div className="flex items-center justify-between gap-3">
+        <p className={eyebrow}>
+          <Link href={`/?tab=${dictation.stage}`} className={textLink}>
+            {STAGE_LABEL[dictation.stage]}
+          </Link>
+          {recipe.copied_from ? " · saved from a link" : ""}
+        </p>
+        {recipeHasNotes(recipe.recipe) && <AllNotesSwitch />}
+      </div>
 
       {dictation.edited_at && dictation.edited_at > recipe.updated_at && (
         <p role="note" className="border-l-2 border-ls-ink bg-ls-surface px-4 py-3 text-[15px]">
@@ -114,6 +120,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
         recipe={recipe.recipe}
         cookName={dictation.cook_name}
         editableRecipeId={recipe.id}
+        switchOutside
         aside={<DishPhoto dictationId={dictation.id} photo={dish && { id: dish.id, url: dish.url }} />}
       />
 
@@ -189,5 +196,6 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
       </div>
 
     </main>
+    </AllNotesProvider>
   );
 }

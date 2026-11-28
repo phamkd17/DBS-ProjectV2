@@ -29,39 +29,57 @@ function useFollowAll(): [boolean, (f: (o: boolean) => boolean) => void] {
   return [open, setOpen];
 }
 
-export function SourcesScope({ children, hasNotes = false }: { children: ReactNode; hasNotes?: boolean }) {
-  // The "Show sources" switch was removed (student, Nov 27: not needed). The
-  // labels are still saved with every recipe; they're just never shown.
+/** Shares the "All notes" switch between the breadcrumb line and the recipe below it. */
+export function AllNotesProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState({ all: false, gen: 0 });
   return (
-    <AllNotes.Provider value={state}>
-      <div data-sources="hidden" className="group/sources">
-        {hasNotes && (
-          <div className="-mt-2 mb-1 flex justify-end">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={state.all}
-              onClick={() => setState((s) => ({ all: !s.all, gen: s.gen + 1 }))}
-              className={`inline-flex min-h-11 cursor-pointer items-center gap-3 px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-muted hover:text-ls-ink ${focusRing}`}
-            >
-              <span
-                aria-hidden
-                className={`relative h-5 w-9 shrink-0 rounded-full border border-ls-ink transition-colors ${state.all ? "bg-ls-ink" : "bg-ls-surface"}`}
-              >
-                <span
-                  className={`absolute top-1/2 left-[3px] size-3 -translate-y-1/2 rounded-full transition-transform duration-150 motion-reduce:transition-none ${
-                    state.all ? "translate-x-4 bg-ls-surface" : "bg-ls-ink"
-                  }`}
-                />
-              </span>
-              Show all notes
-            </button>
-          </div>
-        )}
-        {children}
-      </div>
-    </AllNotes.Provider>
+    <AllNotesSet.Provider value={setState}>
+      <AllNotes.Provider value={state}>{children}</AllNotes.Provider>
+    </AllNotesSet.Provider>
+  );
+}
+const AllNotesSet = createContext<((f: (s: { all: boolean; gen: number }) => { all: boolean; gen: number }) => void) | null>(null);
+
+/** The "All notes" switch (student, Nov 28: on the breadcrumb line, not its own row). */
+export function AllNotesSwitch() {
+  const { all } = useContext(AllNotes);
+  const set = useContext(AllNotesSet);
+  if (!set) return null;
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={all}
+      onClick={() => set((s) => ({ all: !s.all, gen: s.gen + 1 }))}
+      className={`-my-3 inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-muted hover:text-ls-ink ${focusRing}`}
+    >
+      <span aria-hidden className={`relative h-4 w-7 shrink-0 rounded-full border border-ls-ink transition-colors ${all ? "bg-ls-ink" : "bg-ls-surface"}`}>
+        <span
+          className={`absolute top-1/2 left-[2px] size-2.5 -translate-y-1/2 rounded-full transition-transform duration-150 motion-reduce:transition-none ${
+            all ? "translate-x-3 bg-ls-surface" : "bg-ls-ink"
+          }`}
+        />
+      </span>
+      All notes
+    </button>
+  );
+}
+
+export function SourcesScope({ children, hasNotes = false, ownSwitch = true }: { children: ReactNode; hasNotes?: boolean; ownSwitch?: boolean }) {
+  // The "Show sources" switch was removed (student, Nov 27: not needed). The
+  // labels are still saved with every recipe; they're just never shown.
+  const body = <div data-sources="hidden" className="group/sources">{children}</div>;
+  // The owner's recipe page puts the switch on its breadcrumb line (ownSwitch = false).
+  if (!ownSwitch) return body;
+  return (
+    <AllNotesProvider>
+      {hasNotes && (
+        <div className="mb-2 flex justify-end">
+          <AllNotesSwitch />
+        </div>
+      )}
+      {body}
+    </AllNotesProvider>
   );
 }
 

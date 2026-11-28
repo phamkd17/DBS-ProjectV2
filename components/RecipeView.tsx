@@ -15,12 +15,14 @@ type Props = {
   editableRecipeId?: string;
   /** Shown to the right of the title and ingredients (the dish photo, student Nov 28). */
   aside?: ReactNode;
+  /** The page shows the "All notes" switch itself (on its breadcrumb line). */
+  switchOutside?: boolean;
 };
 
 /** The finished recipe: ingredients, steps, the why labeled by source, and her words. */
-export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId, aside }: Props) {
+export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId, aside, switchOutside }: Props) {
   return (
-    <SourcesScope hasNotes={recipeHasNotes(recipe)}>
+    <SourcesScope hasNotes={recipeHasNotes(recipe)} ownSwitch={!switchOutside}>
     <article className="space-y-5">
       {/* The dish photo floats right; the title and ingredient rows wrap around it,
           and rows below it run full width (student, Nov 28). */}

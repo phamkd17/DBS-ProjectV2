@@ -693,7 +693,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   }
   await check(page, "recipe-science-and-dials-open");
   // "Show all notes" opens every note at once, and closes them again (student, Nov 28).
-  const allNotes = main.getByRole("switch", { name: "Show all notes" });
+  const allNotes = main.getByRole("switch", { name: "All notes" });
   await allNotes.click();
   await expect(allNotes).toHaveAttribute("aria-checked", "true");
   for (const b of await main.getByRole("button", { name: /^(Why step \d+ works|Adjust step \d+ to taste|Note about .*|Adjust .* to taste)$/ }).all())
