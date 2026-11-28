@@ -20,7 +20,7 @@ import { getConfig, ModelError, RateLimitError } from "./pipeline";
 import { jsonSchemaFor, type Recipe } from "./schema";
 import { NUTRIENTS, searchFood, type Per100g, type UsdaFood } from "./usda";
 
-export const NUTRITION_PROMPT_VERSION = "n2";
+export const NUTRITION_PROMPT_VERSION = "n3";
 const MAX_ROUNDS = 5; // the last round may only report
 const MAX_SEARCHES = 40; // per estimate, to protect the USDA limit
 const MAX_GRAMS = 10_000; // one ingredient in a home recipe
@@ -110,12 +110,13 @@ Rules:
 5. servings: use the recipe's own number if it gives one (servings_source "cook"). Otherwise suggest a reasonable number (servings_source "suggested").
 6. Every ingredient goes in items or skipped, exactly once.`;
 
-export function nutritionUser(r: Pick<Recipe, "title" | "ingredients" | "steps">) {
+export function nutritionUser(r: Pick<Recipe, "ingredients" | "steps">) {
   const ings = r.ingredients
     .map((i) => `- ${[i.amount, i.item].filter(Boolean).join(" ")}${i.note ? ` (${i.note})` : ""}`)
     .join("\n");
   const steps = r.steps.map((s, n) => `${n + 1}. ${s.text}`).join("\n");
-  return `Recipe: ${r.title}\n\nIngredients:\n${ings}\n\nInstructions (for servings and what's removed):\n${steps}`.slice(0, 20_000);
+  // No title: the ingredients and steps are enough, and it keeps the dev cache stable.
+  return `Ingredients:\n${ings}\n\nInstructions (for servings and what's removed):\n${steps}`.slice(0, 20_000);
 }
 
 /** What happened during one estimate, for the eval and the logs. */

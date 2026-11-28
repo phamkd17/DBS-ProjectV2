@@ -341,6 +341,19 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(mr.getByText(/Kitchen notes/)).toHaveCount(0); // no kitchen-notes section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
 
+  // ---- Nutrition estimate: Gemini tool calls to USDA (issue #14) ----
+  const nut = mr.locator("details").filter({ has: page.locator("summary", { hasText: /^Nutrition/ }) });
+  await nut.locator("summary").click();
+  await expect(nut.getByText("Estimate calories and nutrients from the USDA food database.")).toBeVisible();
+  await check(page, "nutrition-empty", { keyboard: true });
+  await nut.getByRole("button", { name: "Estimate nutrition" }).click();
+  await expect(nut.getByText("Calories", { exact: true })).toBeVisible({ timeout: 180_000 });
+  await expect(nut.locator("summary")).toContainText(/≈ [\d,]+ kcal/); // shown even when closed
+  await nut.getByText("How it was counted").click();
+  await expect(nut.getByRole("link", { name: /milk/i })).toBeVisible(); // a real USDA food, linked
+  await expect(nut.getByText(/Not counted: vanilla bean/)).toBeVisible(); // no amount → not counted
+  await check(page, "nutrition", { keyboard: true });
+
   // ---- Dish photo beside the title and ingredients, with cropping (student, Nov 28) ----
   await expect(mr.getByRole("button", { name: "Add dish photo" })).toBeVisible();
   const dishInput = mr.locator('input[type="file"][aria-label="Dish photo"]');
