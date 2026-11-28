@@ -1144,3 +1144,36 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Component headings: 19px semibold Ink (was 12px uppercase), with items and step text at 16px (was 17px), so Ingredients (24) > component (19) > items (16). Space between components 12 → 24px. Verify ✓, axe clean.
 - Bulk move polish (the student's screenshots): the checkbox moved to the row's left edge (`RowCheck`, beside the step number) in all three editors. The Move bar moved from sticky-bottom (the browser's own bars covered it) to fixed at the top of the screen like a phone's selection bar, so ticking never shifts the list. Items and steps under a component heading are indented (ml-4) in the recipe view. Verify ✓, axe clean.
 - Component headings: 19px medium in Slate (`font-ls-sans`, so not the forced 600 of `font-ls-serif`). Section headings are 24px semibold Ink. The student's pick of three. Axe clean.
+
+## Nov 28 — Prompt p5: components (part of #12)
+- Schema: optional `section` on Ingredient and Step, described for the model
+  ("in the cook's words; "" for a one-part dish and for general steps").
+- Prompt rule 8 (shared by both passes): use components only when the dish has
+  separately prepared parts; the same name on that part's ingredients and
+  steps; "" for preheating/assembling/baking/serving; never reorder to group
+  (the order rule wins). PROMPT_VERSION p4 → p5. No eval answers pasted in.
+- New eval checks (not must): components match between ingredients and steps
+  (all samples, draft and final), and the yogurt (one pot) gets no
+  components.
+- `npm run eval` (gemini-3.5-flash, 6 calls): **52/55, all must-pass**. On
+  the same 50 checks as p4: **47/50 vs 45/50**. Still missed: where the green
+  onions go (soup), which kind of milk and fridge vs freezer (yogurt). The
+  model used components sensibly: tomato-tofu → Tofu / Tomato Sauce, the soup
+  → Rice, yogurt → none. Saved as
+  `evals/results/2026-11-28T02-57-38-324Z_p5_gemini-3.5-flash.json`.
+- Still open in #12: reframe the prompt from "families preserve recipes" to
+  recipe development, and a flan dictation as a 4th sample (needs the
+  student's own dictation, verbatim).
+- Verify with the new prompt made real calls (cache miss). One check was too
+  broad ("removed ingredient" matched a step that mentions sugar), so it's now
+  scoped to the Ingredients region.
+
+## Nov 28 — Lines and buttons
+- Double line in Instructions (the student's screenshot): runs each drew top
+  and bottom lines. Now every ingredient group and step run has the same
+  indented dark top/bottom lines, with light dividers between. A step run
+  without a heading that follows another run drops its top line, so the two
+  share one line.
+- Red: Save ingredients/instructions are primary (the one red action while
+  editing); Make a link and Send… are secondary. Removed the extra line above
+  Move to.

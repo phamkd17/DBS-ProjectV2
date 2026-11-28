@@ -82,6 +82,8 @@
 | Nov 28 | Call them **Components**, and pick a row's component with **one tap** on a chip instead of a dropdown | A dropdown per row (two taps) |
 | Nov 28 | Put several ingredients or steps into a component at once: **tick the rows, then tap the component** | Paste a list into a component; edit laid out by component |
 | Nov 28 | Component headings are **gray, medium weight** (still bigger than the items), so they read as a level below Ingredients/Instructions; their items are indented | Bigger section headings; a dash marker before each component |
+| Nov 28 | The **AI uses components** too (prompt p5): it splits a dish into components only when it really has separate parts, in the cook's words | |
+| Nov 28 | On a recipe, **Save** (while editing) is the red action; **Make a link** is not red; no double lines anywhere in the lists | |
 
 ## What the app is
 
