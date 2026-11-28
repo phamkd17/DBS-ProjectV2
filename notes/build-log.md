@@ -1026,3 +1026,5 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   it's open. No Add button. The tags block went from ~250px to ~60px when not
   editing. Verify: the box is hidden until "+ Tag", then the existing tag flow
   runs. Axe clean.
+- Removed the "All tags" link from a recipe's Tags (the student's request). The
+  Tags page is still one tap away from the Recipes tab filter row. Verify ✓.
