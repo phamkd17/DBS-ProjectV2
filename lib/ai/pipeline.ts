@@ -53,10 +53,25 @@ function getConfig() {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Token cap (issue #5; v2 brief: "set a token cap"). Output includes thinking
+ * tokens; a full recipe is a few thousand. Input is capped elsewhere (kitchen
+ * notes ≤ 20,000 characters, answers ≤ 2,000 each).
+ */
+const MAX_OUTPUT_TOKENS = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS) || 16_384;
+/**
+ * Input cap on the whole prompt (security pass #6): the kitchen notes are capped at
+ * 20,000 characters, but pass 2 also sends the draft and the questions, which a user
+ * could make huge by writing to the database directly. A real recipe is far below this.
+ */
+const MAX_PROMPT_CHARS = 80_000;
+
 async function generate<T>(
   schema: z.ZodType<T>,
   system: string,
-  user: string
+  user: string,
+  /** Runs right before a real Gemini call (not on a dev cache hit): the per-user limit. */
+  beforeCall?: () => Promise<void>,
 ): Promise<{ data: T; model: string; ms: number }> {
   const { ai, model, thinkingLevel } = getConfig();
   const started = Date.now();
@@ -70,9 +85,15 @@ async function generate<T>(
     console.log(`[ai] cache hit (${cacheKey.slice(0, 8)}): no Gemini call`);
     return { data: cached.data, model, ms: 0 };
   }
+  if (system.length + user.length > MAX_PROMPT_CHARS) {
+    throw new ModelError("That's too much to send to the recipe helper at once. Try shorter kitchen notes.");
+  }
   console.log(`[ai] calling Gemini (${model})`);
 
   for (let attempt = 0; ; attempt++) {
+    // Every real call counts toward the per-user limit, retries included (security pass #6).
+    // Throws AiLimitError when over: no call is made.
+    await beforeCall?.();
     try {
       const res = await ai.models.generateContent({
         model,
@@ -80,11 +101,15 @@ async function generate<T>(
         config: {
           systemInstruction: system,
           temperature: 0.2,
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
           responseMimeType: "application/json",
           responseJsonSchema,
           ...(thinkingLevel ? { thinkingConfig: { thinkingLevel } } : {}),
         },
       });
+      if (res.candidates?.[0]?.finishReason === "MAX_TOKENS") {
+        throw new ModelError("The recipe came out too long for one answer. Try shorter kitchen notes, or split them.");
+      }
       const text = res.text;
       if (!text) throw new ModelError("The model returned an empty response.");
       const parsed = schema.safeParse(JSON.parse(text));
@@ -116,11 +141,12 @@ async function generate<T>(
 }
 
 /** Pass 1: transcript → draft recipe + questions. */
-export async function draftRecipe(transcript: string, dishName?: string) {
+export async function draftRecipe(transcript: string, dishName?: string, beforeCall?: () => Promise<void>) {
   const { data, model, ms } = await generate(
     Pass1Output,
     PASS1_SYSTEM,
-    pass1User(transcript, dishName)
+    pass1User(transcript, dishName),
+    beforeCall,
   );
   return { ...data, model, ms, prompt_version: PROMPT_VERSION };
 }
@@ -129,7 +155,8 @@ export async function draftRecipe(transcript: string, dishName?: string) {
 export async function finalizeRecipe(
   transcript: string,
   draft: Recipe,
-  answers: Answer[]
+  answers: Answer[],
+  beforeCall?: () => Promise<void>,
 ) {
   const answersForModel = answers.map((a) => ({
     kind: a.question.kind,
@@ -145,7 +172,8 @@ export async function finalizeRecipe(
       transcript,
       JSON.stringify(draft, null, 2),
       JSON.stringify(answersForModel, null, 2)
-    )
+    ),
+    beforeCall,
   );
   return { recipe: data, model, ms, prompt_version: PROMPT_VERSION };
 }

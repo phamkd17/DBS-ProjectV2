@@ -179,11 +179,17 @@ function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: {
         {/* Two lines, three styles (student, Nov 27): the name with its tags and cook
             beside it in the small label style, then one line of preview. No date. */}
         <div className="min-w-0 space-y-0.5">
-          <p className="flex min-w-0 items-baseline gap-x-3">
-            <span className="truncate font-ls-serif text-xl leading-tight">{title}</span>
-            {[...tags, ...meta].length > 0 && (
-              <span className={`shrink-0 truncate ${eyebrow} max-w-[50%]`}>{[...tags, ...meta].join(" · ")}</span>
-            )}
+          {/* The full name always shows (wraps if long). Tags follow on its last line,
+              each kept whole, and move to the next line only when they don't fit (student, Nov 28). */}
+          <p className="leading-snug">
+            {/* Spacing is a trailing margin + a space, so a tag that wraps starts flush left. */}
+            <span className="mr-2 font-ls-serif text-xl leading-tight">{title}</span>
+            {[...tags, ...meta].map((t, i) => (
+              <span key={`${t}-${i}`}>
+                {" "}
+                <span className={`mr-2 inline-block whitespace-nowrap align-[0.1em] ${eyebrow}`}>{t}</span>
+              </span>
+            ))}
           </p>
           {preview && <p className="truncate text-[15px] text-ls-muted">{preview}</p>}
         </div>

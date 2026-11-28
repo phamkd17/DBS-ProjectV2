@@ -75,6 +75,7 @@
 | Nov 28 | **Tags like a mobile app**: one row of small chips ending in "+ Tag" (it turns into a small box in the row); suggestions only while typing; no Add button | |
 | Nov 28 | **Send this recipe in one line**: "Send this recipe" + Make a link; once it's on, Send… / Copy link / Turn off and one short line | A Share icon at the top that opens a small window |
 | Nov 28 | **Tags set apart** from the Notes and Send rows below, which form one block | |
+| Nov 28 | **AI limits** (#5): each person can make 20 AI requests an hour and 50 a day (a recipe is 1–2); a clear message says when they can make more; every call has a token cap | |
 
 ## What the app is
 
