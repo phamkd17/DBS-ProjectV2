@@ -1200,3 +1200,27 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   date order; edit; delete. Axe clean.
 - Not yet: the AI summary of trials and its eval (#9's AI part), and photos on
   trials.
+
+## Nov 28 — Iterations as recipe versions (replaces the trial log)
+- The student: manual only, no suggestion chips; each iteration is a slightly
+  different recipe with its own notes. Migration
+  `20261128040000_iterations.sql` drops the unmerged `trials` (test data
+  only) and adds `iterations` (entry, `made_on`, `notes` ≤5000, `recipe`
+  jsonb ≤200 KB). recipe = null is the original's notes row (a partial unique
+  index allows one). Owner-only RLS; the insert checks the entry; update
+  grant is (made_on, notes, recipe) only. Tested as two users (rolled back):
+  own only, B can't add/edit/delete A's, re-pointing and a second original
+  row blocked, anon blocked.
+- Actions: `createIteration` copies the viewed version's recipe JSON and
+  redirects to `?it=<id>`; `saveIterationNotes` (original → upsert the null
+  row); `deleteIteration` (never the original). `updateIngredients` /
+  `updateSteps` take an `iterationId` and read/write through
+  `loadRecipeJson`/`saveRecipeJson`, so the pencils edit whichever version is
+  shown.
+- Page: `?it=` picks the version. `IterationBar` (above the title):
+  "1 · Nov 27  2 · Nov 28  + New iteration", then the current iteration's
+  date and notes with a pencil (and × for non-original). Shared links and the
+  AI show the original. Tags, dish photo, and notes from Ideas/Development
+  belong to the dish (shared by all iterations).
+- Verify: notes on 1; + New iteration; change an amount in 2; notes on 2; the
+  original is unchanged; delete 2. Axe clean.
