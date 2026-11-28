@@ -376,6 +376,31 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await dishView.getByRole("button", { name: "Remove" }).click();
   await expect(mr.getByRole("button", { name: "Add dish photo" })).toBeVisible();
 
+  // ---- Edit the instructions: text, Why it works, Adjust to taste (student, Nov 28) ----
+  await expect(mr.getByRole("heading", { name: "Instructions" })).toBeVisible();
+  await mr.getByRole("button", { name: "Edit instructions" }).click();
+  const ed = mr.locator("form").filter({ has: page.getByRole("button", { name: "Save instructions" }) });
+  await ed.getByRole("textbox", { name: "Step 1", exact: true }).fill("Heat the milk until it steams, about 180°F. Don't let it boil.");
+  await ed.getByRole("button", { name: "+ Why it works" }).nth(1).click(); // step 2
+  await ed.getByRole("textbox", { name: /Why it works \(step 2, note 1\)/ }).fill("Sugar dissolves faster in warm milk.");
+  await ed.getByRole("button", { name: "+ Adjust to taste" }).nth(1).click();
+  await ed.getByRole("textbox", { name: "If you" }).fill("more sugar");
+  await ed.getByRole("textbox", { name: "It comes out" }).fill("sweeter");
+  await check(page, "instructions-editing", { keyboard: true });
+  await ed.getByRole("button", { name: "Save instructions" }).click();
+  await expect(mr.getByText("about 180°F", { exact: false })).toBeVisible();
+  await expect(mr.getByRole("button", { name: "Edit instructions" })).toBeFocused();
+  await mr.getByRole("button", { name: "Why step 2 works" }).click();
+  await expect(mr.getByText("Sugar dissolves faster in warm milk.")).toBeVisible();
+  await mr.getByRole("button", { name: "Adjust step 2 to taste" }).click();
+  await expect(mr.getByText("sweeter", { exact: true })).toBeVisible();
+  // Remove step 1's food-science note.
+  await mr.getByRole("button", { name: "Edit instructions" }).click();
+  await ed.getByRole("button", { name: "Remove why it works 1 from step 1" }).click();
+  await ed.getByRole("button", { name: "Save instructions" }).click();
+  await expect(mr.getByRole("button", { name: "Edit instructions" })).toBeVisible();
+  await expect(mr.getByRole("button", { name: "Why step 1 works" })).toHaveCount(0);
+
   // ---- Tags (Recipes tab): type to add, several per recipe, filter, delete (the recipe stays) ----
   const TAG = `Desserts ${RUN}`;
   const TAG2 = `Breakfast ${RUN}`;

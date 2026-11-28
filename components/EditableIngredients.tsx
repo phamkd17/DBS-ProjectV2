@@ -60,10 +60,7 @@ export function EditableIngredients({
           }}
           className="space-y-4 border border-ls-ink bg-ls-surface p-4"
         >
-          <p className="text-[15px] text-ls-muted">
-            Changes are labeled <span className="font-medium text-ls-ink">Family answer</span>, and the old amounts
-            are kept in each ingredient&apos;s note.
-          </p>
+          <p className="text-[15px] text-ls-muted">Change amounts and names, add or remove ingredients.</p>
           <input type="hidden" name="rows" value={JSON.stringify(rows.map(({ orig, amount, item }) => ({ orig, amount, item })))} />
           <ul className="space-y-3">
             {rows.map((r, n) => (

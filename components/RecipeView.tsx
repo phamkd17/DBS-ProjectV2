@@ -1,5 +1,6 @@
 import type { Recipe } from "@/lib/ai/schema";
 import { EditableIngredients } from "./EditableIngredients";
+import { EditableSteps } from "./EditableSteps";
 import { SourcesScope, StepExtras } from "./RecipeExtras";
 import { IngredientList, recipeHasNotes } from "./IngredientList";
 import { SourceBadge, Transcript } from "./ui";
@@ -45,10 +46,9 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
       )}
       </div>
 
-      <section aria-labelledby="steps" className="space-y-2">
-        <h2 id="steps" className="font-ls-serif text-2xl leading-tight">
-          Steps
-        </h2>
+      {/* "Instructions" (was "Steps"; student, Nov 28). The owner can edit them from one pencil. */}
+      {editableRecipeId ? (
+        <EditableSteps recipeId={editableRecipeId} steps={recipe.steps}>
         <ol className="divide-y divide-ls-border border-y border-ls-ink">
           {recipe.steps.map((step, i) => (
             <li key={i} className="flex gap-3 py-2">
@@ -72,7 +72,37 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
             </li>
           ))}
         </ol>
-      </section>
+        </EditableSteps>
+      ) : (
+        <section aria-labelledby="steps" className="space-y-2">
+          <h2 id="steps" className="font-ls-serif text-2xl leading-tight">
+            Instructions
+          </h2>
+        <ol className="divide-y divide-ls-border border-y border-ls-ink">
+          {recipe.steps.map((step, i) => (
+            <li key={i} className="flex gap-3 py-2">
+              {/* The number sits on the first line of the step (compact, Nov 28). */}
+              <span aria-hidden className="w-5 shrink-0 font-ls-serif text-[17px] leading-relaxed text-ls-muted">
+                {i + 1}
+              </span>
+              <div className="min-w-0 flex-1 space-y-2">
+                <StepExtras step={step} number={i + 1} cookName={cookName} />
+                {step.from_answers.length > 0 && (
+                  <ul className="src-only space-y-1.5">
+                    {step.from_answers.map((a, j) => (
+                      <li key={j} className="flex flex-wrap items-baseline gap-2 text-[15px] text-ls-muted">
+                        <SourceBadge source={a.source} /> {a.text}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+              </div>
+            </li>
+          ))}
+        </ol>
+        </section>
+      )}
 
       {recipe.notes.length > 0 && (
         <section aria-labelledby="changes" className="src-only space-y-3">

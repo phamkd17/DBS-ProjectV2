@@ -532,6 +532,74 @@ export async function updateIngredients(
 }
 
 // ---------------------------------------------------------------------------
+// Edit the instructions (student, Nov 28): each step's text, its "Why it works"
+// (food science) and "Adjust to taste" notes. Unchanged parts keep their source;
+// anything changed or added is labeled as yours (user_answer).
+// ---------------------------------------------------------------------------
+type StepRow = {
+  orig: number | null;
+  text: string;
+  why: { orig: number | null; text: string }[];
+  dials: { orig: number | null; setting: string; effect: string }[];
+};
+
+export async function updateSteps(recipeId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  let rows: StepRow[];
+  try {
+    rows = JSON.parse(String(formData.get("rows") ?? "[]"));
+    if (!Array.isArray(rows) || rows.length > 60) throw new Error("bad");
+  } catch {
+    return { error: "Something went wrong reading the steps. Refresh and try again." };
+  }
+  const supabase = await supabaseForUser();
+  // RLS: only your own recipe comes back.
+  const { data: row } = await supabase.from("recipes").select("recipe").eq("id", recipeId).single<Pick<RecipeRow, "recipe">>();
+  if (!row?.recipe) return { error: "We couldn't find that recipe in your lab book." };
+  const old = row.recipe.steps;
+  const idx = (v: unknown, list: unknown[]) => (typeof v === "number" && Number.isInteger(v) && v >= 0 && v < list.length ? v : null);
+  const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
+
+  const steps: typeof old = [];
+  for (const r of rows) {
+    const text = clip(r.text, 2000);
+    const o = old[idx(r.orig, old) ?? -1];
+    const whyIn = (Array.isArray(r.why) ? r.why : []).slice(0, 8);
+    const dialsIn = (Array.isArray(r.dials) ? r.dials : []).slice(0, 8);
+    const why = whyIn.flatMap((w) => {
+      const t = clip(w.text, 1000);
+      if (!t) return [];
+      const ow = o?.why[idx(w.orig, o?.why ?? []) ?? -1];
+      const shown = ow ? (ow.source === "cook" && ow.quote?.trim() ? ow.quote : ow.text) : null;
+      return [ow && shown === t ? ow : { source: "user_answer" as const, text: t, quote: "" }];
+    });
+    const dials = dialsIn.flatMap((d) => {
+      const setting = clip(d.setting, 120);
+      const effect = clip(d.effect, 200);
+      if (!setting && !effect) return [];
+      const od = o?.dials[idx(d.orig, o?.dials ?? []) ?? -1];
+      return [od && od.setting === setting && od.effect === effect ? od : { setting, effect, source: "user_answer" as const }];
+    });
+    if (!text && why.length === 0 && dials.length === 0) continue; // an empty new step
+    if (!text) return { error: "A step has notes but no instructions. Add the step's text, or remove it." };
+    steps.push({ text, from_answers: o?.from_answers ?? [], why, dials });
+  }
+  if (steps.length === 0) return { error: "Keep at least one step." };
+
+  const { error } = await supabase
+    .from("recipes")
+    // Not bumping updated_at (see updateIngredients).
+    .update({ recipe: { ...row.recipe, steps } })
+    .eq("id", recipeId);
+  if (error) {
+    console.error("[updateSteps]", error);
+    return { error: "Couldn't save the instructions. Your changes are still here. Try again." };
+  }
+  revalidatePath(`/r/${recipeId}`);
+  return { saved: true };
+}
+
+// ---------------------------------------------------------------------------
 // Quick-add an idea from the Ideas tab: just a name, Enter, and it's in the
 // list (student, Nov 20). Notes and a link can be added later with the pencil.
 // ---------------------------------------------------------------------------

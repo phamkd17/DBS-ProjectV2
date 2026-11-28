@@ -155,7 +155,7 @@ export function ManualRecipeForm({
       </fieldset>
 
       <fieldset className="space-y-3" aria-describedby={err.steps ? "steps-error" : undefined}>
-        <legend className="font-ls-serif text-3xl leading-tight">Steps</legend>
+        <legend className="font-ls-serif text-3xl leading-tight">Instructions</legend>
         <p className="text-[15px] text-ls-muted">Press Enter for the next step, Shift+Enter for a new line.</p>
         <ol className="space-y-4">
           {steps.map((s, i) => (
