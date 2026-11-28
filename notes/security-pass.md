@@ -87,3 +87,23 @@ or skipped; storage is private and paths are built on the server; uploads are
 checked by their actual bytes; no XSS path (no raw HTML; links limited to
 http/https); public pages show nothing private; no SSRF or injection; logs
 hold no secrets.
+
+## Follow-up review: instructions, components, iterations (Nov 28)
+
+A fresh agent reviewed everything after PR 18 (`edit-instructions` +
+`iterations`): editable instructions, components, prompt p5, the iterations
+table and actions, the summary page, and the logo/icon.
+
+- **Findings at confidence ≥ 8: none.**
+- **Checked safe:** another user's iteration or recipe id finds nothing (RLS),
+  so no one can read, copy, or change someone else's versions; new iterations
+  can only be added to your own entries; an iteration can't be moved to another
+  entry (no update grant on `dictation_id`); shared links never show iterations;
+  inputs are capped; no raw HTML; the SVG icon is static.
+- **Tightened:** an iteration is now only read or saved through its own
+  recipe's entry (before, a user could point an edit at one of *their own*
+  iterations from a different recipe: a correctness quirk, not a security hole).
+  *Checked:* verify passes.
+- **Noted, not changed:** a signed-in owner calling the database directly could
+  write odd recipe JSON into *their own* iteration (same trust model as the
+  original recipe; only that user ever sees it, and React escapes it).
