@@ -32,7 +32,8 @@ export function splitNote(note: string) {
  * The heading over a component ("Caramel sauce"): bigger than its items, smaller than
  * "Ingredients"/"Instructions" (student, Nov 28: 24px > 19px > 16px items).
  */
-export const partHeading = "font-ls-serif text-[19px] leading-tight text-ls-ink";
+// Medium weight in Slate (not the semibold Ink of section headings), so it reads as a sub-level (student, Nov 28).
+export const partHeading = "font-ls-sans text-[19px] font-medium leading-tight text-ls-muted";
 
 export function IngredientList({ ingredients, cookName }: { ingredients: Recipe["ingredients"]; cookName?: string | null }) {
   // Grouped under part headings when the recipe has parts (student, Nov 28).
