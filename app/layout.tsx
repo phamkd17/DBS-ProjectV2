@@ -42,7 +42,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <body className="flex min-h-full flex-col bg-ls-bg font-ls-sans text-ls-ink">
           <header className="border-b border-ls-ink">
             <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3">
-              <Link href="/" className={`font-ls-serif text-2xl leading-none ${focusRing}`}>
+              {/* Bigger wordmark (student, Nov 28). */}
+              <Link href="/" className={`font-ls-serif text-[1.75rem] leading-none sm:text-3xl ${focusRing}`}>
                 Culinary Lab Book
               </Link>
               <div className="flex items-center gap-1">
