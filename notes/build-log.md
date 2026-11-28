@@ -980,3 +980,12 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   (a recipient can't sign the owner's file).
 - Verify: add (tall photo), loads, zoom, Change replaces it (still one), Remove
   brings back the tile. Axe clean.
+- Wrap (the student's request): the photo is a `float-right` (`w-fit`, max
+  112/224px) inside a `flow-root`. Each ingredient row is `flow-root`, so rows
+  beside the photo narrow and their lines stop at it, and rows below it run
+  full width. The list's outer borders moved onto the first/last row
+  (`border-t-ls-ink` / `border-b-ls-ink`, since Tailwind v4's `divide-y`
+  uses border-bottom). Change/Remove live in the viewer's bottom bar
+  (`usePhotoViewer(photos, actions)`). Tapping the photo opens it large with
+  them. Verify: they're absent until the photo is tapped. Fixed a race in the
+  test (waits for the new photo's src before Remove). Axe clean.

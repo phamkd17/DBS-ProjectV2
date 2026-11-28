@@ -67,6 +67,7 @@
 | Nov 28 | On a recipe, **hide everything from Ideas and Development** (inspiration, photos, kitchen notes, the AI's questions) in one closed section; the page shows the recipe, tags, and Send | |
 | Nov 28 | Recipe **headings clearly different** from the ingredients and steps (larger, semibold) | |
 | Nov 28 | A **photo of the dish** on each recipe, to the right of the title and ingredients (one per recipe; it's also the list thumbnail) | |
+| Nov 28 | The title and ingredients **wrap around** the dish photo (rows below it run full width); **Change** and **Remove** appear only after tapping the photo | |
 
 ## What the app is
 
