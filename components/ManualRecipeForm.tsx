@@ -7,7 +7,8 @@ import type { ActionState } from "@/lib/types";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
 type Ing = { key: string; amount: string; item: string };
-type Step = { key: string; text: string; why: string; showWhy: boolean };
+// Each step can have several "Why it works" notes and "Adjust to taste" pairs, like the recipe editor (student, Nov 28).
+type Step = { key: string; text: string; why: { key: string; text: string }[]; dials: { key: string; setting: string; effect: string }[] };
 
 
 const removeBtn = `grid size-11 shrink-0 cursor-pointer place-items-center text-xl text-ls-muted hover:bg-ls-ink/[0.06] hover:text-ls-error active:bg-ls-ink/[0.12] ${focusRing}`;
@@ -28,7 +29,7 @@ export function ManualRecipeForm({
     { key: `${uid}-0`, amount: "", item: "" },
     { key: `${uid}-1`, amount: "", item: "" },
   ]);
-  const [steps, setSteps] = useState<Step[]>(() => [{ key: `${uid}-2`, text: "", why: "", showWhy: false }]);
+  const [steps, setSteps] = useState<Step[]>(() => [{ key: `${uid}-2`, text: "", why: [], dials: [] }]);
   // Errors clear as soon as you edit that part, and come back only on the next Save.
   const [edited, setEdited] = useState<Record<string, boolean>>({});
   const [state, action, pending] = useActionState<ActionState, FormData>((prev, fd) => {
@@ -74,7 +75,7 @@ export function ManualRecipeForm({
     focusId.current = `step-${key}`;
     setSteps((r) => {
       const i = r.findIndex((x) => x.key === after);
-      return [...r.slice(0, i + 1), { key, text: "", why: "", showWhy: false }, ...r.slice(i + 1)];
+      return [...r.slice(0, i + 1), { key, text: "", why: [], dials: [] }, ...r.slice(i + 1)];
     });
   };
 
@@ -86,7 +87,7 @@ export function ManualRecipeForm({
         name="rows"
         value={JSON.stringify({
           ingredients: ings.map(({ amount, item }) => ({ amount, item })),
-          steps: steps.map(({ text, why }) => ({ text, why })),
+          steps: steps.map(({ text, why, dials }) => ({ text, why: why.map((w) => w.text), dials: dials.map(({ setting, effect }) => ({ setting, effect })) })),
         })}
       />
 
@@ -168,18 +169,73 @@ export function ManualRecipeForm({
                   Step {i + 1}
                 </label>
                 <textarea id={`step-${s.key}`} rows={2} value={s.text} maxLength={2000} onChange={(e) => setStep(s.key, { text: e.target.value })} onKeyDown={(e) => nextStep(e, s.key)} placeholder={i === 0 ? "e.g. Heat the milk until it steams. Don't let it boil." : "Next step"} className={fieldClass} />
-                {s.showWhy ? (
-                  <div className="space-y-1">
-                    <label htmlFor={`why-${s.key}`} className={eyebrow}>
-                      Why it works <span className="normal-case tracking-normal">(optional)</span>
-                    </label>
-                    <input id={`why-${s.key}`} value={s.why} maxLength={1000} onChange={(e) => setStep(s.key, { why: e.target.value })} onKeyDown={(e) => nextStep(e, s.key)} placeholder="e.g. Boiling can scorch the milk" className={`${fieldClass} py-2`} />
+                {s.why.map((w, j) => (
+                  <div key={w.key} className="flex items-end gap-2">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <label htmlFor={`why-${w.key}`} className={eyebrow}>
+                        Why it works<span className="sr-only"> (step {i + 1}, note {j + 1})</span>
+                      </label>
+                      <input
+                        id={`why-${w.key}`}
+                        value={w.text}
+                        maxLength={1000}
+                        autoFocus={!w.text}
+                        onChange={(e) => setStep(s.key, { why: s.why.map((y) => (y.key === w.key ? { ...y, text: e.target.value } : y)) })}
+                        placeholder="e.g. Boiling can scorch the milk"
+                        className={`${fieldClass} py-2`}
+                      />
+                    </div>
+                    <button type="button" aria-label={`Remove why it works ${j + 1} from step ${i + 1}`} title="Remove" onClick={() => setStep(s.key, { why: s.why.filter((y) => y.key !== w.key) })} className={removeBtn}>
+                      <span aria-hidden>×</span>
+                    </button>
                   </div>
-                ) : (
-                  <button type="button" onClick={() => setStep(s.key, { showWhy: true })} className={`${addBtn} text-ls-muted`}>
+                ))}
+                {s.dials.map((d, j) => (
+                  <fieldset key={d.key} className="space-y-1">
+                    <legend className={eyebrow}>
+                      Adjust to taste<span className="sr-only"> (step {i + 1}, {j + 1})</span>
+                    </legend>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label htmlFor={`set-${d.key}`} className="sr-only">
+                        If you
+                      </label>
+                      <input
+                        id={`set-${d.key}`}
+                        value={d.setting}
+                        maxLength={120}
+                        autoFocus={!d.setting && !d.effect}
+                        onChange={(e) => setStep(s.key, { dials: s.dials.map((y) => (y.key === d.key ? { ...y, setting: e.target.value } : y)) })}
+                        placeholder="e.g. 12 hours"
+                        className={`${fieldClass} min-w-0 flex-1 basis-32 py-2`}
+                      />
+                      <span aria-hidden className="text-ls-muted">
+                        →
+                      </span>
+                      <label htmlFor={`eff-${d.key}`} className="sr-only">
+                        It comes out
+                      </label>
+                      <input
+                        id={`eff-${d.key}`}
+                        value={d.effect}
+                        maxLength={200}
+                        onChange={(e) => setStep(s.key, { dials: s.dials.map((y) => (y.key === d.key ? { ...y, effect: e.target.value } : y)) })}
+                        placeholder="e.g. super tangy"
+                        className={`${fieldClass} min-w-0 flex-1 basis-32 py-2`}
+                      />
+                      <button type="button" aria-label={`Remove adjust to taste ${j + 1} from step ${i + 1}`} title="Remove" onClick={() => setStep(s.key, { dials: s.dials.filter((y) => y.key !== d.key) })} className={removeBtn}>
+                        <span aria-hidden>×</span>
+                      </button>
+                    </div>
+                  </fieldset>
+                ))}
+                <div className="flex flex-wrap gap-x-4">
+                  <button type="button" onClick={() => setStep(s.key, { why: [...s.why, { key: k(), text: "" }] })} className={`${addBtn} text-ls-muted`}>
                     + Why it works
                   </button>
-                )}
+                  <button type="button" onClick={() => setStep(s.key, { dials: [...s.dials, { key: k(), setting: "", effect: "" }] })} className={`${addBtn} text-ls-muted`}>
+                    + Adjust to taste
+                  </button>
+                </div>
               </div>
               <button type="button" aria-label={`Remove step ${i + 1}`} title="Remove" onClick={() => setSteps((x) => x.filter((y) => y.key !== s.key))} className={removeBtn}>
                 <span aria-hidden>×</span>
@@ -192,7 +248,7 @@ export function ManualRecipeForm({
             {err.steps}
           </p>
         )}
-        <button type="button" onClick={() => setSteps((x) => [...x, { key: k(), text: "", why: "", showWhy: false }])} className={addBtn}>
+        <button type="button" onClick={() => setSteps((x) => [...x, { key: k(), text: "", why: [], dials: [] }])} className={addBtn}>
           + Add step
         </button>
       </fieldset>

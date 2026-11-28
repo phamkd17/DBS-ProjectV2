@@ -680,7 +680,8 @@ export async function deletePhoto(photoId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 type ManualRows = {
   ingredients: { amount: string; item: string }[];
-  steps: { text: string; why: string }[];
+  // why: one string (older form) or several; dials: "Adjust to taste" pairs (student, Nov 28).
+  steps: { text: string; why: string | string[]; dials?: { setting: string; effect: string }[] }[];
 };
 
 export async function createManualRecipe(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -701,7 +702,14 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
     .filter((r) => r.item || r.amount);
   const steps = rows.steps
     .slice(0, 80)
-    .map((r) => ({ text: String(r?.text ?? "").trim().slice(0, 2000), why: String(r?.why ?? "").trim().slice(0, 1000) }))
+    .map((r) => ({
+      text: String(r?.text ?? "").trim().slice(0, 2000),
+      why: (Array.isArray(r?.why) ? r.why : [r?.why]).slice(0, 8).map((w) => String(w ?? "").trim().slice(0, 1000)).filter(Boolean),
+      dials: (Array.isArray(r?.dials) ? r.dials : [])
+        .slice(0, 8)
+        .map((d) => ({ setting: String(d?.setting ?? "").trim().slice(0, 120), effect: String(d?.effect ?? "").trim().slice(0, 200) }))
+        .filter((d) => d.setting || d.effect),
+    }))
     .filter((r) => r.text);
 
   const fieldErrors: Record<string, string> = {};
@@ -724,8 +732,8 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
     steps: steps.map((r) => ({
       text: r.text,
       from_answers: [],
-      dials: [],
-      why: r.why ? [{ source: "cook" as const, text: r.why, quote: r.why }] : [],
+      dials: r.dials.map((d) => ({ ...d, source: "cook" as const })),
+      why: r.why.map((w) => ({ source: "cook" as const, text: w, quote: w })),
     })),
     notes: ["Added by hand (no AI)."],
   };

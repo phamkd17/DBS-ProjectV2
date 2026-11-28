@@ -310,6 +310,14 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await rf.getByLabel("Step 1", { exact: true }).fill("Heat the milk until it steams. Don't let it boil.");
   await rf.getByRole("button", { name: "+ Why it works" }).first().click();
   await rf.getByLabel(/Why it works/).fill("Boiling can scorch the milk.");
+  // Food science and adjustments like the recipe editor; × closes a note (student, Nov 28).
+  await rf.getByRole("button", { name: "+ Why it works" }).first().click();
+  await expect(rf.getByRole("textbox", { name: /Why it works \(step 1, note 2\)/ })).toBeFocused();
+  await rf.getByRole("button", { name: "Remove why it works 2 from step 1" }).click();
+  await expect(rf.getByRole("textbox", { name: /Why it works \(step 1, note 2\)/ })).toHaveCount(0);
+  await rf.getByRole("button", { name: "+ Adjust to taste" }).first().click();
+  await rf.getByRole("textbox", { name: "If you" }).fill("steam longer");
+  await rf.getByRole("textbox", { name: "It comes out" }).fill("a thicker yogurt");
   // Enter in a step adds the next step; Shift+Enter is a new line in the same step.
   await rf.getByLabel("Step 1", { exact: true }).press("Enter");
   await expect(rf.getByLabel("Step 2", { exact: true })).toBeFocused();
@@ -329,6 +337,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(mr.getByText("whole milk")).toBeVisible();
   await expect(mr.getByText("vanilla bean")).toBeVisible();
   await expect(mr.getByRole("button", { name: "Why step 1 works" })).toBeVisible(); // same format as AI recipes
+  await expect(mr.getByRole("button", { name: "Adjust step 1 to taste" })).toBeVisible();
   await expect(mr.getByText(/Kitchen notes/)).toHaveCount(0); // no kitchen-notes section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
 
@@ -384,8 +393,8 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await ed.getByRole("button", { name: "+ Why it works" }).nth(1).click(); // step 2
   await ed.getByRole("textbox", { name: /Why it works \(step 2, note 1\)/ }).fill("Sugar dissolves faster in warm milk.");
   await ed.getByRole("button", { name: "+ Adjust to taste" }).nth(1).click();
-  await ed.getByRole("textbox", { name: "If you" }).fill("more sugar");
-  await ed.getByRole("textbox", { name: "It comes out" }).fill("sweeter");
+  await ed.getByRole("textbox", { name: "If you" }).last().fill("more sugar");
+  await ed.getByRole("textbox", { name: "It comes out" }).last().fill("sweeter");
   await check(page, "instructions-editing", { keyboard: true });
   await ed.getByRole("button", { name: "Save instructions" }).click();
   await expect(mr.getByText("about 180°F", { exact: false })).toBeVisible();

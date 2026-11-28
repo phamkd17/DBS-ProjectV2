@@ -145,7 +145,7 @@ export function EditableSteps({ recipeId, steps, children }: { recipeId: string;
                       <legend className={eyebrow}>
                         Adjust to taste<span className="sr-only"> (step {i + 1}, {j + 1})</span>
                       </legend>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <label htmlFor={`set-${d.key}`} className="sr-only">
                           If you
                         </label>
@@ -155,7 +155,7 @@ export function EditableSteps({ recipeId, steps, children }: { recipeId: string;
                           maxLength={120}
                           onChange={(e) => patch(r.key, (x) => ({ ...x, dials: x.dials.map((y) => (y.key === d.key ? { ...y, setting: e.target.value } : y)) }))}
                           placeholder="e.g. 12 hours"
-                          className={`${fieldClass} min-w-0 flex-1 py-2 text-[15px]`}
+                          className={`${fieldClass} min-w-0 flex-1 basis-32 py-2 text-[15px]`}
                         />
                         <span aria-hidden className="text-ls-muted">
                           →
@@ -169,7 +169,7 @@ export function EditableSteps({ recipeId, steps, children }: { recipeId: string;
                           maxLength={200}
                           onChange={(e) => patch(r.key, (x) => ({ ...x, dials: x.dials.map((y) => (y.key === d.key ? { ...y, effect: e.target.value } : y)) }))}
                           placeholder="e.g. super tangy"
-                          className={`${fieldClass} min-w-0 flex-1 py-2 text-[15px]`}
+                          className={`${fieldClass} min-w-0 flex-1 basis-32 py-2 text-[15px]`}
                         />
                         <button
                           type="button"
