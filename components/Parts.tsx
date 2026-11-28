@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { cleanPart } from "@/lib/types";
-import { eyebrow, fieldClass, focusRing } from "./ui";
+import { eyebrow, focusRing } from "./ui";
 
 const chip = "inline-flex h-8 items-center border font-ls-sans text-[14px]";
 
 /**
- * The parts of a recipe while editing (student, Nov 28): e.g. "Caramel sauce",
- * "Milk", "Egg mixture". Name them here (like tags), then pick a part on each row.
+ * The components of a recipe while editing (student, Nov 28; first called "parts"):
+ * e.g. "Caramel sauce", "Milk", "Egg mixture". Name them here (like tags), then
+ * tap one on each row (one tap, no dropdown).
  */
 export function PartsBar({
   parts,
@@ -31,7 +32,7 @@ export function PartsBar({
   return (
     <div className="space-y-1">
       <p className={eyebrow} id={`${idPrefix}-parts`}>
-        Parts <span className="normal-case tracking-normal">(optional, e.g. Caramel, Custard)</span>
+        Components <span className="normal-case tracking-normal">(optional, e.g. Caramel, Custard)</span>
       </p>
       <ul aria-labelledby={`${idPrefix}-parts`} className="flex flex-wrap items-center gap-2">
         {parts.map((p) => (
@@ -39,8 +40,8 @@ export function PartsBar({
             <span>{p}</span>
             <button
               type="button"
-              aria-label={`Remove part ${p}`}
-              title="Remove part (its rows stay, with no part)"
+              aria-label={`Remove component ${p}`}
+              title="Remove component (its rows stay, with none)"
               onClick={() => onRemove(p)}
               className={`grid h-full w-7 cursor-pointer place-items-center text-base hover:bg-ls-surface/15 ${focusRing}`}
             >
@@ -52,7 +53,7 @@ export function PartsBar({
           {adding ? (
             <>
               <label htmlFor={`${idPrefix}-new-part`} className="sr-only">
-                New part
+                New component
               </label>
               <input
                 id={`${idPrefix}-new-part`}
@@ -75,7 +76,7 @@ export function PartsBar({
                   add();
                   setAdding(false);
                 }}
-                placeholder="Part name"
+                placeholder="Component name"
                 className={`${chip} w-36 border-ls-ink bg-ls-surface px-2.5 text-ls-ink placeholder:text-ls-muted/80 placeholder:italic ${focusRing}`}
               />
             </>
@@ -85,7 +86,7 @@ export function PartsBar({
               onClick={() => setAdding(true)}
               className={`${chip} cursor-pointer border-dashed border-ls-ink/50 px-2.5 text-ls-ink hover:border-ls-ink hover:bg-ls-surface ${focusRing}`}
             >
-              + Part
+              + Component
             </button>
           )}
         </li>
@@ -94,7 +95,10 @@ export function PartsBar({
   );
 }
 
-/** Which part a row belongs to (shown only once the recipe has parts). */
+/**
+ * Which component a row belongs to: one tap on a chip (student, Nov 28: a dropdown
+ * took two). Shown only once the recipe has components.
+ */
 export function PartSelect({
   id,
   label,
@@ -109,24 +113,26 @@ export function PartSelect({
   onChange: (v: string) => void;
 }) {
   if (parts.length === 0) return null;
+  const current = parts.includes(value) ? value : "";
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor={id} className={eyebrow}>
-        Part<span className="sr-only"> of {label}</span>
-      </label>
-      <select
-        id={id}
-        value={parts.includes(value) ? value : ""}
-        onChange={(e) => onChange(e.target.value)}
-        className={`${fieldClass} w-auto min-w-0 py-1.5 text-[15px]`}
-      >
-        <option value="">No part</option>
-        {parts.map((p) => (
-          <option key={p} value={p}>
-            {p}
-          </option>
-        ))}
-      </select>
+    <div id={id} role="radiogroup" aria-label={`Component of ${label}`} className="flex flex-wrap gap-1.5">
+      {["", ...parts].map((p) => {
+        const on = current === p;
+        return (
+          <button
+            key={p || "_none"}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(p)}
+            className={`inline-flex h-7 cursor-pointer items-center border px-2 font-ls-sans text-[13px] transition-colors ${focusRing} ${
+              on ? "border-ls-ink bg-ls-ink text-ls-surface" : "border-ls-ink/30 text-ls-muted hover:border-ls-ink hover:text-ls-ink"
+            }`}
+          >
+            {p || "None"}
+          </button>
+        );
+      })}
     </div>
   );
 }
