@@ -1076,3 +1076,20 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   `20261128020000_tighten_v1_grants.sql` revokes them. Verify passes, and the
   v1/v2 live sites still load.
 - Write-up: `notes/security-pass.md`.
+
+## Nov 28 — Edit the instructions (branch `edit-instructions`)
+- "Steps" → **Instructions** (the recipe page, shared view, and the hand-typed
+  recipe form). `EditableSteps` works like the ingredient editor: one pencil,
+  edit everything, Save/Cancel, Escape, focus back on the pencil. Per step:
+  the text, each Why it works (a cook's reason shows its quote), each Adjust
+  to taste as setting → effect, + Why it works / + Adjust to taste / remove,
+  + Add step / remove step.
+- `updateSteps`: RLS read of your own recipe; at most 60 steps and 8 notes
+  each, with length limits. Unchanged notes keep their original object
+  (source and quote); changed or new ones become `user_answer`. A step with
+  notes but no text is an error, and at least one step must remain.
+  `from_answers` is kept. `updated_at` isn't bumped.
+- The ingredient editor's hint no longer mentions "Family answer" (labels
+  aren't shown since Nov 27).
+- Verify: edit step 1, add Why + Adjust on step 2, save, open both icons, then
+  remove step 1's Why. Axe clean.
