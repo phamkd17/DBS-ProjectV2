@@ -67,7 +67,8 @@ export function EditableIngredients({
           onKeyDown={(e) => {
             if (e.key === "Escape") setEditing(false);
           }}
-          className="space-y-4 border border-ls-ink bg-ls-surface p-4"
+          // Starts below the dish photo (it floats right), so the box never runs under it (student, Nov 28).
+          className="clear-both space-y-4 border border-ls-ink bg-ls-surface p-4"
         >
           <p className="text-[15px] text-ls-muted">Change amounts and names, add or remove ingredients.</p>
           <input type="hidden" name="rows" value={JSON.stringify(rows.map(({ orig, amount, item, section }) => ({ orig, amount, item, section })))} />

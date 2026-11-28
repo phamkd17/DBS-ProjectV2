@@ -535,6 +535,10 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await check(page, "recipe-parts", { keyboard: true });
   // Move "water" to Custard in the ingredient editor.
   await fr.getByRole("button", { name: "Edit ingredients" }).click();
+  // The editor box never overlaps the dish photo tile (it starts below it).
+  const tile = await fr.getByRole("button", { name: "Add dish photo" }).boundingBox();
+  const box = await fr.locator("form").filter({ has: page.getByRole("button", { name: "Save ingredients" }) }).boundingBox();
+  expect(box!.y).toBeGreaterThanOrEqual(tile!.y + tile!.height - 1);
   await fr.getByRole("radiogroup", { name: "Component of water" }).getByRole("radio", { name: "Custard" }).click();
   await fr.getByRole("button", { name: "Save ingredients" }).click();
   await expect(fr.getByRole("button", { name: "Edit ingredients" })).toBeVisible();
