@@ -18,34 +18,35 @@ type Props = {
 export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId }: Props) {
   return (
     <SourcesScope>
-    <article className="space-y-6">
-      <header className="space-y-3">
-        <h1 className="font-ls-serif text-4xl leading-tight sm:text-5xl">{recipe.title}</h1>
+    <article className="space-y-5">
+      <header className="space-y-2">
+        <h1 className="font-ls-serif text-3xl leading-tight sm:text-4xl">{recipe.title}</h1>
         <Legend cookName={cookName} />
       </header>
 
       {editableRecipeId ? (
         <EditableIngredients recipeId={editableRecipeId} ingredients={recipe.ingredients} cookName={cookName} />
       ) : (
-        <section aria-labelledby="ingredients" className="space-y-3">
-          <h2 id="ingredients" className="font-ls-serif text-2xl leading-tight">
+        <section aria-labelledby="ingredients" className="space-y-2">
+          <h2 id="ingredients" className="font-ls-serif text-xl leading-tight">
             Ingredients
           </h2>
           <IngredientList ingredients={recipe.ingredients} cookName={cookName} />
         </section>
       )}
 
-      <section aria-labelledby="steps" className="space-y-3">
-        <h2 id="steps" className="font-ls-serif text-2xl leading-tight">
+      <section aria-labelledby="steps" className="space-y-2">
+        <h2 id="steps" className="font-ls-serif text-xl leading-tight">
           Steps
         </h2>
         <ol className="divide-y divide-ls-border border-y border-ls-ink">
           {recipe.steps.map((step, i) => (
-            <li key={i} className="flex gap-4 py-3">
-              <span aria-hidden className="w-6 shrink-0 font-ls-serif text-2xl leading-none text-ls-muted">
+            <li key={i} className="flex gap-3 py-2">
+              {/* The number sits on the first line of the step (compact, Nov 28). */}
+              <span aria-hidden className="w-5 shrink-0 font-ls-serif text-[17px] leading-relaxed text-ls-muted">
                 {i + 1}
               </span>
-              <div className="min-w-0 flex-1 space-y-4">
+              <div className="min-w-0 flex-1 space-y-2">
                 <StepExtras step={step} number={i + 1} cookName={cookName} />
                 {step.from_answers.length > 0 && (
                   <ul className="src-only space-y-1.5">

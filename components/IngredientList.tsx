@@ -20,7 +20,7 @@ export function IngredientList({ ingredients, cookName }: { ingredients: Recipe[
       {ingredients.map((ing, i) => {
         const { rest, history } = splitNote(ing.note);
         return (
-          <li key={i} className="space-y-1.5 py-3">
+          <li key={i} className="space-y-0.5 py-2">
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
               <p className="text-[17px]">
                 {ing.amount ? <span className="font-medium">{ing.amount} </span> : null}

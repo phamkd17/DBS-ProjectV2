@@ -110,7 +110,7 @@ export function StepExtras({
   const who = cookName || "The cook";
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Icons sit at the end of the step's first line, so steps stay compact. */}
       <div className="flex items-start gap-2">
         {text}
