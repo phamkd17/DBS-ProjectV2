@@ -2,17 +2,20 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
-import { Instrument_Serif, Jost } from "next/font/google";
+import { Figtree } from "next/font/google";
 import "./globals.css";
 import { PageLoading } from "@/components/PageLoading";
 import { focusRing } from "@/components/ui";
+import { HelpButton } from "@/components/HelpButton";
+import { HowItWorks } from "@/components/HowItWorks";
+import { TopTabs } from "@/components/TopTabs";
 
-const serif = Instrument_Serif({ variable: "--font-instrument-serif", subsets: ["latin"], weight: "400" });
-const sans = Jost({ variable: "--font-jost", subsets: ["latin"] });
+// One font for everything (student, Nov 27): Figtree. Headings use it in semibold.
+const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Culinary Lab Book",
-  description: "From inspiration to recipe: develop dishes by voice and AI, with the food science built in.",
+  description: "From inspiration to recipe: type or dictate your dish, and AI makes recipe development easy, with the food science built in.",
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#ece7dc" };
@@ -27,7 +30,7 @@ const clerkAppearance = {
     colorBackground: "#f8f6f1",
     colorInput: "#f8f6f1",
     colorBorder: "#8a8377",
-    fontFamily: "var(--font-jost), system-ui, sans-serif",
+    fontFamily: "var(--font-figtree), system-ui, sans-serif",
     borderRadius: "0px",
   },
 };
@@ -35,13 +38,17 @@ const clerkAppearance = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <ClerkProvider appearance={clerkAppearance}>
-      <html lang="en" className={`${serif.variable} ${sans.variable} h-full antialiased`}>
+      <html lang="en" className={`${figtree.variable} h-full antialiased`}>
         <body className="flex min-h-full flex-col bg-ls-bg font-ls-sans text-ls-ink">
           <header className="border-b border-ls-ink">
             <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3">
               <Link href="/" className={`font-ls-serif text-2xl leading-none ${focusRing}`}>
                 Culinary Lab Book
               </Link>
+              <div className="flex items-center gap-1">
+              <HelpButton>
+                <HowItWorks headingLevel={3} />
+              </HelpButton>
               <Suspense fallback={<span className="size-7" />}>
                 <Show when="signed-in">
                   <UserButton />
@@ -56,7 +63,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   </SignInButton>
                 </Show>
               </Suspense>
+              </div>
             </div>
+            <Suspense fallback={null}>
+              <Show when="signed-in">
+                <TopTabs />
+              </Show>
+            </Suspense>
           </header>
           <div className="mx-auto w-full max-w-3xl flex-1 px-5 py-8">
             <Suspense fallback={<PageLoading />}>{children}</Suspense>

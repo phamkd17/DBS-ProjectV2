@@ -52,10 +52,10 @@ export function QuestionsForm({
   }
 
   return (
-    <form action={action} className="space-y-5">
+    <form id="questions-form" action={action} className="space-y-5">
       <p className="text-[15px] text-ls-muted" aria-live="polite">
         {questions.length === 0
-          ? "No questions this time. Their words had everything a new cook needs."
+          ? "No questions this time. The kitchen notes had everything a new cook needs."
           : `${answered} of ${questions.length} answered. Leave any blank if nobody knows. It will show as “not stated”.`}
       </p>
 
@@ -69,7 +69,7 @@ export function QuestionsForm({
                 {String(i + 1).padStart(2, "0")} · {KIND_LABEL[q.kind]}
               </p>
               {q.quote && (
-                <blockquote className="border-l-2 border-src-cook-ink bg-src-cook px-4 py-2 font-ls-serif text-lg italic text-src-cook-ink">
+                <blockquote className="border-l-2 border-src-cook-ink bg-src-cook px-4 py-2 text-[17px] italic text-src-cook-ink">
                   “{q.quote}”
                 </blockquote>
               )}

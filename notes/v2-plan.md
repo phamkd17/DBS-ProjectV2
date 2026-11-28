@@ -2,8 +2,7 @@
 
 ## What Culinary Lab Book is
 
-> **From inspiration to recipe: develop dishes by voice and AI, with the food
-> science built in.**
+> **From inspiration to recipe: type or dictate your dish, and AI makes recipe development easy, with the food science built in.**
 
 An app to **track culinary inspiration**, a place to **quickly develop recipes
 and iterations by voice and AI**, and a place to **store finished recipes**

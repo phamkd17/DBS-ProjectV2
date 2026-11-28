@@ -10,8 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # AGENTS.md — Culinary Lab Book
 
-**From inspiration to recipe: develop dishes by voice and AI, with the food
-science built in.** (Landing headline, Nov 16, student's pick. The proposal's
+**From inspiration to recipe: type or dictate your dish, and AI makes recipe development easy, with the food science built in.** (Landing headline, Nov 16, student's pick. The proposal's
 original one-liner was "Culinary Lab Book helps cooks turn what they say while
 they cook into recipes that can be shared for others to repeat." In the
 student's words, it's now "an app to track culinary inspiration, provides a
@@ -58,17 +57,20 @@ own lab book.
 
 ## Product rules (non-negotiable)
 
-1. **Her words are kept honestly.** Changed by the student on Nov 15 ("Always
-   editable"): dictations can be edited, but the database keeps the first
-   version (`original_transcript`, shown as "See the original words") and stamps
-   `edited_at`. A recipe made before an edit is flagged as possibly out of date.
-   The AI's corrections still happen only in the generated recipe.
+1. **The cook's words are the user's to edit or delete.** (Student, Nov 14 → 21.)
+   Editing replaces them; deleting removes them; **no original versions are
+   kept**. Only `edited_at` is recorded, so a recipe made before an edit says
+   so. The AI's corrections still happen only in the generated recipe.
 2. **Ask, don't guess.** Unrecoverable amounts, contradictions, missing steps,
    and ambiguous dictation become questions.
 3. **Unknown → suggestion.** If no one knows, offer a suggestion the user
    accepts or edits. It stays labeled **Suggested**, never shown as the cook's.
 4. **Label every why by source:** `cook` (her quote), `user_answer`,
-   `suggested`, `food_science`.
+   `suggested`, `food_science`. Changed by the student on Nov 27: the labels
+   are still **stored** with every recipe (the AI output and evals keep them),
+   but the UI no longer shows them ("Show sources" removed). Rule 3's
+   "Suggested" tag is therefore not displayed. The student chose this after
+   being told it drops the visible honesty label.
 5. Capture and recipe creation are **separate moments**. Capture asks nothing.
 
 ## Lab-book entries (decided Nov 15)
@@ -119,8 +121,10 @@ From Assignment 2 (`~/Desktop/Design-Ship-Build-Assignments/Assignment2/DBS-Assi
 - Limestone page, Plaster surfaces, Ink text and lines, Slate secondary text.
 - **Scarlet `#ae1f2e` = the one primary action per screen, nothing else.**
   (Student swapped it for A2's Aegean blue on Nov 14; see `notes/design/red-swatches-2.html`.)
-- Instrument Serif for headings, Jost for body and UI. Small uppercase tracked
-  labels (`eyebrow`). Square corners, 1px hairlines, no shadows.
+- **One font: Figtree** (student, Nov 27; was Instrument Serif + Jost, which
+  felt like they conflicted; see `notes/design/font-options-2.html`). Headings
+  use `font-ls-serif` = Figtree semibold. Keep to a few sizes. Small uppercase
+  tracked labels (`eyebrow`). Square corners, 1px hairlines, no shadows.
 - Source labels have one look each: cook = ochre, food science = Cypress tint,
   suggested = blue tint, family answer = ink outline, not stated = dashed.
 - Don't introduce Tailwind default palettes (stone, sky, amber…) or rounded cards.

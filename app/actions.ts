@@ -13,8 +13,10 @@ import { redirect } from "next/navigation";
 import { draftRecipe, finalizeRecipe, ModelError, RateLimitError } from "@/lib/ai/pipeline";
 import type { Answer, AnswerSource } from "@/lib/ai/schema";
 import { supabaseForUser } from "@/lib/supabase/server";
+import { deletePhotos, MAX_PHOTOS_PER_ENTRY, readPhoto, savePhoto } from "@/lib/photos";
 import {
   isStage,
+  STARTER_TAGS,
   toQuestion,
   type ActionState,
   type DictationRow,
@@ -34,10 +36,10 @@ function friendlyModelError(err: unknown): string {
   if (err instanceof RateLimitError) return err.message;
   if (err instanceof ModelError) {
     console.error("[model]", err.message, err.detail ?? "");
-    return "The recipe helper couldn't finish. Your words are saved. Try again in a minute.";
+    return "The recipe helper couldn't finish. Your kitchen notes are saved. Try again in a minute.";
   }
   console.error("[unexpected]", err);
-  return "Something went wrong. Your words are saved. Try again.";
+  return "Something went wrong. Your kitchen notes are saved. Try again.";
 }
 
 // ---------------------------------------------------------------------------
@@ -52,7 +54,7 @@ export async function createDictation(_prev: ActionState, formData: FormData): P
   const values = { transcript, dish_name: dish_name ?? "", cook_name: cook_name ?? "" };
 
   if (!transcript.trim()) {
-    return { values, fieldErrors: { transcript: "Paste or dictate the cook's words here first." } };
+    return { values, fieldErrors: { transcript: "Dictate or paste the kitchen notes here first." } };
   }
   if (transcript.length > MAX_TRANSCRIPT) {
     return {
@@ -71,7 +73,7 @@ export async function createDictation(_prev: ActionState, formData: FormData): P
 
   if (error || !data) {
     console.error("[createDictation]", error);
-    return { values, error: "Couldn't save just now. Your words are still here. Try again." };
+    return { values, error: "Couldn't save just now. Your kitchen notes are still here. Try again." };
   }
   revalidatePath("/");
   redirect(`/d/${data.id}`);
@@ -86,13 +88,32 @@ export async function updateDictation(dictationId: string, _prev: ActionState, f
   const cook_name = String(formData.get("cook_name") ?? "").trim().slice(0, 60) || null;
   const values = { transcript, dish_name: dish_name ?? "", cook_name: cook_name ?? "" };
 
-  if (!transcript.trim()) return { values, fieldErrors: { transcript: "Their words can't be empty. To remove this, delete it instead." } };
   if (transcript.length > MAX_TRANSCRIPT) {
     return { values, fieldErrors: { transcript: `That's too long for one recipe (${transcript.length} of ${MAX_TRANSCRIPT} characters).` } };
   }
-
   const supabase = await supabaseForUser();
-  const { error } = await supabase.from("dictations").update({ transcript, dish_name, cook_name }).eq("id", dictationId);
+  // Saving the words empty deletes them (student, Nov 21), unless AI questions are
+  // still open, because finishing them needs the words.
+  const empty = !transcript.trim();
+  if (empty) {
+    const { data: draft } = await supabase
+      .from("recipes")
+      .select("id")
+      .eq("dictation_id", dictationId)
+      .eq("status", "needs_answers")
+      .limit(1)
+      .maybeSingle();
+    if (draft) {
+      return {
+        values,
+        fieldErrors: { transcript: "The AI questions still need these notes. Finish or discard the questions first." },
+      };
+    }
+  }
+  const { error } = await supabase
+    .from("dictations")
+    .update({ transcript: empty ? null : transcript, dish_name, cook_name })
+    .eq("id", dictationId);
   if (error) {
     console.error("[updateDictation]", error);
     return { values, error: "Couldn't save your changes. What you typed is still here. Try again." };
@@ -115,7 +136,7 @@ export async function createRecipe(dictationId: string, _prev: ActionState): Pro
     .eq("id", dictationId)
     .single<DictationRow>();
   if (!dictation) return { error: "We couldn't find that dictation in your lab book." };
-  if (!dictation.transcript) return { error: "Add the cook's words first. The AI makes the recipe from them." };
+  if (!dictation.transcript) return { error: "Add kitchen notes first. The AI makes the recipe from them." };
   // The AI step only runs from Development (the UI hides it elsewhere; this enforces it).
   if (dictation.stage !== "development") {
     return { error: "Move this to Development first, then create the recipe." };
@@ -282,6 +303,7 @@ export async function saveSharedCopy(token: string, _prev: ActionState): Promise
 export async function deleteDictation(dictationId: string): Promise<void> {
   await requireUser();
   const supabase = await supabaseForUser();
+  await deletePhotos(supabase, { dictationId }); // the files too, not just the rows
   const { error } = await supabase.from("dictations").delete().eq("id", dictationId);
   if (error) console.error("[deleteDictation]", error);
   revalidatePath("/");
@@ -328,7 +350,12 @@ export async function createIdea(_prev: ActionState, formData: FormData): Promis
     return { values, error: "Couldn't save the idea. What you typed is still here. Try again." };
   }
   revalidatePath("/");
-  redirect(`/d/${data.id}`);
+  // Issue #3: "Save and add another" goes straight to a fresh form.
+  if (formData.get("intent") === "another") {
+    redirect(`/ideas/new?added=${encodeURIComponent(title)}&n=${Date.now()}`);
+  }
+  // Issue #2: show "Saved to Ideas" and the next step, once.
+  redirect(`/d/${data.id}?saved=1`);
 }
 
 export async function updateIdea(ideaId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -420,7 +447,7 @@ export async function updateNotes(
       : await supabase.from("dictations").update({ notes: note, link }).eq("id", id);
   if (error) {
     console.error("[updateNotes]", error);
-    return { values, error: "Couldn't save your notes. What you typed is still here. Try again." };
+    return { values, error: "Couldn't save your inspiration. What you typed is still here. Try again." };
   }
   revalidatePath("/", "layout");
   return { saved: true };
@@ -500,4 +527,319 @@ export async function updateIngredients(
   }
   revalidatePath(`/r/${recipeId}`);
   return { saved: true };
+}
+
+// ---------------------------------------------------------------------------
+// Quick-add an idea from the Ideas tab: just a name, Enter, and it's in the
+// list (student, Nov 20). Notes and a link can be added later with the pencil.
+// ---------------------------------------------------------------------------
+export async function quickAddIdea(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const userId = await requireUser();
+  const title = String(formData.get("title") ?? "").trim().slice(0, 120);
+  // Inspiration in the same step (student, Nov 27: fewer taps).
+  const note = String(formData.get("note") ?? "").trim().slice(0, 5000);
+  // Text, a photo, or both (student, Nov 27).
+  const file = formData.get("photo");
+  const hasPhoto = file instanceof File && file.size > 0;
+  if (!title && !note && !hasPhoto) return { fieldErrors: { title: "Type the idea or add a photo first." } };
+  const photo = hasPhoto ? await readPhoto(file) : null;
+  if (photo && !photo.ok) return { values: { title, note }, fieldErrors: { photo: photo.error } };
+
+  const supabase = await supabaseForUser();
+  const { data, error } = await supabase.from("dictations").insert({ dish_name: title || null, notes: note }).select("id").single();
+  if (error || !data) {
+    console.error("[quickAddIdea]", error);
+    return { values: { title, note }, error: "Couldn't add it. Try again." };
+  }
+  revalidatePath("/");
+  const added = title || (hasPhoto ? "Photo idea" : "Untitled idea");
+  if (photo?.ok && !(await savePhoto(supabase, userId, data.id, photo)).ok) {
+    return { saved: true, values: { added }, error: "The idea is saved, but the photo didn't upload. Open the idea to try again." };
+  }
+  return { saved: true, values: { added } };
+}
+
+// ---------------------------------------------------------------------------
+// Photos on an entry (issue #7): add one more, or delete one.
+// ---------------------------------------------------------------------------
+export async function addPhoto(dictationId: string, formData: FormData): Promise<{ error?: string }> {
+  const userId = await requireUser();
+  const photo = await readPhoto(formData.get("photo"));
+  if (!photo.ok) return { error: photo.error };
+  const supabase = await supabaseForUser();
+  // RLS: only your own entry comes back, and the insert re-checks it.
+  const { data: entry } = await supabase.from("dictations").select("id").eq("id", dictationId).maybeSingle();
+  if (!entry) return { error: "Couldn't find this idea." };
+  const { count } = await supabase.from("entry_photos").select("id", { count: "exact", head: true }).eq("dictation_id", dictationId);
+  if ((count ?? 0) >= MAX_PHOTOS_PER_ENTRY) return { error: `Up to ${MAX_PHOTOS_PER_ENTRY} photos each. Delete one to add another.` };
+  if (!(await savePhoto(supabase, userId, dictationId, photo)).ok) return { error: "The photo didn't upload. Try again." };
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function deletePhoto(photoId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  await deletePhotos(supabase, { ids: [photoId] });
+  revalidatePath("/", "layout");
+}
+
+// ---------------------------------------------------------------------------
+// Add a recipe by hand, in the same format as an AI recipe (student, Nov 20).
+// No AI call. Saved straight into Recipes: an entry (stage "finished") + a ready
+// recipe. Everything is labeled as the cook's (the "Whose recipe?" name).
+// ---------------------------------------------------------------------------
+type ManualRows = {
+  ingredients: { amount: string; item: string }[];
+  steps: { text: string; why: string }[];
+};
+
+export async function createManualRecipe(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  const title = String(formData.get("title") ?? "").trim().slice(0, 120);
+  const cook_name = String(formData.get("cook_name") ?? "").trim().slice(0, 60) || null;
+  const notes = String(formData.get("notes") ?? "").slice(0, 5000);
+  let rows: ManualRows;
+  try {
+    rows = JSON.parse(String(formData.get("rows") ?? "{}"));
+    if (!Array.isArray(rows.ingredients) || !Array.isArray(rows.steps)) throw new Error("bad");
+  } catch {
+    return { error: "Something went wrong reading the recipe. Refresh and try again." };
+  }
+  const ingredients = rows.ingredients
+    .slice(0, 80)
+    .map((r) => ({ amount: String(r?.amount ?? "").trim().slice(0, 60), item: String(r?.item ?? "").trim().slice(0, 120) }))
+    .filter((r) => r.item || r.amount);
+  const steps = rows.steps
+    .slice(0, 80)
+    .map((r) => ({ text: String(r?.text ?? "").trim().slice(0, 2000), why: String(r?.why ?? "").trim().slice(0, 1000) }))
+    .filter((r) => r.text);
+
+  const fieldErrors: Record<string, string> = {};
+  if (!title) fieldErrors.title = "Give the recipe a name.";
+  if (ingredients.some((r) => !r.item)) fieldErrors.ingredients = "Every amount needs an ingredient name (or remove that row).";
+  else if (!ingredients.length) fieldErrors.ingredients = "Add at least one ingredient.";
+  if (!steps.length) fieldErrors.steps = "Add at least one step.";
+  const values = { title, cook_name: cook_name ?? "", notes };
+  if (Object.keys(fieldErrors).length) return { values, fieldErrors };
+
+  const recipe = {
+    title,
+    ingredients: ingredients.map((r) => ({
+      item: r.item,
+      amount: r.amount,
+      source: r.amount ? ("cook" as const) : ("not_stated" as const),
+      note: "",
+      from_answers: [],
+    })),
+    steps: steps.map((r) => ({
+      text: r.text,
+      from_answers: [],
+      dials: [],
+      why: r.why ? [{ source: "cook" as const, text: r.why, quote: r.why }] : [],
+    })),
+    notes: ["Added by hand (no AI)."],
+  };
+
+  const supabase = await supabaseForUser();
+  // Written for an existing entry (from Development), or a brand-new one (from Recipes).
+  const fromId = String(formData.get("dictation_id") ?? "") || null;
+  let entry: { id: string } | null = null;
+  let createdEntry = false;
+  if (fromId) {
+    // RLS: only your own entry comes back.
+    const { data: own } = await supabase.from("dictations").select("id").eq("id", fromId).maybeSingle();
+    if (!own) return { values, error: "We couldn't find that item in your lab book." };
+    const { data: existing } = await supabase
+      .from("recipes")
+      .select("id")
+      .eq("dictation_id", fromId)
+      .neq("status", "failed")
+      .limit(1)
+      .maybeSingle();
+    if (existing) return { values, error: "This item already has a recipe. Discard its AI questions first, or edit the recipe." };
+    const { error: eu } = await supabase
+      .from("dictations")
+      .update({ dish_name: title, cook_name, notes, stage: "finished" })
+      .eq("id", fromId);
+    if (eu) {
+      console.error("[createManualRecipe update entry]", eu);
+      return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
+    }
+    entry = own;
+  } else {
+    const { data: made, error: e1 } = await supabase
+      .from("dictations")
+      .insert({ dish_name: title, cook_name, notes, stage: "finished" })
+      .select("id")
+      .single();
+    if (e1 || !made) {
+      console.error("[createManualRecipe entry]", e1);
+      return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
+    }
+    entry = made;
+    createdEntry = true;
+  }
+  const { data: made, error: e2 } = await supabase
+    .from("recipes")
+    .insert({ dictation_id: entry.id, status: "ready", recipe, model: "manual", prompt_version: null })
+    .select("id")
+    .single();
+  if (e2 || !made) {
+    console.error("[createManualRecipe recipe]", e2);
+    // Don't leave a half-saved entry: remove a new one, or move an existing one back.
+    if (createdEntry) await supabase.from("dictations").delete().eq("id", entry.id);
+    else await supabase.from("dictations").update({ stage: "development" }).eq("id", entry.id);
+    return { values, error: "Couldn't save the recipe. What you typed is still here. Try again." };
+  }
+  revalidatePath("/");
+  redirect(`/r/${made.id}`);
+}
+
+// ---------------------------------------------------------------------------
+// Leave the AI questions (student, Nov 20): save for later, or discard.
+// ---------------------------------------------------------------------------
+/** Save whatever answers are typed so far (no AI call) and go back to Development. */
+export async function saveAnswersForLater(recipeId: string, formData: FormData): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { data: questions } = await supabase
+    .from("recipe_questions")
+    .select("*")
+    .eq("recipe_id", recipeId)
+    .returns<QuestionRow[]>();
+  const now = new Date().toISOString();
+  for (const q of questions ?? []) {
+    const text = String(formData.get(`answer_${q.id}`) ?? "").slice(0, 2000);
+    const mode = String(formData.get(`mode_${q.id}`) ?? "own");
+    // Untouched questions stay unanswered, so they're still open next time.
+    if (!text.trim()) continue;
+    const { error } = await supabase
+      .from("recipe_questions")
+      .update({ answer: text.trim(), answer_source: answerSourceFor(mode, text, q.suggestion), answered_at: now })
+      .eq("id", q.id);
+    if (error) console.error("[saveAnswersForLater]", error);
+  }
+  revalidatePath("/", "layout");
+  redirect("/?tab=development");
+}
+
+/** Throw the AI draft and its questions away, back to the cook's words, to start over. */
+export async function discardDraft(recipeId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  // RLS: only your own recipe comes back, and only a draft can be discarded here.
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("dictation_id, status")
+    .eq("id", recipeId)
+    .maybeSingle<{ dictation_id: string; status: string }>();
+  if (!recipe || recipe.status === "ready") redirect(`/r/${recipeId}`);
+  const { error } = await supabase.from("recipes").delete().eq("id", recipeId); // questions cascade
+  if (error) console.error("[discardDraft]", error);
+  revalidatePath("/", "layout");
+  redirect(`/d/${recipe.dictation_id}`);
+}
+
+// ---------------------------------------------------------------------------
+// Delete the cook's words (student, Nov 21). The entry, its idea notes, and
+// any finished recipe stay. Nothing is kept: no copy of the old words.
+// ---------------------------------------------------------------------------
+export async function deleteWords(dictationId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { error } = await supabase.from("dictations").update({ transcript: null }).eq("id", dictationId);
+  if (error) console.error("[deleteWords]", error);
+  revalidatePath("/", "layout");
+}
+
+// ---------------------------------------------------------------------------
+// Tags for the Recipes tab (student, Nov 21; issue #8). Your own list (create,
+// delete); a recipe can have several. Stored in `sections` / `entry_sections`
+// (first called sections). Deleting a tag never deletes recipes, only the
+// links. RLS checks both ends of every link.
+// ---------------------------------------------------------------------------
+const cleanTag = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
+
+/** Tags page: make a tag. */
+export async function addTag(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  const name = cleanTag(formData.get("name"));
+  if (!name) return { fieldErrors: { name: "Name the tag, like “Desserts”." } };
+  const supabase = await supabaseForUser();
+  const { error } = await supabase.from("sections").insert({ name });
+  if (error) {
+    if (error.code === "23505") return { values: { name }, fieldErrors: { name: `You already have a tag called “${name}”.` } };
+    console.error("[addTag]", error);
+    return { values: { name }, error: "Couldn't add the tag. Try again." };
+  }
+  revalidatePath("/", "layout");
+  return { saved: true, values: { added: name } };
+}
+
+/** Add the starter tags (lib/types.ts). Skips ones you already have. */
+export async function addStarterTags(): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  for (const name of STARTER_TAGS) {
+    const { error } = await supabase.from("sections").insert({ name });
+    if (error && error.code !== "23505") console.error("[addStarterTags]", error);
+  }
+  revalidatePath("/", "layout");
+}
+
+export async function deleteTag(tagId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { error } = await supabase.from("sections").delete().eq("id", tagId);
+  if (error) console.error("[deleteTag]", error);
+  revalidatePath("/", "layout");
+}
+
+/**
+ * Type-to-add on a recipe: tag it with `name`. Uses your existing tag with that
+ * name (any case), or makes a new one.
+ */
+export async function tagEntry(
+  dictationId: string,
+  rawName: string,
+): Promise<{ ok: true; tag: { id: string; name: string } } | { ok: false; error: string }> {
+  await requireUser();
+  const name = cleanTag(rawName);
+  if (!name) return { ok: false, error: "Type a tag first." };
+  const supabase = await supabaseForUser();
+  const { data: mine } = await supabase.from("sections").select("id, name").returns<{ id: string; name: string }[]>();
+  let tag = (mine ?? []).find((t) => t.name.toLowerCase() === name.toLowerCase());
+  if (!tag) {
+    const { data, error } = await supabase.from("sections").insert({ name }).select("id, name").single();
+    if (error || !data) {
+      console.error("[tagEntry]", error);
+      return { ok: false, error: "Couldn't add the tag. Try again." };
+    }
+    tag = data;
+  }
+  const { error } = await supabase.from("entry_sections").insert({ dictation_id: dictationId, section_id: tag.id });
+  if (error && error.code !== "23505") {
+    console.error("[tagEntry link]", error);
+    return { ok: false, error: "Couldn't add the tag. Try again." };
+  }
+  revalidatePath("/", "layout");
+  return { ok: true, tag };
+}
+
+/**
+ * Take a tag off a recipe (the tag itself stays). By name, so it also works on
+ * a tag that was added a moment ago and has no id on screen yet.
+ */
+export async function untagEntry(dictationId: string, rawName: string): Promise<{ ok: boolean }> {
+  await requireUser();
+  const name = cleanTag(rawName).toLowerCase();
+  const supabase = await supabaseForUser();
+  const { data: mine } = await supabase.from("sections").select("id, name").returns<{ id: string; name: string }[]>();
+  const tag = (mine ?? []).find((t) => t.name.toLowerCase() === name);
+  if (!tag) return { ok: true }; // nothing to remove
+  const { error } = await supabase.from("entry_sections").delete().eq("dictation_id", dictationId).eq("section_id", tag.id);
+  if (error) console.error("[untagEntry]", error);
+  revalidatePath("/", "layout");
+  return { ok: !error };
 }

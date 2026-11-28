@@ -45,7 +45,7 @@ export default async function SharedRecipePage({ params }: PageProps<"/s/[token]
   return (
     <main className="space-y-8">
       <p className={eyebrow}>
-        Someone sent you this recipe{shared.cook_name ? `, from ${shared.cook_name}'s own words` : ""}.
+        Someone sent you this recipe{shared.cook_name ? `, from ${shared.cook_name}'s kitchen notes` : ""}.
       </p>
       <RecipeView recipe={shared.recipe} transcript={shared.transcript} cookName={shared.cook_name} />
       <SaveCopy token={token} signedIn={!!userId} />

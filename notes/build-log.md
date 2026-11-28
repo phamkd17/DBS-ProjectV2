@@ -625,3 +625,311 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   p5, #13 progress line, #14 nutrition, labeled cut-first), then #15 What
   Changed + demo prep. Labels: stuck-point, security, feature, ai, polish,
   docs, cut-first. **Student:** "Create them in this order."
+
+## Nov 20 — Issues #1–#4: where my cousin got stuck (branch `stuck-points`)
+
+### V3. Stuck points fixed
+- **Student:** "yes" (start with #1–#4 on one branch); "Be sure to commit often."
+- **Baseline first:** `npm run words` counts visible words on the main screens:
+  v1 = landing 81, empty lab book 99, new idea 34, new dictation 86 (**300**).
+- **#1:** the landing page is the headline + `HowItWorks` (3 steps, icons) + one
+  button, with no paragraph.
+- **#2:** `createIdea` → `/d/[id]?saved=1` → `SavedBanner` ("✓ Saved to Ideas" +
+  **Add another idea** as the one primary; "Move to Development" drops to
+  secondary). The flag is stripped from the URL, so it shows once.
+- **#3:** **Save and add another** (`intent=another`) → a fresh form with "Saved
+  “X” to Ideas. Add the next one." (a key resets the form); **+ New idea** on the
+  Ideas tab and on idea pages.
+- **#4:** a **?** in the header opens a native `<dialog>` (Escape closes,
+  focus returns); one-line tab hints and empty states; shorter intros and AI
+  copy; dropped duplicate tips; README "How to use it". After: landing 50,
+  empty lab book 39, new idea 25, new dictation 32 (**146**, under half).
+- **Verify** covers each one (the dialog opens/closes with focus return; Saved
+  banner; shown once; add-another clears the form; + New idea), 0 axe
+  violations at 390/1440. Test fixes: exact name matching (#2 contains #1's
+  name; the rename step), and cleanup of the second idea. `npm run verify` now
+  runs only `verify.spec.ts`; the word count is `npm run words`.
+- Renamed the V1 remote to `v1-repo` (the name "v1" clashed with the tag).
+- **Student:** "I also want an option to be able to type it in." Every place
+  that asks for the cook's words now says **type or dictate**. That pushed the
+  main screens to 154 words (over the ≤150 target), so the New dictation intro
+  was trimmed back to 149.
+- **Student:** "Mention typing, mention that it makes recipe development easy."
+  **Options offered:** A keeps the opening / B leads with easy / C shortest.
+  **Student chose:** A: "From inspiration to recipe: type or dictate your dish,
+  and AI makes recipe development easy, with the food science built in."
+  Also updated AGENTS.md, the v2 plan, and the talking points.
+- **Student:** "the text is too big. i want to minimize scrolling." The landing
+  headline is now 2rem / 4xl / 5xl (phone / tablet / laptop), was 2.5rem / 7xl,
+  with tighter spacing and more compact steps on small screens. Measured: the
+  button is fully on screen at 390×844, 375×667, 768×1024, 1280×720, and
+  1440×900 (0px scroll except 19px of bottom padding on the 375×667 phone).
+- **Student:** "Are you able to add tabs at the top that people can always
+  navigate between Ideas, Development and Finished. I don't like finished,
+  what's any word?" **Options offered:** Recipes / Cookbook / Perfected /
+  Library. **Student chose:** "Recipes." The label is renamed everywhere; the
+  stored stage stays `finished` (shared DB with v1). `TopTabs` in the header
+  (signed in) marks the open section (`aria-current`). The home page now always
+  redirects to an explicit `?tab=`. The in-page tab bar was removed (it's in the
+  header now), and the counts moved into the hint ("Ideas · 12 · …"). Verify ✓
+  at 390/1440.
+- Streamlined the start buttons (the student found New, Save an idea, and Add the
+  cook's words redundant). Chosen: one button per tab. The first-run screen is
+  now the heading + steps only; the extra + New idea next to the hint is gone.
+  Tests point to the right tab for each button. Verify ✓; an empty account
+  shows exactly one start link.
+- Creating an idea felt indirect (tab → button → separate page). **Options:**
+  quick-add box / clickable step cards / "+ New" in the header. **Chosen:**
+  quick-add. `quickAddIdea` saves just the name (no redirect); the box resets
+  and keeps focus, and a status line confirms it. The Ideas tab's "+ New idea"
+  button is gone (the box replaces it); the full form (`/ideas/new`) is still
+  reachable from New ▾ on Recipes. Verify ✓: empty Enter error, item appears,
+  box clears and keeps focus, cleanup.
+- Recipes can be added by hand in the same format as AI recipes.
+  `createManualRecipe` saves an entry (stage finished) + a ready recipe
+  (`model: "manual"`; everything labeled as the cook's, i.e. "Whose recipe?"; a
+  why note → a cook-sourced why, so the science icon shows "<cook>'s reason").
+  If the recipe insert fails, the entry is removed (no half-saved rows).
+  `/recipes/new` form: rows for ingredients and steps, "+ Why it works" per
+  step; errors clear when you edit that part; ids via useId (no hydration
+  mismatch). The Recipes tab's button is now **+ New recipe**; the unused New
+  menu was removed. Hand-typed recipes hide the cook's-words section. Verify ✓
+  (errors, save, format, no words section, delete).
+- A way to quit the AI questions. **Options:** both / save only / discard only.
+  **Chosen:** both. `saveAnswersForLater` saves the non-empty answers (no AI
+  call) → `/?tab=development`; untouched questions stay open. `discardDraft`
+  deletes a draft recipe (questions cascade; a ready recipe can't be
+  discarded this way) → back to the entry, where Create recipe shows again.
+  "Save for later" submits the questions form via `form` + `formAction`.
+  Verify ✓: the answer persists after save; after discard the draft URL is gone
+  and the recipe can be recreated (dev cache, 0 Gemini calls).
+
+## Nov 21 — Delete the cook's words; no original versions
+- Delete their words: `deleteWords` sets the transcript to null; the entry, idea
+  notes, and recipe stay. Not offered on the AI questions page (pass 2 needs
+  the words). Confirm dialog. Edit comes before Delete when they wrap.
+- The student doesn't need original versions kept. The trigger now never keeps
+  `original_transcript`, sets `edited_at` on edit, and clears it on delete;
+  existing originals were cleared (migrations `20261121000000`,
+  `20261121010000`). The column stays (additive rule; v1 reads it and shows
+  nothing). Removed "See the original words" and the "first version is kept"
+  note. AGENTS.md rule 1 updated.
+- Tested in the DB (rolled back): no copy after an edit, everything gone after a
+  delete, another user deletes 0. Verify ✓.
+- Saving the cook's words empty now deletes them (it used to be an error).
+  `updateDictation` sets the transcript to null when empty, except while a draft
+  has open AI questions ("The AI questions still need these words…"). The edit
+  hint says clearing deletes. Verify ✓ for both cases.
+
+## Nov 21 — Write the recipe yourself from Development
+- "Or write the recipe yourself, no AI" under the AI panel and in the no-words
+  box links to `/recipes/new?from=<id>`. The page loads the entry through RLS
+  and prefills name, cook, and notes. `createManualRecipe` with `dictation_id`
+  checks ownership, refuses if a recipe already exists (unless it failed),
+  moves the entry to Recipes, and rolls the stage back if the recipe insert
+  fails. A manual recipe shows the cook's words section only if words exist.
+  Verify ✓.
+- Shortcut (student's request): Enter in an ingredient field or a step adds a
+  row right below and focuses it (Ingredient on phones, Amount at 640px+, the
+  first field on screen). It doesn't submit the form, and it ignores Enter
+  while an IME is composing. Shift+Enter is a new line in a step. A hint line
+  sits under each heading. Verify ✓ (Enter adds row 3 with focus, no submit;
+  Shift+Enter keeps one step).
+
+## Nov 21 — Sections in the Recipes tab (issue #8, first part)
+- Student's call: several sections per recipe, their own list (create/delete).
+- Migration `20261121020000_sections.sql` (additive; v1 never reads it):
+  `sections` (name 1–40, unique per owner ignoring case) and `entry_sections`
+  (entry ↔ section). Owner-only RLS; inserting a link checks that **both** the
+  entry and the section are yours (the Nov 14 re-pointing lesson). No UPDATE
+  grant at all; anon gets nothing. Tested in the DB (rolled back): duplicate
+  name blocked, another user sees 0, can't link into someone else's entry
+  (42501), can't delete theirs, update and anon blocked, deleting a section
+  keeps the entry and removes its links.
+- Links hang off the entry (`dictations`), not the recipe, so they survive
+  re-creating a recipe. Shared copies don't carry sections (they're personal).
+- UI: Recipes tab filter chips (`?section=<id>`, `aria-current`), section names
+  on each card; on a Recipes item, toggle chips (`aria-pressed`, optimistic)
+  + "+ New section" (adds it and puts the recipe in it); `/sections` to add,
+  count, and delete (confirm: the recipes stay). The starter list is offered
+  only when you have no sections, so deleted ones never come back on their own.
+  Chips are Ink when on, so Scarlet stays the one primary.
+- Verify ✓ (axe clean at 390/1440). Fixed after the screenshot review: an
+  "Added to …" line stayed on screen after the chip was toggled off, so it was removed.
+- Still open in #8: search by title, AI-suggested sections.
+
+## Nov 21 — Sections become Tags, with a type-to-add box
+- Student's call after I suggested it: "tag" fits several-per-recipe, and typing
+  scales better than a wall of chips. Labels, route (`/tags`), query param
+  (`?tag=`), and code names changed. The tables keep their names
+  (`sections`, `entry_sections`): no migration, nothing for v1 to notice.
+- `TagPicker`: tags on the recipe are Ink chips with ×. One input: Enter adds.
+  `tagEntry` reuses your tag with that name (any case) or makes a new one, then
+  links it. Your other tags are listed below and narrow as you type; tap to add.
+  With no tags yet, the starter names are offered (tapping one makes it).
+  Optimistic updates; `aria-busy` while saving.
+- Bug found by verify: removing a tag right after adding it sent its temporary
+  id and failed. `untagEntry` now goes by name (the server looks the tag up).
+- Verify ✓ (axe clean): type to add, Enter, focus stays, no duplicate in any
+  case, ×, matching tags, saved after reload, filter, delete keeps the recipe.
+  Cleaned leftover test tags and recipes from failed runs (verify names only).
+- All tags (student's pick): `/tags` now lists each tag as a region with its
+  recipes (one embedded query: tags → links → entries → recipes, all under
+  RLS), linking to the recipe (or the entry if it has none). "Edit tags" links
+  are now "All tags". Verify ✓ (the tag's region lists the recipe; an unused
+  tag says "No recipes yet").
+
+## Nov 27 — Photos on ideas (issue #7, first part)
+- Student's request: add an idea as text, a photo, or both.
+- Storage: a **private** `photos` bucket (2MB cap, JPEG/PNG/WebP only). Files
+  live at `<user id>/<entry id>/<random>`; Storage RLS only allows your own
+  folder (read, add, delete; no update). `entry_photos` records them; its insert
+  policy checks the entry is yours and the path starts with your folder for
+  that entry (`starts_with`, not LIKE, because Clerk ids contain `_`). Tested
+  in the DB (rolled back): own folder ok; another user's folder, entry, or a
+  `_`-wildcard path blocked; another user sees 0 files; anon sees nothing.
+- Photos are shown with **1-hour signed URLs** made on the server, never public
+  links. Not shared through recipe links.
+- Phone photos are 3–12MB, but server actions are capped at 1MB. The browser
+  shrinks each photo (longest side 1600px, JPEG under 900KB, keeps rotation)
+  before upload. The server checks the real file bytes (magic numbers), not
+  the name. "Not a photo" gives a friendly error. HEIC on desktop Chrome can't
+  be decoded, so it gets the same message.
+- Deleting a photo or an entry deletes the files too (`deletePhotos`), so
+  nothing is left in Storage. Checked after verify: 0 files, 0 rows left.
+- Quick-add: the camera button opens the picker (camera on phones), shows a
+  preview with "Remove photo", and Enter or Add saves. A photo-only idea is
+  called "Photo idea" everywhere. Up to 6 photos per idea.
+- Verify ✓ (axe clean). Screenshot review: photos looked blank because the
+  shot was taken before they loaded, so verify now waits until each image has
+  really loaded (naturalWidth > 0). That also proves the signed URLs work.
+  Cleaned up old verify test ideas.
+- Student: zoom in on tap instead of opening a new tab, and don't crop
+  thumbnails. The viewer is a native `<dialog>` (like the "?" guide): Escape,
+  a tap outside, or × closes it, and focus returns to the thumbnail.
+  Previous/Next and the arrow keys move between photos. The photo fits the
+  screen (`object-contain`, max 100dvh minus the bars). Thumbnails changed
+  from `object-cover` to `object-contain` on Plaster. Verify adds a tall
+  portrait photo and covers open, arrows, Next, Escape, focus return, and no
+  new tab. Axe clean.
+- Student didn't like the empty bars from `object-contain` in square boxes.
+  Thumbnails now keep each photo's own shape: the same max height (176px on
+  phones, 224px wider), width auto, and the border hugs the photo. The list
+  thumbnail is max 64×96. On a narrow photo the overlaid × covered half of it,
+  so Delete moved below each photo as a text button. Verify ✓, axe clean.
+
+## Nov 27 — "Kitchen notes"
+- The student didn't like the cook's-words wording and picked **Kitchen notes**
+  from four options. Recipe development = dictate or paste rough
+  instructions. Renamed in every UI string, error message, confirm dialog, and
+  the AI step ("The kitchen notes are complete. I'm ready."). The COOK badge was
+  dropped from the empty box heading. It stays on the notes themselves and on
+  recipe parts, where it's the source label (rule 4).
+- `KitchenNotesTip` (draft): "include amounts (2 cups flour, 1 tsp salt) and as
+  much detail as you can: times, temperatures, what it should look like." It
+  shows in the empty box and under the field label (`aria-describedby`). The
+  placeholder example now has amounts and temperatures.
+- Code names (`transcript`, `DictationEditor`) and the AI prompt are unchanged;
+  reframing the prompt is #12 and needs an eval run.
+- The page title "Kitchen notes" repeated the field label, so it's now "New
+  kitchen notes". Verify ✓, axe clean.
+- "Idea notes" → **Inspiration** (my suggestion, the student's call): the
+  heading, pencil ("Edit inspiration"), field labels, and empty state ("Nothing
+  yet. Tap the pencil to note what inspired it."). Errors that meant the
+  transcript now say "kitchen notes". The `notes` column is unchanged.
+- Tip trimmed at the student's request: "include amounts and as much detail as
+  you can, like times and temperatures. The more detail, the better the recipe."
+  Verify ✓.
+- Grammar pass on the tip (student's request): "Tip: Include amounts and as
+  much detail as you can, such as cooking times and temperatures. The more
+  detail, the better the recipe."
+- Quick-add now has an always-visible Inspiration textarea (the student's pick
+  of three) saved to `notes` with the idea. Enter in the name still saves; Enter
+  in the inspiration box is a new line. An idea with only inspiration is
+  "Untitled idea". The box clears after saving and keeps what you typed on an
+  error. Verify ✓ (saved with the idea and shown in the list), axe clean.
+- Compact list rows (the student's pick of three): removed the per-row `MoveTo`
+  (moving is on `/d` and `/r`). Name text-2xl → text-xl, padding pt-4/pb-1 +
+  a MoveTo line → py-3, preview 2 lines → 1 (truncate), thumbnail max 48×80,
+  and tags on their own line in Recipes. Each row is about half as tall. Verify
+  updated: rows have no Move buttons, and an idea moves from its own page.
+  Axe clean.
+- No date on list rows (the item page still has it). The meta line only shows
+  when there's a cook, "from a link", or "has a link".
+- List thumbnails zoom in: the viewer moved into `components/PhotoViewer.tsx`
+  (`usePhotoViewer`, `ZoomThumb`), shared with the idea page. The thumbnail is
+  its own button next to the row link (not nested inside it), and it opens all
+  of that item's photos. Verify: tapping it opens "Photo 1 of 1", the URL is
+  unchanged, and Escape returns focus to the thumbnail.
+- The student disliked the magnifying-glass cursor, so it's `cursor-pointer`
+  everywhere.
+- Photo viewer: a tap anywhere closes it, even on the photo (the student's
+  request). Taps on the Previous, Next, and × buttons are excluded with
+  `closest("button")`. Verify ✓ (clicking the photo closes it).
+- Compact idea page (the student's request). Section gap 32 → 20px, title
+  5xl → 4xl on phones, and the "Saved …" date moved onto the breadcrumb line.
+  Inspiration padding is tighter. Photos are max 112px tall (144px wider) with
+  a dashed camera tile to add more. The text "Add a photo" link only shows
+  when there are none. The AI panels are p-4 with 2xl headings, and Move to +
+  Delete share one footer line. At 390px: 1205 → 857px (idea with photos),
+  1231 → 962px (Development, no notes). With a photo's Delete just above, the
+  footer button now says "Delete idea" so the two aren't confused. Verify ✓,
+  axe clean.
+- Compact recipe page. Section gap 40 → 24px. Title 5xl/6xl → 4xl/5xl.
+  Ingredients/Steps/Changes headings 3xl → 2xl. Step rows py-5 → py-3 with a
+  2xl number. Show sources sits right above the title (gap 40 → 8px). The Send
+  panel is p-4 with a 2xl heading. The kitchen-notes buttons show "Edit" and
+  "Delete" (the accessible names stay "Edit/Delete kitchen notes" and contain
+  the visible text), so they fit on one line on the idea page too. Footer:
+  Move to + "Delete recipe" (was "Delete this recipe"). The same RecipeView
+  serves shared links, so they're compact too. At 390px: 2967 → 2534px. Verify
+  ✓, axe clean.
+- List rows (the student's request): tags and the cook sit on the name's line in
+  the eyebrow style (max half the width, truncated). The separate tags line
+  (15px Ink) and meta line are gone, leaving two lines and three styles: serif
+  name, eyebrow label, muted preview. Verify ✓.
+- Tab header (the student's example of "too much going on": a huge "Your lab
+  book" plus a mixed Ink/muted "Recipes · 2 · Ready to cook…" line). The h1 is
+  now the tab's name (4xl/5xl) with the start button beside it. Removed the
+  count/description line and the `blurb` text. Verify ✓.
+
+## Nov 27 — One font: Figtree
+- The student felt the condensed Instrument Serif and geometric Jost conflicted.
+  Previewed six pairings, then eight one-font options (static HTML in
+  `notes/design/`, screenshotted to check the fonts load). The student liked
+  Inter, then Manrope and Figtree. I recommended one font, not two similar sans
+  together, and Figtree for reading steps on a phone. The student chose it.
+- `next/font` loads Figtree only. Both tokens (`--font-ls-serif`,
+  `--font-ls-sans`) point to it, so headings keep one class. `.font-ls-serif`
+  sets semibold and -0.015em tracking. Clerk's appearance font is updated too.
+  AGENTS.md style rule updated.
+- Restarted the dev server with a clean `.next` (globals.css changed; the
+  stale-CSS guard passed). Verify ✓: 44 screens, axe clean at 390/1440, and the
+  landing page still fits one screen.
+
+## Nov 27 — "Show sources" removed
+- Student: "I do not need it." I pushed back once. Removing it also hides the
+  "Suggested" tag, which is the visible form of rules 3–4 and part of the AI
+  honesty story. I offered to keep only that tag. The student chose removing
+  the switch and all labels.
+- `SourcesScope` keeps `data-sources="hidden"` with no switch, so `.src-only`
+  content (labels, legend, history notes, "what the app changed") never shows.
+  The labels stay in the recipe JSON (pipeline, evals, shared copies
+  unchanged), so restoring them is a one-component change. AGENTS.md rule 4
+  notes the change. Verify updated: no switch, edits saved, labels hidden.
+  Axe clean.
+
+## Nov 27 — Compact Development page
+- Found in the screenshot review: after the Figtree switch, text that used
+  `font-ls-serif` for a "reading" style (the kitchen notes, quotes in Why it
+  works, the questions' blockquote) became **semibold**, because
+  `.font-ls-serif` now means heading. Those are now plain 17px (quotes keep
+  italic).
+- Kitchen notes: `ClampText` shows 6 lines plus "Show all" / "Show less"
+  (`aria-expanded`), only when the text overflows. The header is now just
+  "Kitchen notes" (was "…, exactly as written").
+- Empty Inspiration is one line ("INSPIRATION  Nothing yet  ✎"). With no
+  photos, "Add a photo" sits on the Photos heading line. The breadcrumb drops
+  "Saved" so it fits on one line.
+- At 390px: 1658 → 1226px (with long notes), and 1231 → 995px with no notes.
+  Verify ✓ (Show all/less), axe clean.

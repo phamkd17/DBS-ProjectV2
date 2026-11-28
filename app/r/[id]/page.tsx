@@ -1,18 +1,22 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { deleteDictation } from "@/app/actions";
+import { deleteDictation, discardDraft, saveAnswersForLater } from "@/app/actions";
 import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { RecipeView } from "@/components/RecipeView";
 import { DictationEditor } from "@/components/DictationEditor";
 import { EditableNotes } from "@/components/InlineEdit";
-import { eyebrow, focusRing, formatDate, SourceBadge, textLink } from "@/components/ui";
+import { Button, eyebrow, focusRing, formatDate, SourceBadge, textLink } from "@/components/ui";
 import { supabaseForUser } from "@/lib/supabase/server";
 import type { DictationRow, QuestionRow, RecipeRow } from "@/lib/types";
 import { QuestionsForm } from "./QuestionsForm";
 import { MoveTo } from "@/components/MoveTo";
 import { STAGE_LABEL } from "@/lib/types";
 import { SharePanel } from "./SharePanel";
+import { TagPicker } from "@/components/TagPicker";
+import { EntryPhotos } from "@/components/EntryPhotos";
+import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
+import type { TagRow } from "@/lib/types";
 
 // Pass 2 can take a while on the free tier.
 export const maxDuration = 300;
@@ -42,24 +46,52 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
           </p>
           <h1 className="font-ls-serif text-5xl leading-none">A few questions first</h1>
           <p className="max-w-prose text-[17px] leading-relaxed text-ls-muted">
-            These are things a new cook couldn&apos;t figure out from {dictation.cook_name ? `${dictation.cook_name}'s` : "the"}{" "}
-            words. Answer what you know.
+            These are things a new cook couldn&apos;t figure out from the kitchen notes. Answer what you know.
           </p>
+          {/* Leave the questions: keep answers for later, or throw the AI draft away. */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+            <Button
+              type="submit"
+              form="questions-form"
+              formAction={saveAnswersForLater.bind(null, recipe.id)}
+              formNoValidate
+              variant="secondary"
+            >
+              Save for later
+            </Button>
+            <form action={discardDraft.bind(null, recipe.id)}>
+              <ConfirmSubmit
+                variant="danger"
+                message="Discard these questions and the AI draft? Your answers will be lost. You can edit the kitchen notes and create the recipe again."
+              >
+                Discard questions
+              </ConfirmSubmit>
+            </form>
+          </div>
         </div>
         <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
-        <DictationEditor dictation={dictation} />
+        <DictationEditor dictation={dictation} canDelete={false} />
         <QuestionsForm recipeId={recipe.id} questions={questions ?? []} cookName={dictation.cook_name} />
       </main>
     );
   }
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
+  const photos = await photosFor(supabase, [dictation.id]);
+  // Tags (Recipes tab only): your list + which ones this recipe has.
+  const [{ data: sections }, { data: links }] =
+    dictation.stage === "finished"
+      ? await Promise.all([
+          supabase.from("sections").select("id, name, created_at").order("name").returns<TagRow[]>(),
+          supabase.from("entry_sections").select("section_id").eq("dictation_id", dictation.id),
+        ])
+      : [{ data: null }, { data: null }];
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
   const shareUrl = recipe.share_token ? `${origin}/s/${recipe.share_token}` : null;
 
   return (
-    <main className="space-y-10">
+    <main className="space-y-6">
       <p className={eyebrow}>
         <Link href={`/?tab=${dictation.stage}`} className={textLink}>
           {STAGE_LABEL[dictation.stage]}
@@ -70,7 +102,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       {dictation.edited_at && dictation.edited_at > recipe.updated_at && (
         <p role="note" className="border-l-2 border-ls-ink bg-ls-surface px-4 py-3 text-[15px]">
-          Their words were edited on {formatDate(dictation.edited_at)}, after this recipe was made, so the recipe may
+          The kitchen notes were edited on {formatDate(dictation.edited_at)}, after this recipe was made, so the recipe may
           not match them anymore.
         </p>
       )}
@@ -79,9 +111,18 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
 
-      <section aria-label="Original dictation" className="space-y-3">
-        <DictationEditor dictation={dictation} />
-      </section>
+      <EntryPhotos dictationId={dictation.id} photos={photos} max={MAX_PHOTOS_PER_ENTRY} />
+
+      {dictation.stage === "finished" && (
+        <TagPicker dictationId={dictation.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
+      )}
+
+      {/* Hand-typed recipes (model "manual") have no kitchen notes to show or add. */}
+      {(recipe.model !== "manual" || dictation.transcript) && (
+        <section aria-label="Kitchen notes" className="space-y-3">
+          <DictationEditor dictation={dictation} />
+        </section>
+      )}
 
       {answered.length > 0 && (
         <details className="border border-ls-border bg-ls-surface">
@@ -112,16 +153,18 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       <SharePanel recipeId={recipe.id} url={shareUrl} title={recipe.recipe.title} />
 
-      <MoveTo kind="dictation" id={dictation.id} current={dictation.stage} />
-
-      <form action={deleteDictation.bind(null, dictation.id)} className="border-t border-ls-border pt-4">
-        <ConfirmSubmit
-          variant="danger"
-          message="Delete this recipe and the words it came from? Links you've sent will stop working. This can't be undone."
-        >
-          Delete this recipe
-        </ConfirmSubmit>
-      </form>
+      {/* Move to and Delete share one line at the bottom (compact, student Nov 27). */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 border-t border-ls-border pt-2">
+        <MoveTo kind="dictation" id={dictation.id} current={dictation.stage} />
+        <form action={deleteDictation.bind(null, dictation.id)} className="-mr-3">
+          <ConfirmSubmit
+            variant="danger"
+            message="Delete this recipe and the kitchen notes it came from? Links you've sent will stop working. This can't be undone."
+          >
+            Delete recipe
+          </ConfirmSubmit>
+        </form>
+      </div>
 
     </main>
   );

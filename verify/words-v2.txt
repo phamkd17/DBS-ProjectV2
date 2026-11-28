@@ -1,0 +1,8 @@
+landing (signed out): 52
+empty lab book: 41
+new idea: 25
+new dictation: 31
+tab: ideas (empty): 41
+tab: development (empty): 41
+tab: finished (empty): 41
+TOTAL: 272

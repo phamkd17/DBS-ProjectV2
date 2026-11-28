@@ -11,6 +11,23 @@ Design, Build, Ship (MPCS 51238) · **Project v2** (v1 is tagged `v1`; v1 repo: 
 know → answer, or accept a suggestion → a recipe with every reason labeled by
 who said it → send it by link; the recipient saves a copy to their own lab book.
 
+## How to use it
+
+1. **Ideas:** tap **New → Idea** to save what inspires you: a name, a note, a
+   link. Use **Save and add another** to jot down several in a row.
+2. **Development:** open an idea and tap **Move to Development**. Add the
+   cook's words: type or dictate the ingredients, then each step (the phone's 🎤
+   works). Tick **I'm ready** and tap **Create recipe with AI**. Answer what
+   you know, or tap **Use suggestion**.
+3. **Recipes:** the recipe is ready to cook. Tap the 🧪 icon on a step for
+   *why it works*, and the sliders icon to *adjust to taste*. **Show sources**
+   shows what came from the cook, from you, and from the AI. Keep it, or tap
+   **Make a link** to send it.
+
+Already have a recipe written down? On **Recipes**, tap **+ New recipe** and type it in. No AI needed.
+
+Lost? Tap **?** at the top of any page.
+
 ## Run locally
 
 ```bash

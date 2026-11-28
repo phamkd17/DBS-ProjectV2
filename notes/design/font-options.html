@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Font options · Culinary Lab Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Instrument+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500&family=Source+Sans+3:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=Jost:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+  body { margin:0; background:#ece7dc; color:#1c1d1f; font-family:system-ui,sans-serif; }
+  main { max-width:1200px; margin:0 auto; padding:32px 20px; }
+  .intro h1 { font-size:28px; margin:0 0 6px; } .intro p { color:#5e656e; margin:0 0 24px; max-width:60ch; }
+  .grid { display:grid; gap:20px; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); }
+  .card { background:#f8f6f1; border:1px solid #1c1d1f; padding:18px; }
+  .card .opt { font-family:var(--sans); font-weight:500; font-size:18px; margin:2px 0 4px; }
+  .card .why { font-family:var(--sans); color:#5e656e; font-size:14px; margin:0 0 14px; min-height:3.2em; }
+  .eyebrow { font-family:var(--sans); font-size:11px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; color:#5e656e; }
+  .app { background:#ece7dc; border:1px solid #c9c2b4; padding:14px; font-family:var(--sans); }
+  .tabs { display:flex; gap:18px; border-bottom:1px solid #1c1d1f; padding-bottom:8px; font-size:12px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:#5e656e; }
+  .tabs .on { color:#1c1d1f; text-decoration:underline; text-underline-offset:10px; }
+  .head { display:flex; justify-content:space-between; align-items:center; margin:14px 0 10px; }
+  h1 { font-family:var(--serif); font-weight:var(--sw); font-size:38px; line-height:1.1; margin:0; }
+  h3 { font-family:var(--serif); font-weight:var(--sw); font-size:24px; margin:16px 0 6px; }
+  .btn { background:#ae1f2e; color:#f8f6f1; font-size:11px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; padding:10px 14px; }
+  .row { display:flex; gap:12px; align-items:baseline; border-top:1px solid #c9c2b4; padding-top:8px; }
+  .row .t { font-family:var(--serif); font-weight:var(--sw); font-size:20px; }
+  .prev { color:#5e656e; font-size:15px; margin:2px 0 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .step { display:flex; gap:12px; font-size:16px; line-height:1.5; margin:0; }
+  .step .n { font-family:var(--serif); font-weight:var(--sw); font-size:24px; color:#5e656e; line-height:1; }
+  .tip { border-left:2px solid #c9c2b4; padding-left:10px; color:#5e656e; font-size:14px; margin:12px 0 0; }
+  .tip b { color:#1c1d1f; font-weight:500; }
+</style></head><body><main>
+<div class="intro"><h1>Font options</h1><p>The same piece of the app in each pairing (all free Google Fonts). Option 1 is closest to now. Draft for the student to review.</p></div>
+<div class="grid">
+<section class="card" style="--serif:'Instrument Serif',serif;--sw:400;--sans:'Instrument Sans',sans-serif">
+  <p class="eyebrow">Option 1</p>
+  <h2 class="opt">Instrument Serif + Instrument Sans</h2>
+  <p class="why">Now: same serif, with the sans from the same family. Smallest change; the two were designed to go together.</p>
+  <div class="app">
+    <div class="tabs"><span class="on">Ideas</span><span>Development</span><span>Recipes</span></div>
+    <div class="head"><h1>Recipes</h1><span class="btn">+ New recipe</span></div>
+    <div class="row"><span class="t">Tangy Yogurt</span><span class="eyebrow">Dessert · Grandma</span></div>
+    <p class="prev">Yogurt is a very simple dish, you need about a half gallon of milk…</p>
+    <div class="row"><span class="t">Caramelized Onion Crunch</span><span class="eyebrow">Mexican</span></div>
+    <p class="prev">Had it on pho. Crunchy and sweet. Dry at 200°F for 2 hours?</p>
+    <h3>Steps</h3>
+    <p class="step"><span class="n">1</span>Heat the milk gently until it steams, about 180°F. Don't let it boil.</p>
+    <p class="tip"><b>Tip:</b> Include amounts and as much detail as you can, such as cooking times and temperatures.</p>
+  </div>
+</section>
+<section class="card" style="--serif:'Jost',serif;--sw:300;--sans:'Jost',sans-serif">
+  <p class="eyebrow">Option 2</p>
+  <h2 class="opt">Jost only</h2>
+  <p class="why">One font for everything. Headings in a light weight. No mixing at all; calm and modern.</p>
+  <div class="app">
+    <div class="tabs"><span class="on">Ideas</span><span>Development</span><span>Recipes</span></div>
+    <div class="head"><h1>Recipes</h1><span class="btn">+ New recipe</span></div>
+    <div class="row"><span class="t">Tangy Yogurt</span><span class="eyebrow">Dessert · Grandma</span></div>
+    <p class="prev">Yogurt is a very simple dish, you need about a half gallon of milk…</p>
+    <div class="row"><span class="t">Caramelized Onion Crunch</span><span class="eyebrow">Mexican</span></div>
+    <p class="prev">Had it on pho. Crunchy and sweet. Dry at 200°F for 2 hours?</p>
+    <h3>Steps</h3>
+    <p class="step"><span class="n">1</span>Heat the milk gently until it steams, about 180°F. Don't let it boil.</p>
+    <p class="tip"><b>Tip:</b> Include amounts and as much detail as you can, such as cooking times and temperatures.</p>
+  </div>
+</section>
+<section class="card" style="--serif:'Source Serif 4',serif;--sw:500;--sans:'Source Sans 3',sans-serif">
+  <p class="eyebrow">Option 3</p>
+  <h2 class="opt">Source Serif 4 + Source Sans 3</h2>
+  <p class="why">A matched pair from one designer. Bookish and very readable; feels like a cookbook.</p>
+  <div class="app">
+    <div class="tabs"><span class="on">Ideas</span><span>Development</span><span>Recipes</span></div>
+    <div class="head"><h1>Recipes</h1><span class="btn">+ New recipe</span></div>
+    <div class="row"><span class="t">Tangy Yogurt</span><span class="eyebrow">Dessert · Grandma</span></div>
+    <p class="prev">Yogurt is a very simple dish, you need about a half gallon of milk…</p>
+    <div class="row"><span class="t">Caramelized Onion Crunch</span><span class="eyebrow">Mexican</span></div>
+    <p class="prev">Had it on pho. Crunchy and sweet. Dry at 200°F for 2 hours?</p>
+    <h3>Steps</h3>
+    <p class="step"><span class="n">1</span>Heat the milk gently until it steams, about 180°F. Don't let it boil.</p>
+    <p class="tip"><b>Tip:</b> Include amounts and as much detail as you can, such as cooking times and temperatures.</p>
+  </div>
+</section>
+<section class="card" style="--serif:'IBM Plex Serif',serif;--sw:400;--sans:'IBM Plex Sans',sans-serif">
+  <p class="eyebrow">Option 4</p>
+  <h2 class="opt">IBM Plex Serif + IBM Plex Sans</h2>
+  <p class="why">One superfamily. A bit technical, which suits a lab book.</p>
+  <div class="app">
+    <div class="tabs"><span class="on">Ideas</span><span>Development</span><span>Recipes</span></div>
+    <div class="head"><h1>Recipes</h1><span class="btn">+ New recipe</span></div>
+    <div class="row"><span class="t">Tangy Yogurt</span><span class="eyebrow">Dessert · Grandma</span></div>
+    <p class="prev">Yogurt is a very simple dish, you need about a half gallon of milk…</p>
+    <div class="row"><span class="t">Caramelized Onion Crunch</span><span class="eyebrow">Mexican</span></div>
+    <p class="prev">Had it on pho. Crunchy and sweet. Dry at 200°F for 2 hours?</p>
+    <h3>Steps</h3>
+    <p class="step"><span class="n">1</span>Heat the milk gently until it steams, about 180°F. Don't let it boil.</p>
+    <p class="tip"><b>Tip:</b> Include amounts and as much detail as you can, such as cooking times and temperatures.</p>
+  </div>
+</section>
+<section class="card" style="--serif:'Fraunces',serif;--sw:400;--sans:'Jost',sans-serif">
+  <p class="eyebrow">Option 5</p>
+  <h2 class="opt">Fraunces + Jost</h2>
+  <p class="why">Keeps Jost; swaps the tall, narrow serif for a softer, rounder one that sits better beside it.</p>
+  <div class="app">
+    <div class="tabs"><span class="on">Ideas</span><span>Development</span><span>Recipes</span></div>
+    <div class="head"><h1>Recipes</h1><span class="btn">+ New recipe</span></div>
+    <div class="row"><span class="t">Tangy Yogurt</span><span class="eyebrow">Dessert · Grandma</span></div>
+    <p class="prev">Yogurt is a very simple dish, you need about a half gallon of milk…</p>
+    <div class="row"><span class="t">Caramelized Onion Crunch</span><span class="eyebrow">Mexican</span></div>
+    <p class="prev">Had it on pho. Crunchy and sweet. Dry at 200°F for 2 hours?</p>
+    <h3>Steps</h3>
+    <p class="step"><span class="n">1</span>Heat the milk gently until it steams, about 180°F. Don't let it boil.</p>
+    <p class="tip"><b>Tip:</b> Include amounts and as much detail as you can, such as cooking times and temperatures.</p>
+  </div>
+</section>
+<section class="card" style="--serif:'Inter',serif;--sw:500;--sans:'Inter',sans-serif">
+  <p class="eyebrow">Option 6</p>
+  <h2 class="opt">Inter only</h2>
+  <p class="why">One font, very plain and clear. The most neutral option.</p>
+  <div class="app">
+    <div class="tabs"><span class="on">Ideas</span><span>Development</span><span>Recipes</span></div>
+    <div class="head"><h1>Recipes</h1><span class="btn">+ New recipe</span></div>
+    <div class="row"><span class="t">Tangy Yogurt</span><span class="eyebrow">Dessert · Grandma</span></div>
+    <p class="prev">Yogurt is a very simple dish, you need about a half gallon of milk…</p>
+    <div class="row"><span class="t">Caramelized Onion Crunch</span><span class="eyebrow">Mexican</span></div>
+    <p class="prev">Had it on pho. Crunchy and sweet. Dry at 200°F for 2 hours?</p>
+    <h3>Steps</h3>
+    <p class="step"><span class="n">1</span>Heat the milk gently until it steams, about 180°F. Don't let it boil.</p>
+    <p class="tip"><b>Tip:</b> Include amounts and as much detail as you can, such as cooking times and temperatures.</p>
+  </div>
+</section></div>
+</main></body></html>

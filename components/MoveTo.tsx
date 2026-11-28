@@ -5,7 +5,7 @@ import { moveItem } from "@/app/actions";
 import { STAGE_LABEL, STAGES, type Stage } from "@/lib/types";
 import { eyebrow, focusRing } from "./ui";
 
-/** "Move to: Development · Finished": moves an idea or dictation between tabs. */
+/** "Move to: Development · Recipes": moves an idea or dictation between tabs. */
 export function MoveTo({
   kind,
   id,

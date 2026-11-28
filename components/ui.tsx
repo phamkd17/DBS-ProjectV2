@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import type { Source } from "@/lib/ai/schema";
+import { ClampText } from "./ClampText";
 
 // Line & Stone building blocks (from Assignment 2's design system).
 
@@ -95,6 +96,15 @@ export function LinkButton({
 
 export const textLink = `underline decoration-ls-rule underline-offset-4 transition-colors hover:decoration-ls-ink active:text-ls-muted ${focusRing}`;
 
+/** A square, hairline chip. "On" is Ink-filled (Scarlet stays for the one primary action). */
+export function chipClass(on: boolean) {
+  return `inline-flex min-h-11 cursor-pointer items-center gap-1.5 border px-3 font-ls-sans text-[15px] transition-colors duration-150 active:translate-y-px ${focusRing} ${
+    on
+      ? "border-ls-ink bg-ls-ink text-ls-surface hover:bg-ls-ink/85"
+      : "border-ls-ink/40 bg-ls-surface text-ls-ink hover:border-ls-ink hover:bg-white active:bg-ls-ink/[0.08]"
+  }`;
+}
+
 // ---------------------------------------------------------------------------
 // Form fields
 // ---------------------------------------------------------------------------
@@ -130,20 +140,28 @@ export function Spinner() {
 }
 
 // ---------------------------------------------------------------------------
-// Her words
+// Kitchen notes (the rough instructions the AI turns into a recipe; first
+// called "the cook's words"). Renamed by the student, Nov 27.
 // ---------------------------------------------------------------------------
-/** Her words, exactly as saved. Never edited. */
+/** The tip shown wherever kitchen notes are added. Draft wording: for the student to review. */
+export function KitchenNotesTip({ id }: { id?: string }) {
+  return (
+    <p id={id} className="border-l-2 border-ls-rule pl-3 text-[15px] text-ls-muted">
+      <span className="font-medium text-ls-ink">Tip:</span> Include amounts and as much detail as you can, such as cooking
+      times and temperatures. The more detail, the better the recipe.
+    </p>
+  );
+}
+/** The kitchen notes, exactly as saved. */
 export function Transcript({
   text,
   cookName,
   open = false,
-  original,
   editedAt,
 }: {
   text: string;
   cookName?: string | null;
   open?: boolean;
-  original?: string | null;
   editedAt?: string | null;
 }) {
   return (
@@ -154,26 +172,16 @@ export function Transcript({
         <span className="flex items-center gap-3">
           <SourceBadge source="cook" cookName={cookName} />
           <span className="text-[15px]">
-            {editedAt ? `Their words · edited ${formatDate(editedAt)}` : "Their words, exactly as said"}
+            {editedAt ? `Kitchen notes · edited ${formatDate(editedAt)}` : "Kitchen notes"}
           </span>
         </span>
         <span aria-hidden className="text-sm text-ls-muted transition-transform group-open:rotate-180">
           ▾
         </span>
       </summary>
-      <p className="whitespace-pre-wrap border-t border-ls-border px-4 py-4 font-ls-serif text-lg leading-relaxed">
-        {text}
-      </p>
-      {original && original !== text && (
-        <details className="border-t border-ls-border">
-          <summary
-            className={`flex min-h-11 cursor-pointer items-center px-4 py-3 text-[15px] text-ls-muted hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
-          >
-            See the original words
-          </summary>
-          <p className="whitespace-pre-wrap px-4 pb-4 font-ls-serif text-lg leading-relaxed text-ls-muted">{original}</p>
-        </details>
-      )}
+      <div className="border-t border-ls-border px-4 pt-3 pb-1">
+        <ClampText text={text} className="text-[17px] leading-relaxed" />
+      </div>
     </details>
   );
 }

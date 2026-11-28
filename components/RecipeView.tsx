@@ -9,19 +9,18 @@ type Props = {
   /** Omit to render the words elsewhere (e.g. the owner's editable copy). */
   transcript?: string;
   cookName?: string | null;
-  original?: string | null;
   editedAt?: string | null;
   /** Owner's own recipe: amounts get a pencil to edit them. Omit for read-only (shared links). */
   editableRecipeId?: string;
 };
 
 /** The finished recipe: ingredients, steps, the why labeled by source, and her words. */
-export function RecipeView({ recipe, transcript, cookName, original, editedAt, editableRecipeId }: Props) {
+export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId }: Props) {
   return (
     <SourcesScope>
-    <article className="space-y-10">
-      <header className="space-y-4">
-        <h1 className="font-ls-serif text-5xl leading-none sm:text-6xl">{recipe.title}</h1>
+    <article className="space-y-6">
+      <header className="space-y-3">
+        <h1 className="font-ls-serif text-4xl leading-tight sm:text-5xl">{recipe.title}</h1>
         <Legend cookName={cookName} />
       </header>
 
@@ -29,7 +28,7 @@ export function RecipeView({ recipe, transcript, cookName, original, editedAt, e
         <EditableIngredients recipeId={editableRecipeId} ingredients={recipe.ingredients} cookName={cookName} />
       ) : (
         <section aria-labelledby="ingredients" className="space-y-3">
-          <h2 id="ingredients" className="font-ls-serif text-3xl leading-tight">
+          <h2 id="ingredients" className="font-ls-serif text-2xl leading-tight">
             Ingredients
           </h2>
           <IngredientList ingredients={recipe.ingredients} cookName={cookName} />
@@ -37,13 +36,13 @@ export function RecipeView({ recipe, transcript, cookName, original, editedAt, e
       )}
 
       <section aria-labelledby="steps" className="space-y-3">
-        <h2 id="steps" className="font-ls-serif text-3xl leading-tight">
+        <h2 id="steps" className="font-ls-serif text-2xl leading-tight">
           Steps
         </h2>
         <ol className="divide-y divide-ls-border border-y border-ls-ink">
           {recipe.steps.map((step, i) => (
-            <li key={i} className="flex gap-4 py-5">
-              <span aria-hidden className="w-7 shrink-0 font-ls-serif text-3xl leading-none text-ls-muted">
+            <li key={i} className="flex gap-4 py-3">
+              <span aria-hidden className="w-6 shrink-0 font-ls-serif text-2xl leading-none text-ls-muted">
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1 space-y-4">
@@ -66,7 +65,7 @@ export function RecipeView({ recipe, transcript, cookName, original, editedAt, e
 
       {recipe.notes.length > 0 && (
         <section aria-labelledby="changes" className="src-only space-y-3">
-          <h2 id="changes" className="font-ls-serif text-3xl leading-tight">
+          <h2 id="changes" className="font-ls-serif text-2xl leading-tight">
             What the app changed
           </h2>
           <ul className="list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed text-ls-muted marker:text-ls-rule">
@@ -78,8 +77,8 @@ export function RecipeView({ recipe, transcript, cookName, original, editedAt, e
       )}
 
       {transcript !== undefined && (
-        <section aria-label="Original dictation">
-          <Transcript text={transcript} cookName={cookName} original={original} editedAt={editedAt} />
+        <section aria-label="Kitchen notes">
+          <Transcript text={transcript} cookName={cookName} editedAt={editedAt} />
         </section>
       )}
     </article>

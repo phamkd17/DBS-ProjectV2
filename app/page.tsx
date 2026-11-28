@@ -1,31 +1,34 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { SignUpButton } from "@clerk/nextjs";
 import { supabaseForUser } from "@/lib/supabase/server";
-import { Button, ErrorNote, eyebrow, focusRing, formatDate, LinkButton } from "@/components/ui";
-import { MoveTo } from "@/components/MoveTo";
-import { NewMenu } from "@/components/NewMenu";
-import type { DictationRow, RecipeStatus } from "@/lib/types";
+import { Button, chipClass, ErrorNote, eyebrow, focusRing, LinkButton, textLink } from "@/components/ui";
+import { QuickAddIdea } from "@/components/QuickAddIdea";
+import { HowItWorks } from "@/components/HowItWorks";
+import { photosFor } from "@/lib/photos";
+import { ZoomThumb } from "@/components/PhotoViewer";
+import type { DictationRow, RecipeStatus, TagRow } from "@/lib/types";
 
-type Row = DictationRow & { recipes: { id: string; status: RecipeStatus; recipe: { title?: string } | null }[] };
+type Row = DictationRow & {
+  recipes: { id: string; status: RecipeStatus; recipe: { title?: string } | null }[];
+  entry_sections: { section_id: string }[];
+};
 
 
 // Draft wording: for the student to review.
 const TABS = {
   ideas: {
     label: "Ideas",
-    blurb: "Notes, links, and saved words to come back to.",
-    empty: "Nothing here yet. Tap “New” to jot down an idea or save a cook's words.",
+    empty: "No ideas yet.",
   },
   development: {
     label: "Development",
-    blurb: "Recipes you're working on.",
-    empty: "Nothing in development. Move an idea here, or open saved words and tap “Create recipe”.",
+    empty: "Nothing in development yet.",
   },
   finished: {
-    label: "Finished",
-    blurb: "Recipes ready to cook and send.",
-    empty: "No finished recipes yet. Answer a recipe's questions to finish it, or move something here.",
+    label: "Recipes",
+    empty: "No recipes yet.",
   },
 } as const;
 type Tab = keyof typeof TABS;
@@ -36,76 +39,76 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   if (!userId) return <Landing />;
 
   const supabase = await supabaseForUser();
-  const [{ tab: tabParam }, { data, error }] = await Promise.all([
+  const [{ tab: tabParam, tag: tagParam }, { data, error }, { data: tagData }] = await Promise.all([
     searchParams,
     supabase
       .from("dictations")
-      .select("*, recipes(id, status, recipe)")
+      .select("*, recipes(id, status, recipe), entry_sections(section_id)")
       .order("created_at", { ascending: false })
       .returns<Row[]>(),
+    supabase.from("sections").select("id, name, created_at").order("name").returns<TagRow[]>(), // tags
   ]);
+  const tags = tagData ?? [];
 
   const rows = data ?? [];
   const byTab: Record<Tab, Row[]> = { ideas: [], development: [], finished: [] };
   for (const d of rows) byTab[d.stage].push(d);
 
-  // Explicit ?tab= wins; otherwise open where the work is.
-  const tab: Tab =
-    typeof tabParam === "string" && tabParam in TABS
-      ? (tabParam as Tab)
-      : byTab.development.length
-        ? "development"
-        : byTab.finished.length
-          ? "finished"
-          : "ideas";
+  // Explicit ?tab= wins; otherwise open where the work is. Redirect so the URL
+  // (and the header tabs) always say which section is open.
+  if (!(typeof tabParam === "string" && tabParam in TABS)) {
+    redirect(`/?tab=${byTab.development.length ? "development" : byTab.finished.length ? "finished" : "ideas"}`);
+  }
+  const tab = tabParam as Tab;
 
-  const items = byTab[tab];
+  // Recipes tab: filter by one tag (?tag=<id>); a recipe can have several.
+  const tag = tab === "finished" ? tags.find((t) => t.id === tagParam) : undefined;
+  const items = tag ? byTab[tab].filter((d) => d.entry_sections.some((l) => l.section_id === tag.id)) : byTab[tab];
+  const tagNames = new Map(tags.map((t) => [t.id, t.name]));
+  // Each item's photos: the first is the thumbnail; tapping it zooms in on all of them.
+  const thumbs = new Map<string, { url: string }[]>();
+  for (const p of await photosFor(supabase, items.map((d) => d.id))) thumbs.set(p.dictation_id, [...(thumbs.get(p.dictation_id) ?? []), { url: p.url }]);
 
   return (
     <main className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-ls-serif text-5xl leading-none">Your lab book</h1>
-        <NewMenu />
+        {/* The tab's name is the title, nothing under it (student, Nov 27). */}
+        <h1 className="font-ls-serif text-4xl leading-tight sm:text-5xl">{TABS[tab].label}</h1>
+        {/* One start button per tab, for what you do there (student, Nov 20). */}
+        {tab === "ideas" ? null : tab === "development" ? (
+          <LinkButton href="/new">+ Kitchen notes</LinkButton>
+        ) : (
+          <LinkButton href="/recipes/new">+ New recipe</LinkButton>
+        )}
       </div>
 
       {error && <ErrorNote>We couldn&apos;t load your lab book. Refresh the page to try again.</ErrorNote>}
 
       {rows.length === 0 && !error ? (
-        <FirstRun />
+        <>
+          {tab === "ideas" && <QuickAddIdea />}
+          <FirstRun />
+        </>
       ) : (
         <>
-          <nav aria-label="Lab book sections" className="border-b border-ls-border">
-            <ul className="flex gap-6 sm:gap-8">
-              {(Object.keys(TABS) as Tab[]).map((t) => {
-                const active = t === tab;
-                return (
-                  <li key={t}>
-                    <Link
-                      href={`/?tab=${t}`}
-                      aria-current={active ? "page" : undefined}
-                      className={`-mb-px inline-flex min-h-11 items-center gap-2 border-b-2 px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] transition-colors duration-150 ${focusRing} ${
-                        active
-                          ? "border-ls-ink text-ls-ink"
-                          : "border-transparent text-ls-muted hover:border-ls-rule hover:text-ls-ink active:border-ls-border"
-                      }`}
-                    >
-                      {TABS[t].label}
-                      <span className="tabular-nums text-ls-muted">{byTab[t].length}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
 
-          <p className="text-[15px] text-ls-muted">{TABS[tab].blurb}</p>
+          {tab === "ideas" && <QuickAddIdea />}
+
+          {tab === "finished" && byTab.finished.length > 0 && <TagFilter tags={tags} current={tag?.id} />}
 
           {items.length === 0 ? (
-            <p className="border border-dashed border-ls-border p-6 text-[15px] text-ls-muted">{TABS[tab].empty}</p>
+            <p className="border border-dashed border-ls-border p-6 text-[15px] text-ls-muted">
+              {tag ? `No recipes tagged ${tag.name} yet. Open a recipe and add the tag.` : TABS[tab].empty}
+            </p>
           ) : (
             <ul className="divide-y divide-ls-border border-y border-ls-ink">
               {items.map((d) => (
-                <EntryCard key={d.id} d={d} />
+                <EntryCard
+                  key={d.id}
+                  d={d}
+                  thumb={thumbs.get(d.id)}
+                  tags={tab === "finished" ? d.entry_sections.map((l) => tagNames.get(l.section_id)).filter((n): n is string => !!n).sort() : []}
+                />
               ))}
             </ul>
           )}
@@ -115,9 +118,42 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   );
 }
 
-function EntryCard({ d }: { d: Row }) {
+/** Recipes tab: All · each tag · All tags. */
+function TagFilter({ tags, current }: { tags: TagRow[]; current?: string }) {
+  if (tags.length === 0)
+    return (
+      <p className="text-[15px] text-ls-muted">
+        <Link href="/tags" className={`text-ls-ink ${textLink}`}>
+          Add tags
+        </Link>{" "}
+        to sort your recipes, like Mexican or Desserts.
+      </p>
+    );
+  return (
+    <nav aria-label="Filter by tag" className="flex flex-wrap items-center gap-2">
+      <Link href="/?tab=finished" aria-current={current ? undefined : "page"} className={chipClass(!current)}>
+        All
+      </Link>
+      {tags.map((s) => (
+        <Link
+          key={s.id}
+          href={`/?tab=finished&tag=${s.id}`}
+          aria-current={current === s.id ? "page" : undefined}
+          className={chipClass(current === s.id)}
+        >
+          {s.name}
+        </Link>
+      ))}
+      <Link href="/tags" className={`min-h-11 px-2 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
+        All tags
+      </Link>
+    </nav>
+  );
+}
+
+function EntryCard({ d, tags = [], thumb }: { d: Row; tags?: string[]; thumb?: { url: string }[] }) {
   const r = d.recipes[0];
-  const title = r?.recipe?.title || d.dish_name || "Untitled dictation";
+  const title = r?.recipe?.title || d.dish_name || (d.stage === "ideas" ? (thumb ? "Photo idea" : "Untitled idea") : "Untitled");
   const href = r ? `/r/${r.id}` : `/d/${d.id}`;
   const next = r
     ? r.status === "ready"
@@ -126,93 +162,62 @@ function EntryCard({ d }: { d: Row }) {
     : d.stage === "development"
       ? d.transcript
         ? "Create recipe"
-        : "Add the cook's words"
+        : "Add kitchen notes"
       : null;
   const preview = d.notes || d.transcript;
+  const meta = [d.cook_name, d.copied_from && "from a link", d.link && "has a link"].filter(Boolean);
+  // Compact rows (student, Nov 27): name, one meta line, one preview line.
+  // "Move to" lives on each item's page, not repeated on every row.
   return (
-    <li className="pb-1">
+    <li className="flex items-center gap-3">
       <Link
         href={href}
-        className={`group block px-1 pt-4 pb-1 transition-colors hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
+        className={`group flex min-w-0 flex-1 items-center justify-between gap-4 px-1 py-3 transition-colors hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 space-y-1">
-            <p className="truncate font-ls-serif text-2xl leading-tight">{title}</p>
-            <p className={eyebrow}>
-              {d.cook_name ? `${d.cook_name} · ` : ""}
-              {formatDate(d.created_at)}
-              {d.copied_from ? " · from a link" : ""}
-              {d.link ? " · has a link" : ""}
-            </p>
-          </div>
-          {next && (
-            <span className="shrink-0 pt-1 text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 group-hover:decoration-ls-ink">
-              {next}
-            </span>
-          )}
+        {/* Two lines, three styles (student, Nov 27): the name with its tags and cook
+            beside it in the small label style, then one line of preview. No date. */}
+        <div className="min-w-0 space-y-0.5">
+          <p className="flex min-w-0 items-baseline gap-x-3">
+            <span className="truncate font-ls-serif text-xl leading-tight">{title}</span>
+            {[...tags, ...meta].length > 0 && (
+              <span className={`shrink-0 truncate ${eyebrow} max-w-[50%]`}>{[...tags, ...meta].join(" · ")}</span>
+            )}
+          </p>
+          {preview && <p className="truncate text-[15px] text-ls-muted">{preview}</p>}
         </div>
-        {preview && <p className="mt-2 line-clamp-2 text-[15px] text-ls-muted">{preview}</p>}
+        {next && (
+          <span className="shrink-0 text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 group-hover:decoration-ls-ink">
+            {next}
+          </span>
+        )}
       </Link>
-      <div className="px-1">
-        <MoveTo kind="dictation" id={d.id} current={d.stage} />
-      </div>
+      {/* Tapping the photo zooms in on it; tapping the name opens the item (student, Nov 27). */}
+      {thumb && <ZoomThumb photos={thumb} title={title} />}
     </li>
   );
 }
 
 function FirstRun() {
-  // Draft wording: for the student to review.
-  const cards = [
-    {
-      id: "start-idea",
-      title: "Start with an idea",
-      body: "Tasted something you want to make, saw a technique, or found a recipe online? Jot it down with a note and a link. It waits in Ideas until you're ready to develop it into a recipe.",
-      href: "/ideas/new",
-      cta: "Save an idea",
-    },
-    {
-      id: "start-words",
-      title: "Start with the cook's words",
-      body: "Have the cook dictate how they make the dish: the ingredients, then each step in detail. Tap the microphone on the phone keyboard, or paste what they said. The AI will format it into a recipe anyone can repeat.",
-      href: "/new",
-      cta: "Add the cook's words",
-    },
-  ];
   return (
-    <section aria-labelledby="first-run" className="space-y-4">
+    <section aria-labelledby="first-run" className="space-y-5">
       <h2 id="first-run" className="font-ls-serif text-3xl leading-tight">
         Start with one dish
       </h2>
-      <ul className="grid gap-4 sm:grid-cols-2">
-        {cards.map((c) => (
-          <li key={c.id} aria-labelledby={c.id} className="flex flex-col gap-4 border border-ls-ink bg-ls-surface p-6">
-            <h3 id={c.id} className="font-ls-serif text-2xl leading-tight">
-              {c.title}
-            </h3>
-            <p className="flex-1 text-[17px] leading-relaxed">{c.body}</p>
-            <LinkButton href={c.href} variant="secondary" className="self-start">
-              {c.cta}
-            </LinkButton>
-          </li>
-        ))}
-      </ul>
+      <HowItWorks headingLevel={3} />
     </section>
   );
 }
 
 function Landing() {
   return (
-    <main className="space-y-8 py-8">
+    // Sized so the headline, the three steps, and the button fit on one screen (no scrolling).
+    <main className="space-y-6 py-2 sm:py-4">
       <p className={eyebrow}>A lab book for recipe development</p>
-      <h1 className="font-ls-serif text-5xl leading-[1.05] text-balance sm:text-7xl">
-        From inspiration to recipe: develop dishes by voice and AI, with the food science built in.
+      <h1 className="max-w-[24ch] font-ls-serif text-[2rem] leading-[1.1] text-balance sm:text-4xl lg:text-5xl">
+        From inspiration to recipe: type or dictate your dish, and AI makes recipe development easy, with the food science built in.
       </h1>
-      <p className="max-w-prose text-lg leading-relaxed text-ls-muted">
-        Jot down ideas, save what the cook says while they cook, and develop them into recipes. The AI asks what a new
-        cook couldn&apos;t know, explains the science behind each step, and keeps track of what came from whom. When
-        it&apos;s ready, send it to someone else to cook or save it for future use.
-      </p>
-      <div className="flex flex-wrap gap-3 border-t border-ls-ink pt-8">
+      <HowItWorks />
+      <div className="flex flex-wrap gap-3">
         <SignUpButton mode="modal">
           <Button>Start your lab book</Button>
         </SignUpButton>

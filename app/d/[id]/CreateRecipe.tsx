@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createRecipe } from "@/app/actions";
-import { AiBadge, Button, ErrorNote } from "@/components/ui";
+import { AiBadge, Button, ErrorNote, textLink } from "@/components/ui";
 import { Working } from "@/components/Working";
 import type { ActionState } from "@/lib/types";
 
@@ -19,7 +20,7 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
     return (
       <Working
         messages={[
-          "Reading their words…",
+          "Reading the kitchen notes…",
           "Writing a first draft…",
           "Looking for anything a new cook couldn't figure out…",
           "Almost done…",
@@ -29,15 +30,13 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
   }
 
   return (
-    <form action={action} aria-labelledby="ai-step" className="space-y-4 border border-ls-ink bg-ls-surface p-5">
+    <form action={action} aria-labelledby="ai-step" className="space-y-3 border border-ls-ink bg-ls-surface p-4">
       <AiBadge />
-      <h2 id="ai-step" className="font-ls-serif text-3xl leading-tight">
+      <h2 id="ai-step" className="font-ls-serif text-2xl leading-tight">
         Ready to make it a recipe?
       </h2>
       <p className="max-w-prose text-[15px] leading-relaxed text-ls-muted">
-        The AI reads their words, drafts a recipe, and asks you about anything a new cook couldn&apos;t figure out.
-        It takes about 30 seconds. Make sure their words are complete first: the recipe is made from what&apos;s
-        here now.
+        The AI drafts the recipe and asks about anything missing. About 30 seconds.
       </p>
 
       <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[17px]">
@@ -47,7 +46,7 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
           onChange={(e) => setReady(e.target.checked)}
           className="size-5 shrink-0 cursor-pointer accent-ls-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ls-ink"
         />
-        Their words are complete. I&apos;m ready.
+        The kitchen notes are complete. I&apos;m ready.
       </label>
 
       {state.error && <ErrorNote>{state.error}</ErrorNote>}
@@ -60,6 +59,14 @@ export function CreateRecipe({ dictationId }: { dictationId: string }) {
           {ready ? "Uses one AI request." : "Tick the box above when you're ready."}
         </p>
       </div>
+      {/* No AI needed? Write the recipe yourself, in the same format. */}
+      <p className="border-t border-ls-border pt-4 text-[15px] text-ls-muted">
+        Or{" "}
+        <Link href={`/recipes/new?from=${dictationId}`} className={`text-ls-ink ${textLink}`}>
+          write the recipe yourself
+        </Link>
+        , no AI.
+      </p>
     </form>
   );
 }

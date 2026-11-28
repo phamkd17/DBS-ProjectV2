@@ -5,7 +5,8 @@ export type Stage = (typeof STAGES)[number];
 export const STAGE_LABEL: Record<Stage, string> = {
   ideas: "Ideas",
   development: "Development",
-  finished: "Finished",
+  // Shown as "Recipes" (student, Nov 20); the stored value stays "finished" (v1 shares the DB).
+  finished: "Recipes",
 };
 export function isStage(v: unknown): v is Stage {
   return typeof v === "string" && (STAGES as readonly string[]).includes(v);
@@ -87,3 +88,9 @@ export type ActionState = {
   fieldErrors?: Record<string, string>;
   values?: Record<string, string>;
 };
+
+// Tags in the Recipes tab (student, Nov 21). Your own list; a recipe can have several.
+// Stored in the `sections` table (they were first called sections).
+export type TagRow = { id: string; name: string; created_at: string };
+/** Offered when you have no tags yet. Draft names: for the student to review. */
+export const STARTER_TAGS = ["American", "Indian", "Mexican", "Desserts"];

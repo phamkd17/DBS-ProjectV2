@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createDictation, updateDictation } from "@/app/actions";
-import { Button, ErrorNote, eyebrow, fieldClass, Spinner, textLink } from "@/components/ui";
+import { Button, ErrorNote, eyebrow, fieldClass, Spinner, textLink, KitchenNotesTip } from "@/components/ui";
 import type { ActionState, DictationRow } from "@/lib/types";
 
 const FIELD = fieldClass;
@@ -37,8 +37,9 @@ export function NewDictationForm({
     <form action={action} className="space-y-5">
       <div className="space-y-1.5">
         <label htmlFor="transcript" className="block text-[17px] font-medium">
-          The cook&apos;s words
+          Kitchen notes
         </label>
+        <KitchenNotesTip id="transcript-tip" />
         <textarea
           id="transcript"
           name="transcript"
@@ -46,17 +47,13 @@ export function NewDictationForm({
           autoFocus={!!dictation}
           defaultValue={v.transcript}
           aria-invalid={!!err.transcript}
-          aria-describedby={err.transcript ? "transcript-error" : "transcript-hint"}
+          aria-describedby={err.transcript ? "transcript-tip transcript-error" : "transcript-tip"}
           className={FIELD}
-          placeholder="e.g. “Yogurt is a very simple dish, you need about a half gallon of milk…”"
+          placeholder="e.g. “Half a gallon of whole milk. Heat it until it steams, about 180°F, then let it cool to warm, about 110°F. Stir in 2 tablespoons of yogurt…”"
         />
-        {err.transcript ? (
+        {err.transcript && (
           <p id="transcript-error" className="text-[15px] text-ls-error">
             {err.transcript}
-          </p>
-        ) : (
-          <p id="transcript-hint" className="text-[15px] text-ls-muted">
-            Tip: on a phone, tap the 🎤 on the keyboard and have the cook name the ingredients first, then each step.
           </p>
         )}
       </div>
@@ -70,27 +67,24 @@ export function NewDictationForm({
 
       <div className="space-y-1.5">
         <label htmlFor="cook_name" className="block text-[17px] font-medium">
-          Whose words are these? <span className={eyebrow}>Optional</span>
+          Whose recipe? <span className={eyebrow}>Optional</span>
         </label>
         <input
           id="cook_name"
           name="cook_name"
           maxLength={60}
           defaultValue={v.cook_name}
-          aria-describedby="cook_name-hint"
           className={FIELD}
           placeholder="e.g. Grandma"
         />
-        <p id="cook_name-hint" className="text-[15px] text-ls-muted">
-          Used to label their reasons in the recipe.
-        </p>
+
       </div>
 
       {state.error && <ErrorNote>{state.error}</ErrorNote>}
 
       <Button type="submit" disabled={pending} className="w-full sm:w-auto">
         {pending && <Spinner />}
-        {pending ? "Saving…" : dictation ? "Save changes" : "Save their words"}
+        {pending ? "Saving…" : dictation ? "Save changes" : "Save kitchen notes"}
       </Button>
       {onCancel && (
         <button
