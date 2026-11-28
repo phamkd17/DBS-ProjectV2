@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { draftRecipe, finalizeRecipe, ModelError, RateLimitError } from "@/lib/ai/pipeline";
 import type { Answer, AnswerSource } from "@/lib/ai/schema";
 import { supabaseForUser } from "@/lib/supabase/server";
+import { AiLimitError, recordAiCall } from "@/lib/ai/limits";
 import { deletePhotos, MAX_PHOTOS_PER_ENTRY, readPhoto, savePhoto } from "@/lib/photos";
 import {
   isStage,
@@ -33,6 +34,7 @@ async function requireUser() {
 }
 
 function friendlyModelError(err: unknown): string {
+  if (err instanceof AiLimitError) return err.message; // our per-user limit (#5): no call was made
   if (err instanceof RateLimitError) return err.message;
   if (err instanceof ModelError) {
     console.error("[model]", err.message, err.detail ?? "");
@@ -154,7 +156,7 @@ export async function createRecipe(dictationId: string, _prev: ActionState): Pro
 
   let result;
   try {
-    result = await draftRecipe(dictation.transcript, dictation.dish_name ?? undefined);
+    result = await draftRecipe(dictation.transcript, dictation.dish_name ?? undefined, () => recordAiCall(supabase, "draft"));
   } catch (err) {
     return { error: friendlyModelError(err) };
   }
@@ -240,7 +242,7 @@ export async function submitAnswers(recipeId: string, _prev: ActionState, formDa
   try {
     const { scan: _scan, ...draft } = recipe.draft;
     void _scan;
-    final = await finalizeRecipe(dictation.transcript, draft, answers);
+    final = await finalizeRecipe(dictation.transcript, draft, answers, () => recordAiCall(supabase, "finalize"));
   } catch (err) {
     return { values, error: friendlyModelError(err) };
   }
