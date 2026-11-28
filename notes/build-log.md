@@ -1177,3 +1177,4 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Red: Save ingredients/instructions are primary (the one red action while
   editing); Make a link and Send… are secondary. Removed the extra line above
   Move to.
+- Lines beside the dish photo (the student's screenshot): the list's own top/bottom borders ran under the float and touched the photo, while row dividers (flow-root rows) stopped short. The dark top/bottom lines are now on the first/last row (`border-t-ls-ink`/`border-b-ls-ink`), so every line stops the same way, and rows below the photo still run full width. Verify ✓.
