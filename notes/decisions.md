@@ -80,6 +80,7 @@
 | Nov 28 | The hand-typed recipe form gets the same **Why it works** and **Adjust to taste** as the recipe editor, and each can be closed again (×) | |
 | Nov 28 | **Recipe parts** (like my flan's Caramel sauce, Milk, Egg mixture): name the parts once, then pick a part for each ingredient and step; ingredients group under part headings; instructions keep their order, with a heading where the part changes and numbers running straight through | |
 | Nov 28 | Call them **Components**, and pick a row's component with **one tap** on a chip instead of a dropdown | A dropdown per row (two taps) |
+| Nov 28 | Put several ingredients or steps into a component at once: **tick the rows, then tap the component** | Paste a list into a component; edit laid out by component |
 
 ## What the app is
 

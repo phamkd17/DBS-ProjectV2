@@ -1131,3 +1131,13 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   tap. Rows are also shorter than with the full-width select. Adding a
   component is one tap on "+ Component" (the box is focused) and Enter. Verify
   updated (radio chips), axe clean.
+- Bulk move (the student's pick of three): once there are components, each
+  row has a checkbox before its chips. With any ticked, a sticky
+  `BulkMoveBar` ("Move N to: None · A · B · Clear") moves them all in one tap
+  and clears the selection. In the hand-typed form (ingredients and steps
+  separately) and both recipe editors. Verify: tick 2, move to Custard, both
+  set, bar gone; move back.
+- Overlap fix (from the student's screenshot): the ingredient editor's box
+  ran under the floated dish photo. The form is now `clear-both`, so it starts
+  below the photo while the heading stays beside it. Verify asserts the form's
+  top is at or below the photo tile's bottom.
