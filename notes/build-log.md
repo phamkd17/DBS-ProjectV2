@@ -1039,3 +1039,27 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 
 ## Nov 28 — PR for compact-recipe
 - /security-review on the branch (fresh subagent): no findings ≥ 8. PR opened; merge waits for the student.
+
+## Nov 28 — AI limits (#5, branch `ai-limits`)
+- Migration `20261128010000_ai_calls.sql`: one row per real Gemini call. RLS
+  is owner-only; the grants are select plus `insert (kind)` only, so the
+  client can't set `owner_id` or backdate `created_at`, and there's no
+  update/delete (you can't erase your history). Tested as two users (rolled
+  back): own rows only; backdating, inserting as someone else, delete, and
+  update all blocked (42501); B sees 0 of A's; anon blocked.
+- `lib/ai/limits.ts` `recordAiCall()`: counts your rows in the last 24h and
+  1h; over 50/day or 20/hour it throws `AiLimitError` with "You can make more
+  in about N minutes/hours. Your kitchen notes are saved." Otherwise it records
+  the call. Limits can be set with `AI_LIMIT_PER_HOUR` / `AI_LIMIT_PER_DAY`.
+- `generate()` runs it as `beforeCall` after a dev-cache miss and before the
+  network call, so cache hits (verify runs) don't count, and over the limit
+  there is no Gemini call. Retries of one call count once.
+- Token cap: `maxOutputTokens` 16,384 on every call (`GEMINI_MAX_OUTPUT_TOKENS`
+  overrides). A `MAX_TOKENS` finish gives "The recipe came out too long…".
+  Input was already capped (notes ≤ 20,000 chars, answers ≤ 2,000).
+- Proof: `npm run verify:limits` uses its own Clerk test user, fills the hour
+  through the REST API with that user's token (RLS applies), then tries Create
+  recipe with AI. The message shows, the URL is unchanged, and the server log
+  has `createRecipe … 332ms` with no "[ai] calling Gemini". After the main
+  verify, `ai_calls` held only that user's 20 rows; the main user had none
+  (cache hits), so another user isn't affected.
