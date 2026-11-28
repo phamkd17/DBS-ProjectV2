@@ -167,3 +167,27 @@ export function StepExtras({
     </div>
   );
 }
+
+/**
+ * An ingredient row whose extra note ("or less to taste") hides behind the same
+ * flask icon as the steps (student, Nov 28).
+ */
+export function IngredientNote({ note, label, children }: { note: string; label: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <div className="w-full space-y-1">
+      <div className="flex items-start justify-between gap-2">
+        {children}
+        <div className="-my-2 shrink-0">
+          <IconToggle open={open} onClick={() => setOpen((o) => !o)} controls={`${id}-note`} label={label}>
+            <FlaskIcon />
+          </IconToggle>
+        </div>
+      </div>
+      <p id={`${id}-note`} hidden={!open} className="border-l-2 border-ls-ink pl-3 text-[15px] text-ls-muted">
+        {note}
+      </p>
+    </div>
+  );
+}

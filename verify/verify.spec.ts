@@ -332,24 +332,45 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(mr.getByText(/Kitchen notes/)).toHaveCount(0); // no kitchen-notes section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
 
-  // ---- Dish photo beside the title and ingredients (student, Nov 28) ----
+  // ---- Dish photo beside the title and ingredients, with cropping (student, Nov 28) ----
   await expect(mr.getByRole("button", { name: "Add dish photo" })).toBeVisible();
-  await mr.locator('input[type="file"][aria-label="Dish photo"]').setInputFiles("verify/fixtures/tall.jpg");
+  const dishInput = mr.locator('input[type="file"][aria-label="Dish photo"]');
+  const cropper = page.getByRole("dialog", { name: "Crop the photo" });
+  const ratio = (img: import("@playwright/test").Locator) => img.evaluate((el: HTMLImageElement) => el.naturalWidth / el.naturalHeight);
+  await dishInput.setInputFiles("verify/fixtures/tall.jpg");
+  await expect(cropper).toBeVisible(); // a new photo opens the cropper first
+  await cropper.getByRole("radio", { name: "Square" }).click();
+  await expect(cropper.getByRole("radio", { name: "Square" })).toHaveAttribute("aria-checked", "true");
+  await check(page, "dish-photo-crop");
+  await cropper.getByRole("button", { name: "Save photo" }).click();
+  await expect(cropper).toBeHidden();
   const dishImg = mr.getByRole("img", { name: "The dish" });
   await expectLoaded(dishImg);
+  expect(Math.abs((await ratio(dishImg)) - 1)).toBeLessThan(0.02); // saved square
   await check(page, "recipe-dish-photo", { keyboard: true });
-  // Change/Remove only show once the photo is tapped (in the large view).
+  // Change/Remove/Crop only show once the photo is tapped (in the large view).
   await expect(mr.getByRole("button", { name: "Remove", exact: true })).toHaveCount(0);
   await mr.getByRole("button", { name: /^Dish photo: zoom in/ }).click();
   const dishView = page.getByRole("dialog", { name: "Photo 1 of 1" });
   await expect(dishView.getByRole("button", { name: "Change" })).toBeVisible();
   await check(page, "dish-photo-open");
-  await page.keyboard.press("Escape");
-  const oldSrc = await mr.getByRole("img", { name: "The dish" }).getAttribute("src");
-  await mr.locator('input[type="file"][aria-label="Dish photo"]').setInputFiles("verify/fixtures/onions.jpg"); // Change replaces it
-  await expect(mr.getByRole("img", { name: "The dish" })).not.toHaveAttribute("src", oldSrc ?? ""); // the new one is showing
+  // Re-crop the saved photo (reads it back from private Storage) to Wide.
+  let oldSrc = await dishImg.getAttribute("src");
+  await dishView.getByRole("button", { name: "Crop" }).click();
+  await expect(cropper).toBeVisible();
+  await cropper.getByRole("radio", { name: "Wide" }).click();
+  await cropper.getByRole("button", { name: "Save photo" }).click();
+  await expect(cropper).toBeHidden();
+  await expect(dishImg).not.toHaveAttribute("src", oldSrc ?? "");
+  await expectLoaded(dishImg);
+  expect(Math.abs((await ratio(dishImg)) - 4 / 3)).toBeLessThan(0.03); // saved wide
+  // Change: pick another photo; it replaces the old one.
+  oldSrc = await dishImg.getAttribute("src");
+  await dishInput.setInputFiles("verify/fixtures/onions.jpg");
+  await cropper.getByRole("button", { name: "Save photo" }).click();
+  await expect(dishImg).not.toHaveAttribute("src", oldSrc ?? "");
   await expect(mr.getByRole("img", { name: "The dish" })).toHaveCount(1);
-  await expectLoaded(mr.getByRole("img", { name: "The dish" }));
+  await expectLoaded(dishImg);
   await mr.getByRole("button", { name: /^Dish photo: zoom in/ }).click();
   page.once("dialog", (d) => d.accept());
   await dishView.getByRole("button", { name: "Remove" }).click();
@@ -671,6 +692,13 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
     await expect(main.getByText("Adjust to taste").first()).toBeVisible();
   }
   await check(page, "recipe-science-and-dials-open");
+  // Ingredient notes hide behind the same flask icon (student, Nov 28).
+  const noteBtn = main.getByRole("button", { name: /^Note about / }).first();
+  if (await noteBtn.count()) {
+    await expect(noteBtn).toHaveAttribute("aria-expanded", "false");
+    await noteBtn.click();
+    await expect(noteBtn).toHaveAttribute("aria-expanded", "true");
+  }
 
   // ---- Edit the whole ingredient list from one pencil ----
   await page.getByRole("button", { name: "Edit ingredients" }).click();

@@ -2,7 +2,8 @@
 
 import { useRef, useState, useTransition } from "react";
 import { deletePhoto, setDishPhoto } from "@/app/actions";
-import { PHOTO_OPEN_ERROR, shrinkPhoto } from "@/lib/shrinkPhoto";
+import { PHOTO_OPEN_ERROR } from "@/lib/shrinkPhoto";
+import { PhotoCropper } from "./PhotoCropper";
 import { CameraIcon } from "./CameraIcon";
 import { usePhotoViewer } from "./PhotoViewer";
 import { focusRing, Spinner } from "./ui";
@@ -32,6 +33,16 @@ export function DishPhoto({
         type="button"
         onClick={() => {
           close();
+          if (photo) setCropSrc(photo.url);
+        }}
+        className={`${smallLink} decoration-ls-rule hover:decoration-ls-ink`}
+      >
+        Crop
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          close();
           fileInput.current?.click();
         }}
         className={`${smallLink} decoration-ls-rule hover:decoration-ls-ink`}
@@ -52,22 +63,32 @@ export function DishPhoto({
     </>
   ));
 
+  // Cropping (student, Nov 28): a new photo opens the cropper first; "Crop" re-crops the saved one.
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const closeCropper = () => {
+    if (cropSrc?.startsWith("blob:")) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+  };
   const choose = (file: File | undefined) => {
+    if (fileInput.current) fileInput.current.value = ""; // choosing the same file again still works
     if (!file) return;
     setError(null);
-    start(async () => {
-      try {
-        const blob = await shrinkPhoto(file);
-        const fd = new FormData();
-        fd.set("photo", blob, "dish.jpg");
-        const result = await setDishPhoto(dictationId, fd);
-        if (result.error) setError(result.error);
-      } catch {
-        setError(PHOTO_OPEN_ERROR);
-      } finally {
-        if (fileInput.current) fileInput.current.value = "";
-      }
-    });
+    const url = URL.createObjectURL(file);
+    // Check the browser can open it (e.g. HEIC on a desktop browser can't) before cropping.
+    const test = new Image();
+    test.onload = () => setCropSrc(url);
+    test.onerror = () => {
+      URL.revokeObjectURL(url);
+      setError(PHOTO_OPEN_ERROR);
+    };
+    test.src = url;
+  };
+  const upload = async (blob: Blob) => {
+    const fd = new FormData();
+    fd.set("photo", blob, "dish.jpg");
+    const result = await setDishPhoto(dictationId, fd);
+    if (result.error) throw new Error(result.error);
+    closeCropper();
   };
 
   return (
@@ -97,6 +118,7 @@ export function DishPhoto({
           <span>{busy ? "Adding…" : "Add dish photo"}</span>
         </button>
       )}
+      {cropSrc && <PhotoCropper src={cropSrc} onSave={upload} onCancel={closeCropper} />}
       {error && (
         <p role="alert" className="pt-1 text-[13px] leading-snug text-ls-error">
           {error}
