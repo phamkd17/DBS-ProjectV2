@@ -657,7 +657,8 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await wf.getByRole("button", { name: "Save recipe" }).click();
   await page.waitForURL(/\/r\//);
   const wr = page.locator("main").filter({ visible: true });
-  await expect(wr.getByRole("link", { name: "Recipes" }).first()).toBeVisible(); // moved to Recipes
+  await expect(wr.getByRole("button", { name: "Development" })).toBeVisible(); // moved to Recipes: "Move to" now offers Development
+  await expect(wr.getByRole("button", { name: "Recipes", exact: true })).toHaveCount(0);
   await expect(wr.getByText("yellow onions")).toBeVisible();
   await expect(wr.getByText(/Dry at 200°F/)).toBeHidden(); // folded away on the recipe page
   await openNotes(page);
@@ -861,16 +862,23 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(page.getByRole("button", { name: "Recipes" })).toBeVisible(); // now offers "Recipes"
   await expect(page.getByRole("button", { name: "Development" })).toHaveCount(0);
   await page.reload();
-  await expect(page.locator("main").getByRole("link", { name: "Development" })).toBeVisible(); // breadcrumb follows the move
+  await expect(page.getByRole("button", { name: "Recipes" })).toBeVisible(); // the move stuck (no breadcrumb on recipes now)
   await page.getByRole("button", { name: "Recipes" }).click();
   await expect(page.getByRole("button", { name: "Development" })).toBeVisible();
 
   // ---- Iterations: versions of the recipe, each with its own notes (issue #9; student, Nov 28) ----
   await page.goto(recipeUrl);
   const itBox = page.locator("main").filter({ visible: true }).getByRole("region", { name: "Iterations" });
+  const itToggle = itBox.getByRole("button", { name: /^Iteration \d/ });
+  const openIt = async () => {
+    if ((await itToggle.getAttribute("aria-expanded")) !== "true") await itToggle.click();
+  };
   const itNav = itBox.getByRole("navigation", { name: "Iterations of this recipe" });
+  await expect(itToggle).toHaveAttribute("aria-expanded", "false"); // mostly hidden
+  await expect(itNav).toBeHidden();
+  await expect(itToggle).toContainText("Iteration 1");
+  await openIt();
   await expect(itNav.getByRole("link")).toHaveCount(1);
-  await expect(itNav.getByRole("link").first()).toHaveAttribute("aria-current", "page");
   // Notes on iteration 1 (the original).
   await itBox.getByRole("button", { name: "Edit iteration 1 notes" }).click();
   await itBox.getByLabel("Iteration notes").fill("First batch: 8 hours, a little mild.");
@@ -880,29 +888,44 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await itBox.getByRole("button", { name: "+ New iteration" }).click();
   await page.waitForURL(/\?it=/);
   const itUrl = page.url();
-  await expect(itNav.getByRole("link")).toHaveCount(2);
-  await expect(itNav.getByRole("link").nth(1)).toHaveAttribute("aria-current", "page");
+  await expect(itToggle).toContainText("Iteration 2");
   const iv = page.locator("main").filter({ visible: true });
   await iv.getByRole("button", { name: "Edit ingredients" }).click();
   await iv.getByRole("textbox", { name: /^Amount of / }).first().fill("3 cups (iteration 2)");
   await iv.getByRole("button", { name: "Save ingredients" }).click();
   await expect(iv.getByText("3 cups (iteration 2)")).toBeVisible();
+  await openIt();
   await itBox.getByRole("button", { name: "Edit iteration 2 notes" }).click();
   await itBox.getByLabel("Iteration notes").fill("More milk; 12 hours. Thicker and tangier.");
   await itBox.getByRole("button", { name: "Save notes" }).click();
   await expect(itBox.getByText("More milk; 12 hours. Thicker and tangier.")).toBeVisible();
   await check(page, "iteration-2", { keyboard: true });
-  // The original is unchanged.
+  // The recipe opens on the latest iteration by default.
+  await page.goto(recipeUrl);
+  await expect(itToggle).toContainText("Iteration 2");
+  await expect(iv.getByText("3 cups (iteration 2)")).toBeVisible();
+  // Iteration 1 (the original) is unchanged.
+  await openIt();
   await itNav.getByRole("link").first().click();
-  await page.waitForURL((u) => !u.search.includes("it="));
+  await page.waitForURL(/it=original/);
+  await expect(itToggle).toContainText("Iteration 1");
   await expect(iv.getByText("3 cups (iteration 2)")).toHaveCount(0);
-  await expect(itBox.getByText("First batch: 8 hours, a little mild.")).toBeVisible();
+  // Iteration summary: every iteration's date and notes on one page.
+  await page.goto(recipeUrl + "/iterations");
+  const sum = page.locator("main").filter({ visible: true });
+  await expect(sum.getByRole("heading", { name: "Iteration summary" })).toBeVisible();
+  await expect(sum.getByText("More milk; 12 hours. Thicker and tangier.")).toBeVisible();
+  await expect(sum.getByText("First batch: 8 hours, a little mild.")).toBeVisible();
+  await check(page, "iteration-summary", { keyboard: true });
+  await sum.getByRole("link", { name: "Open iteration 2" }).click();
+  await page.waitForURL(/\?it=/);
   // Delete iteration 2.
   await page.goto(itUrl);
+  await openIt();
   page.once("dialog", (d) => d.accept());
   await itBox.getByRole("button", { name: "Delete iteration 2" }).click();
   await page.waitForURL((u) => !u.search.includes("it="));
-  await expect(itNav.getByRole("link")).toHaveCount(1);
+  await expect(itToggle).toContainText("Iteration 1");
 
   // ---- Edit their words after the recipe exists (no AI call) ----
   await page.goto(recipeUrl);

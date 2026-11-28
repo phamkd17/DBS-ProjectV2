@@ -16,7 +16,8 @@ import { SharePanel } from "./SharePanel";
 import { TagPicker } from "@/components/TagPicker";
 import { EntryPhotos } from "@/components/EntryPhotos";
 import { DishPhoto } from "@/components/DishPhoto";
-import { IterationBar, type Iteration } from "@/components/IterationBar";
+import { IterationBar } from "@/components/IterationBar";
+import { loadIterations, pickIteration } from "@/lib/iterations";
 import { AllNotesProvider, AllNotesSwitch } from "@/components/RecipeExtras";
 import { recipeHasNotes } from "@/components/IngredientList";
 import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
@@ -82,22 +83,10 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/r
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
   const allPhotos = await photosFor(supabase, [dictation.id]);
-  // Iterations (issue #9; student, Nov 28): versions of this recipe. Iteration 1 is the
-  // original; the rest are copies the cook edited. ?it=<id> shows one of them.
-  const { data: itRows } = await supabase
-    .from("iterations")
-    .select("id, made_on, notes, recipe, created_at")
-    .eq("dictation_id", dictation.id)
-    .order("made_on")
-    .order("created_at")
-    .returns<{ id: string; made_on: string; notes: string; recipe: RecipeRow["recipe"]; created_at: string }[]>();
-  const origRow = (itRows ?? []).find((r) => !r.recipe);
-  const versions = (itRows ?? []).filter((r) => r.recipe);
-  const iterations: Iteration[] = [
-    { id: null, number: 1, made_on: origRow?.made_on ?? new Date(recipe.created_at).toLocaleDateString("en-CA"), notes: origRow?.notes ?? "" },
-    ...versions.map((r, i) => ({ id: r.id, number: i + 2, made_on: r.made_on, notes: r.notes })),
-  ];
-  const selected = versions.find((r) => r.id === it);
+  // Iterations (issue #9; student, Nov 28): versions of this recipe. Opens on the latest;
+  // ?it=original shows iteration 1, ?it=<id> a specific one.
+  const { iterations, versions } = await loadIterations(supabase, dictation.id, recipe.created_at);
+  const selected = pickIteration(versions, it);
   const current = iterations.find((x) => x.id === (selected?.id ?? null))!;
   const shown = selected?.recipe ?? recipe.recipe;
   const dish = allPhotos.find((p) => p.kind === "dish");
@@ -118,15 +107,14 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/r
     <AllNotesProvider>
     <main className="space-y-6">
       {/* Breadcrumb and the "All notes" switch share one line; the recipe's name is the title below (student, Nov 28). */}
-      <div className="flex items-center justify-between gap-3">
-        <p className={eyebrow}>
-          <Link href={`/?tab=${dictation.stage}`} className={textLink}>
-            {STAGE_LABEL[dictation.stage]}
-          </Link>
-          {recipe.copied_from ? " · saved from a link" : ""}
-        </p>
-        {recipeHasNotes(shown!) && <AllNotesSwitch />}
-      </div>
+      {/* The breadcrumb is replaced by the iteration control (student, Nov 28): tap it to open
+          the iterations, their notes, and the summary. The top tabs lead back to Recipes. */}
+      <IterationBar
+        recipeId={recipe.id}
+        iterations={iterations}
+        current={current}
+        right={recipeHasNotes(shown!) ? <AllNotesSwitch /> : null}
+      />
 
       {dictation.edited_at && dictation.edited_at > recipe.updated_at && (
         <p role="note" className="border-l-2 border-ls-ink bg-ls-surface px-4 py-3 text-[15px]">
@@ -134,8 +122,6 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/r
           not match them anymore.
         </p>
       )}
-
-      <IterationBar recipeId={recipe.id} iterations={iterations} current={current} />
 
       <RecipeView
         recipe={shown!}

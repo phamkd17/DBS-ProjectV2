@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createIteration, deleteIteration, saveIterationNotes } from "@/app/actions";
 import type { ActionState } from "@/lib/types";
 import { PencilButton } from "./InlineEdit";
 import { Button, chipClass, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
-export type Iteration = { id: string | null; number: number; made_on: string; notes: string };
+import type { Iteration } from "@/lib/iterations";
+export type { Iteration };
+
+const href = (recipeId: string, id: string | null) => (id ? `/r/${recipeId}?it=${id}` : `/r/${recipeId}?it=original`);
 
 /** "2026-11-21" → "Nov 21" (no time zone shift). */
 function shortDate(d: string) {
@@ -20,11 +23,26 @@ function longDate(d: string) {
 }
 
 /**
- * Iterations (issue #9; student, Nov 28): versions of the recipe. Tap one to see that
- * version; "+ New iteration" copies the one you're looking at (then edit it with the
- * pencils). Each iteration has its date and the cook's own notes. Draft wording.
+ * Iterations (issue #9; student, Nov 28): versions of the recipe, in place of the
+ * breadcrumb. Mostly hidden: one line ("Iteration 2 · Nov 28 ▾") until tapped. Open, it
+ * lists every iteration, "+ New iteration" (copies the one you're viewing; then edit it
+ * with the pencils), this iteration's date and notes, and the Iteration summary.
+ * Draft wording, for the student to review.
  */
-export function IterationBar({ recipeId, iterations, current }: { recipeId: string; iterations: Iteration[]; current: Iteration }) {
+export function IterationBar({
+  recipeId,
+  iterations,
+  current,
+  right,
+}: {
+  recipeId: string;
+  iterations: Iteration[];
+  current: Iteration;
+  /** Shown at the right of the top line (the "All notes" switch). */
+  right?: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
   const [editing, setEditing] = useState(false);
   const pencil = useRef<HTMLButtonElement>(null);
   const was = useRef(false);
@@ -40,16 +58,30 @@ export function IterationBar({ recipeId, iterations, current }: { recipeId: stri
   const err = state.fieldErrors ?? {};
 
   return (
-    <section aria-labelledby="iterations-heading" className="space-y-2">
-      <h2 id="iterations-heading" className={eyebrow}>
-        Iterations
-      </h2>
+    <section aria-label="Iterations" className="space-y-2">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => setOpen((o) => !o)}
+          className={`-my-3 -ml-1 inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-ink hover:text-ls-ink ${focusRing}`}
+        >
+          Iteration {current.number}
+          <span className="text-ls-muted">· {shortDate(current.made_on)}</span>
+          <span aria-hidden className={`text-[10px] text-ls-muted transition-transform ${open ? "rotate-180" : ""}`}>
+            ▾
+          </span>
+        </button>
+        {right}
+      </div>
+      <div id={panelId} hidden={!open} className="space-y-2 border-b border-ls-border pb-3">
       <div className="flex flex-wrap items-center gap-2">
         <nav aria-label="Iterations of this recipe" className="contents">
           {iterations.map((it) => (
             <Link
               key={it.id ?? "original"}
-              href={it.id ? `/r/${recipeId}?it=${it.id}` : `/r/${recipeId}`}
+              href={href(recipeId, it.id)}
               aria-current={it.number === current.number ? "page" : undefined}
               className={`${chipClass(it.number === current.number)} text-[14px]`}
             >
@@ -60,6 +92,9 @@ export function IterationBar({ recipeId, iterations, current }: { recipeId: stri
         <form action={createIteration.bind(null, recipeId, current.id)}>
           <NewIterationButton />
         </form>
+        <Link href={`/r/${recipeId}/iterations`} className={`ml-auto min-h-11 px-1 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
+          Iteration summary
+        </Link>
       </div>
 
       <div className="border-l border-ls-rule pl-3">
@@ -136,6 +171,7 @@ export function IterationBar({ recipeId, iterations, current }: { recipeId: stri
         ) : (
           <p className="text-[15px] text-ls-muted">No notes yet. Tap the pencil to add them.</p>
         )}
+      </div>
       </div>
     </section>
   );
