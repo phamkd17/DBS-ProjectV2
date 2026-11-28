@@ -1125,3 +1125,9 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Verify: a flan with Caramel sauce/Custard. Enter inherits the part; the
   saved recipe has the headings in both lists; the preheat step comes first;
   moving "water" to Custard in the editor works. Axe clean.
+- Renamed parts → **Components** in the UI (the stored field stays `section`).
+  The student found the dropdown slow (two taps), so `PartSelect` is now a
+  `radiogroup` of small chips (None + each component; Ink when chosen): one
+  tap. Rows are also shorter than with the full-width select. Adding a
+  component is one tap on "+ Component" (the box is focused) and Enter. Verify
+  updated (radio chips), axe clean.
