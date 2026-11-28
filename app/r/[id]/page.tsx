@@ -130,8 +130,8 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       {/* Everything from Ideas and Development, folded away so the recipe page
           stays calm (student, Nov 28). Open it to see or edit them. */}
-      {/* Notes and Send are one block, set apart from the tags above (student, Nov 28). */}
-      <div className="pt-4">
+      {/* Notes and Send are one block, set well apart from the tags above (student, Nov 28). */}
+      <div className="pt-10">
       <details className="group border-y border-ls-ink">
         <summary
           className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
