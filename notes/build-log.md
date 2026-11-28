@@ -1235,3 +1235,15 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Clickability: a `Chevron` SVG (rotates when open). The notes `<details>`
   shows Show/Hide via `group-open`, and the iteration control is outlined
   like a dropdown. Verify ✓, axe clean.
+
+## Nov 28 — Logo
+- Bigger wordmark (22px phones / 30px wider), then a logo explored in rounds of
+  static HTML sheets (`notes/design/logo-options*.html`, screenshotted): 12
+  first ideas → notebook-with-flask variations (L1–L8) → the solid cover (L8)
+  with other icons → mortar and pestle (M1–M8) → pestle designs (P1–P8) →
+  skinnier clubs (P4a–c). The student picked **P4c**.
+- `components/Logo.tsx` (inline SVG, aria-hidden; the link text is the name)
+  sits in the header at 36/44px. `app/icon.svg` is the browser-tab icon (Next
+  file convention), with heavier strokes for 16px; the default `favicon.ico`
+  was removed. On phones the header stays on one line (nowrap, Sign in px-2).
+  Verify ✓, axe clean.

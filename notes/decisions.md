@@ -106,6 +106,7 @@
 | Nov 15 | Separate starting cards for an idea and for the cook's words | |
 | Nov 20 | Less text and minimal scrolling: the landing page fits on one screen | |
 | Nov 27 | **One font, Figtree**, instead of Instrument Serif + Jost (the two felt like they conflicted) | Six pairings (`notes/design/font-options.html`), then eight one-font options (`font-options-2.html`); Inter and Manrope were close |
+| Nov 28 | **Logo**: a solid ink notebook cover with a mortar and a slim red pestle (P4c), next to a bigger name and as the browser-tab icon | 12 first ideas (flask, lab book with spoon, whisk, monogram, mortar, recipe card, pot, egg, fork chart, notebook with flask…), then notebook variations, cover icons, mortar and pestle designs, and pestle widths (`notes/design/logo-options*.html`) |
 
 ## v2 decisions
 
