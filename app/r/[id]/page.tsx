@@ -16,6 +16,8 @@ import { SharePanel } from "./SharePanel";
 import { TagPicker } from "@/components/TagPicker";
 import { EntryPhotos } from "@/components/EntryPhotos";
 import { DishPhoto } from "@/components/DishPhoto";
+import { TrialLog } from "@/components/TrialLog";
+import type { TrialRow } from "@/lib/types";
 import { AllNotesProvider, AllNotesSwitch } from "@/components/RecipeExtras";
 import { recipeHasNotes } from "@/components/IngredientList";
 import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
@@ -81,6 +83,15 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
   const allPhotos = await photosFor(supabase, [dictation.id]);
+  // Iterations (issue #9): trials oldest first, so they read left to right.
+  const { data: trials } = await supabase
+    .from("trials")
+    .select("id, dictation_id, tried_on, changed, result, created_at")
+    .eq("dictation_id", dictation.id)
+    .order("tried_on")
+    .order("created_at")
+    .returns<TrialRow[]>();
+  const adjustments = [...new Set(recipe.recipe.steps.flatMap((st) => st.dials.map((d) => d.setting.trim()).filter(Boolean)))].slice(0, 8);
   const dish = allPhotos.find((p) => p.kind === "dish");
   const photos = allPhotos.filter((p) => p.kind === "idea"); // inspiration photos stay in the notes
   // Tags (Recipes tab only): your list + which ones this recipe has.
@@ -123,6 +134,8 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
         switchOutside
         aside={<DishPhoto dictationId={dictation.id} photo={dish && { id: dish.id, url: dish.url }} />}
       />
+
+      <TrialLog dictationId={dictation.id} trials={trials ?? []} adjustments={adjustments} />
 
       {dictation.stage === "finished" && (
         <TagPicker dictationId={dictation.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />

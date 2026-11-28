@@ -865,6 +865,41 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.getByRole("button", { name: "Recipes" }).click();
   await expect(page.getByRole("button", { name: "Development" })).toBeVisible();
 
+  // ---- Iterations: log trials, compare side by side, edit, delete (issue #9) ----
+  await page.goto(recipeUrl);
+  const tr = page.locator("main").filter({ visible: true }).getByRole("region", { name: /^Trials/ });
+  await expect(tr.getByText("Each time you make it", { exact: false })).toBeVisible();
+  await tr.getByRole("button", { name: "+ Log a trial" }).click();
+  const t1 = tr.getByRole("form", { name: "Log trial 1" });
+  await t1.getByLabel("Date").fill("2026-11-20");
+  const chip = t1.getByRole("button", { name: /^\+ / }).first();
+  const chipText = ((await chip.textContent()) ?? "").replace(/^\+\s*/, "").trim();
+  await chip.click(); // one tap adds the recipe's own adjustment
+  await expect(t1.getByLabel("What you changed")).toHaveValue(chipText);
+  await t1.getByLabel("How it turned out").fill("Tangier. Grandma: closer, but still not as sour.");
+  await check(page, "trial-form", { keyboard: true });
+  await t1.getByRole("button", { name: "Save trial" }).click();
+  await expect(tr.getByText("Trial 1 · Nov 20, 2026")).toBeVisible();
+  await tr.getByRole("button", { name: "+ Log a trial" }).click();
+  const t2 = tr.getByRole("form", { name: "Log trial 2" });
+  await t2.getByRole("button", { name: "Save trial" }).click();
+  await expect(t2.getByText("Write what you changed or how it turned out.")).toBeVisible(); // can't be empty
+  await t2.getByLabel("Date").fill("2026-11-22");
+  await t2.getByLabel("What you changed").fill("¼ cup sugar instead of ⅓");
+  await t2.getByLabel("How it turned out").fill("Less sweet; the tang comes through.");
+  await t2.getByRole("button", { name: "Save trial" }).click();
+  const trialList = tr.getByRole("list", { name: "Trials, oldest first" });
+  await expect(trialList.getByRole("listitem")).toHaveCount(2);
+  await expect(trialList.getByRole("listitem").nth(1)).toContainText("Trial 2 · Nov 22, 2026"); // side by side, in date order
+  await check(page, "trials", { keyboard: true });
+  await tr.getByRole("button", { name: "Edit trial 1" }).click();
+  await tr.getByRole("form", { name: "Edit trial 1" }).getByLabel("How it turned out").fill("Tangier and thicker.");
+  await tr.getByRole("form", { name: "Edit trial 1" }).getByRole("button", { name: "Save trial" }).click();
+  await expect(trialList.getByText("Tangier and thicker.")).toBeVisible();
+  page.once("dialog", (d) => d.accept());
+  await tr.getByRole("button", { name: "Delete trial 2" }).click();
+  await expect(trialList.getByRole("listitem")).toHaveCount(1);
+
   // ---- Edit their words after the recipe exists (no AI call) ----
   await page.goto(recipeUrl);
   await openNotes(page);

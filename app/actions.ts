@@ -952,3 +952,44 @@ export async function untagEntry(dictationId: string, rawName: string): Promise<
   revalidatePath("/", "layout");
   return { ok: !error };
 }
+
+// ---------------------------------------------------------------------------
+// Iterations (issue #9; student, Nov 28): log a trial of a recipe (when, what
+// changed, how it turned out), edit it, or delete it. RLS: only your own
+// entries and trials; only the date and text can change after logging.
+// ---------------------------------------------------------------------------
+export async function saveTrial(
+  dictationId: string,
+  trialId: string | null,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireUser();
+  const tried_on = String(formData.get("tried_on") ?? "").trim();
+  const changed = String(formData.get("changed") ?? "").trim().slice(0, 1000);
+  const result = String(formData.get("result") ?? "").trim().slice(0, 2000);
+  const values = { tried_on, changed, result };
+  const fieldErrors: Record<string, string> = {};
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tried_on) || Number.isNaN(Date.parse(tried_on))) fieldErrors.tried_on = "Pick the date you made it.";
+  if (!changed && !result) fieldErrors.changed = "Write what you changed or how it turned out.";
+  if (Object.keys(fieldErrors).length) return { values, fieldErrors };
+
+  const supabase = await supabaseForUser();
+  const { error } = trialId
+    ? await supabase.from("trials").update({ tried_on, changed, result }).eq("id", trialId).eq("dictation_id", dictationId)
+    : await supabase.from("trials").insert({ dictation_id: dictationId, tried_on, changed, result });
+  if (error) {
+    console.error("[saveTrial]", error);
+    return { values, error: "Couldn't save the trial. What you typed is still here. Try again." };
+  }
+  revalidatePath("/", "layout");
+  return { saved: true };
+}
+
+export async function deleteTrial(trialId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { error } = await supabase.from("trials").delete().eq("id", trialId);
+  if (error) console.error("[deleteTrial]", error);
+  revalidatePath("/", "layout");
+}
