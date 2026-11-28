@@ -5,7 +5,7 @@ import { useActionState, useEffect, useId, useRef, useState, type ReactNode } fr
 import { createIteration, deleteIteration, saveIterationNotes } from "@/app/actions";
 import type { ActionState } from "@/lib/types";
 import { PencilButton } from "./InlineEdit";
-import { Button, chipClass, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
+import { Button, Chevron, chipClass, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
 import type { Iteration } from "@/lib/iterations";
 export type { Iteration };
@@ -65,13 +65,12 @@ export function IterationBar({
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((o) => !o)}
-          className={`-my-3 -ml-1 inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-ink hover:text-ls-ink ${focusRing}`}
+          // Outlined like a dropdown, with a clear chevron, so it reads as a control (student, Nov 28).
+          className={`inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap border border-ls-ink/40 bg-ls-surface px-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-ink transition-colors hover:border-ls-ink hover:bg-white active:bg-ls-ink/[0.08] ${focusRing}`}
         >
           Iteration {current.number}
           <span className="text-ls-muted">· {shortDate(current.made_on)}</span>
-          <span aria-hidden className={`text-[10px] text-ls-muted transition-transform ${open ? "rotate-180" : ""}`}>
-            ▾
-          </span>
+          <Chevron className={open ? "rotate-180" : ""} />
         </button>
         {right}
       </div>

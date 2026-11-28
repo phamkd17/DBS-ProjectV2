@@ -6,7 +6,7 @@ import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { RecipeView } from "@/components/RecipeView";
 import { DictationEditor } from "@/components/DictationEditor";
 import { EditableNotes } from "@/components/InlineEdit";
-import { Button, eyebrow, focusRing, formatDate, SourceBadge, textLink } from "@/components/ui";
+import { Button, eyebrow, focusRing, formatDate, SourceBadge, textLink, Chevron } from "@/components/ui";
 import { supabaseForUser } from "@/lib/supabase/server";
 import type { DictationRow, QuestionRow, RecipeRow } from "@/lib/types";
 import { QuestionsForm } from "./QuestionsForm";
@@ -145,8 +145,11 @@ export default async function RecipePage({ params, searchParams }: PageProps<"/r
           className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
         >
           Notes from Ideas and Development
-          <span aria-hidden className="text-sm text-ls-muted transition-transform group-open:rotate-180">
-            ▾
+          {/* "Show"/"Hide" + a clear chevron, so it reads as something to open (student, Nov 28). */}
+          <span aria-hidden className="flex items-center gap-1.5 text-ls-ink">
+            <span className="group-open:hidden">Show</span>
+            <span className="hidden group-open:inline">Hide</span>
+            <Chevron className="group-open:rotate-180" />
           </span>
         </summary>
         <div className="space-y-5 pt-1 pb-5">
