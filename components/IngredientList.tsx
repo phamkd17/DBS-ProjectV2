@@ -16,11 +16,11 @@ export function splitNote(note: string) {
  */
 export function IngredientList({ ingredients, cookName }: { ingredients: Recipe["ingredients"]; cookName?: string | null }) {
   return (
-    <ul className="divide-y divide-ls-border border-y border-ls-ink">
+    <ul className="divide-y divide-ls-border">
       {ingredients.map((ing, i) => {
         const { rest, history } = splitNote(ing.note);
         return (
-          <li key={i} className="space-y-0.5 py-2">
+          <li key={i} className="flow-root space-y-0.5 py-2 first:border-t first:border-t-ls-ink last:border-b last:border-b-ls-ink">
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
               <p className="text-[17px]">
                 {ing.amount ? <span className="font-medium">{ing.amount} </span> : null}

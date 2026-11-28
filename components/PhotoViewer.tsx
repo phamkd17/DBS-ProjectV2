@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { eyebrow, focusRing } from "./ui";
 
 /**
@@ -8,7 +8,7 @@ import { eyebrow, focusRing } from "./ui";
  * <dialog>, so a tap anywhere (except the buttons), Escape, or × closes it and focus returns to the
  * photo you tapped. Previous/Next and the arrow keys move between photos.
  */
-export function usePhotoViewer(photos: { url: string }[]) {
+export function usePhotoViewer(photos: { url: string }[], actions?: (close: () => void) => ReactNode) {
   const ref = useRef<HTMLDialogElement>(null);
   const [shown, setShown] = useState(0);
   const open = (i: number) => {
@@ -62,6 +62,7 @@ export function usePhotoViewer(photos: { url: string }[]) {
                 </button>
               </div>
             )}
+            {actions && <div className="flex flex-wrap justify-end gap-x-2 border-t border-ls-border px-2">{actions(() => ref.current?.close())}</div>}
           </div>
         )}
       </dialog>

@@ -22,9 +22,11 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
   return (
     <SourcesScope>
     <article className="space-y-5">
-      <div className={aside ? "flex items-start gap-4 sm:gap-6" : ""}>
-      <div className="min-w-0 flex-1 space-y-5">
-      <header className="space-y-2">
+      {/* The dish photo floats right; the title and ingredient rows wrap around it,
+          and rows below it run full width (student, Nov 28). */}
+      <div className="flow-root">
+      {aside && <div className="float-right mb-3 ml-4 w-fit max-w-28 sm:ml-6 sm:max-w-56">{aside}</div>}
+      <header className="mb-5 space-y-2">
         <h1 className="font-ls-serif text-3xl leading-tight sm:text-4xl">{recipe.title}</h1>
         <Legend cookName={cookName} />
       </header>
@@ -39,8 +41,6 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
           <IngredientList ingredients={recipe.ingredients} cookName={cookName} />
         </section>
       )}
-      </div>
-      {aside}
       </div>
 
       <section aria-labelledby="steps" className="space-y-2">

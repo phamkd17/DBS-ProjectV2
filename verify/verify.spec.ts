@@ -338,14 +338,21 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   const dishImg = mr.getByRole("img", { name: "The dish" });
   await expectLoaded(dishImg);
   await check(page, "recipe-dish-photo", { keyboard: true });
-  await mr.getByRole("button", { name: "Zoom in on the dish photo" }).click();
-  await expect(page.getByRole("dialog", { name: "Photo 1 of 1" })).toBeVisible();
+  // Change/Remove only show once the photo is tapped (in the large view).
+  await expect(mr.getByRole("button", { name: "Remove", exact: true })).toHaveCount(0);
+  await mr.getByRole("button", { name: /^Dish photo: zoom in/ }).click();
+  const dishView = page.getByRole("dialog", { name: "Photo 1 of 1" });
+  await expect(dishView.getByRole("button", { name: "Change" })).toBeVisible();
+  await check(page, "dish-photo-open");
   await page.keyboard.press("Escape");
+  const oldSrc = await mr.getByRole("img", { name: "The dish" }).getAttribute("src");
   await mr.locator('input[type="file"][aria-label="Dish photo"]').setInputFiles("verify/fixtures/onions.jpg"); // Change replaces it
+  await expect(mr.getByRole("img", { name: "The dish" })).not.toHaveAttribute("src", oldSrc ?? ""); // the new one is showing
   await expect(mr.getByRole("img", { name: "The dish" })).toHaveCount(1);
   await expectLoaded(mr.getByRole("img", { name: "The dish" }));
+  await mr.getByRole("button", { name: /^Dish photo: zoom in/ }).click();
   page.once("dialog", (d) => d.accept());
-  await mr.getByRole("button", { name: "Remove" }).click();
+  await dishView.getByRole("button", { name: "Remove" }).click();
   await expect(mr.getByRole("button", { name: "Add dish photo" })).toBeVisible();
 
   // ---- Tags (Recipes tab): type to add, several per recipe, filter, delete (the recipe stays) ----
