@@ -460,10 +460,28 @@ export async function updateNotes(
 // Edit the whole ingredient list of a finished recipe at once. Changed or added
 // amounts are labeled as family answers; old values are kept in notes; removed
 // ingredients are recorded in the recipe's "What the app changed" notes.
+// The recipe JSON being edited: the original (public.recipes) or one of its
+// iterations (public.iterations, student Nov 28). RLS limits both to your own.
+type Supa = Awaited<ReturnType<typeof supabaseForUser>>;
+async function loadRecipeJson(supabase: Supa, recipeId: string, iterationId: string | null) {
+  if (!iterationId) {
+    const { data } = await supabase.from("recipes").select("recipe").eq("id", recipeId).single<Pick<RecipeRow, "recipe">>();
+    return data;
+  }
+  const { data } = await supabase.from("iterations").select("recipe").eq("id", iterationId).not("recipe", "is", null).single<Pick<RecipeRow, "recipe">>();
+  return data;
+}
+async function saveRecipeJson(supabase: Supa, recipeId: string, iterationId: string | null, recipe: NonNullable<RecipeRow["recipe"]>) {
+  return iterationId
+    ? supabase.from("iterations").update({ recipe }).eq("id", iterationId)
+    : supabase.from("recipes").update({ recipe }).eq("id", recipeId);
+}
+
 // ---------------------------------------------------------------------------
 export async function updateIngredients(
   recipeId: string,
   cookName: string,
+  iterationId: string | null,
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
@@ -477,8 +495,8 @@ export async function updateIngredients(
   }
 
   const supabase = await supabaseForUser();
-  // RLS: only your own recipe comes back.
-  const { data: row } = await supabase.from("recipes").select("recipe").eq("id", recipeId).single<Pick<RecipeRow, "recipe">>();
+  // RLS: only your own recipe (or iteration of it) comes back.
+  const row = await loadRecipeJson(supabase, recipeId, iterationId);
   if (!row?.recipe) return { error: "We couldn't find that recipe in your lab book." };
   const old = row.recipe.ingredients;
 
@@ -523,12 +541,9 @@ export async function updateIngredients(
   }
   const removed = old.filter((_, i) => !kept.has(i)).map((o) => `Removed “${[o.amount, o.item].filter(Boolean).join(" ")}” (${whoSaid(o.source)}) on ${when}.`);
 
-  const { error } = await supabase
-    .from("recipes")
-    // Not bumping updated_at: it marks when the AI made the recipe, which the
-    // "words edited after this recipe was made" notice compares against.
-    .update({ recipe: { ...row.recipe, ingredients, notes: [...row.recipe.notes, ...removed] } })
-    .eq("id", recipeId);
+  // Not bumping updated_at: it marks when the AI made the recipe, which the
+  // "words edited after this recipe was made" notice compares against.
+  const { error } = await saveRecipeJson(supabase, recipeId, iterationId, { ...row.recipe, ingredients, notes: [...row.recipe.notes, ...removed] });
   if (error) {
     console.error("[updateIngredients]", error);
     return { error: "Couldn't save the ingredients. Your changes are still here. Try again." };
@@ -550,7 +565,7 @@ type StepRow = {
   dials: { orig: number | null; setting: string; effect: string }[];
 };
 
-export async function updateSteps(recipeId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function updateSteps(recipeId: string, iterationId: string | null, _prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireUser();
   let rows: StepRow[];
   try {
@@ -560,8 +575,8 @@ export async function updateSteps(recipeId: string, _prev: ActionState, formData
     return { error: "Something went wrong reading the steps. Refresh and try again." };
   }
   const supabase = await supabaseForUser();
-  // RLS: only your own recipe comes back.
-  const { data: row } = await supabase.from("recipes").select("recipe").eq("id", recipeId).single<Pick<RecipeRow, "recipe">>();
+  // RLS: only your own recipe (or iteration of it) comes back.
+  const row = await loadRecipeJson(supabase, recipeId, iterationId);
   if (!row?.recipe) return { error: "We couldn't find that recipe in your lab book." };
   const old = row.recipe.steps;
   const idx = (v: unknown, list: unknown[]) => (typeof v === "number" && Number.isInteger(v) && v >= 0 && v < list.length ? v : null);
@@ -594,11 +609,8 @@ export async function updateSteps(recipeId: string, _prev: ActionState, formData
   }
   if (steps.length === 0) return { error: "Keep at least one step." };
 
-  const { error } = await supabase
-    .from("recipes")
-    // Not bumping updated_at (see updateIngredients).
-    .update({ recipe: { ...row.recipe, steps } })
-    .eq("id", recipeId);
+  // Not bumping updated_at (see updateIngredients).
+  const { error } = await saveRecipeJson(supabase, recipeId, iterationId, { ...row.recipe, steps });
   if (error) {
     console.error("[updateSteps]", error);
     return { error: "Couldn't save the instructions. Your changes are still here. Try again." };
@@ -954,42 +966,63 @@ export async function untagEntry(dictationId: string, rawName: string): Promise<
 }
 
 // ---------------------------------------------------------------------------
-// Iterations (issue #9; student, Nov 28): log a trial of a recipe (when, what
-// changed, how it turned out), edit it, or delete it. RLS: only your own
-// entries and trials; only the date and text can change after logging.
+// Iterations (issue #9; student, Nov 28): versions of a recipe. A new iteration
+// copies the version you're looking at; you then edit its ingredients and
+// instructions. Each has a date and the cook's own notes. Iteration 1 is the
+// original recipe (its notes live in a row with recipe = null).
 // ---------------------------------------------------------------------------
-export async function saveTrial(
-  dictationId: string,
-  trialId: string | null,
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+export async function createIteration(recipeId: string, fromIterationId: string | null): Promise<void> {
   await requireUser();
-  const tried_on = String(formData.get("tried_on") ?? "").trim();
-  const changed = String(formData.get("changed") ?? "").trim().slice(0, 1000);
-  const result = String(formData.get("result") ?? "").trim().slice(0, 2000);
-  const values = { tried_on, changed, result };
-  const fieldErrors: Record<string, string> = {};
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(tried_on) || Number.isNaN(Date.parse(tried_on))) fieldErrors.tried_on = "Pick the date you made it.";
-  if (!changed && !result) fieldErrors.changed = "Write what you changed or how it turned out.";
-  if (Object.keys(fieldErrors).length) return { values, fieldErrors };
-
   const supabase = await supabaseForUser();
-  const { error } = trialId
-    ? await supabase.from("trials").update({ tried_on, changed, result }).eq("id", trialId).eq("dictation_id", dictationId)
-    : await supabase.from("trials").insert({ dictation_id: dictationId, tried_on, changed, result });
-  if (error) {
-    console.error("[saveTrial]", error);
-    return { values, error: "Couldn't save the trial. What you typed is still here. Try again." };
+  // RLS: your own recipe only.
+  const { data: base } = await supabase.from("recipes").select("dictation_id").eq("id", recipeId).maybeSingle();
+  const src = base ? await loadRecipeJson(supabase, recipeId, fromIterationId) : null;
+  if (!base || !src?.recipe) redirect(`/r/${recipeId}`);
+  const { data, error } = await supabase
+    .from("iterations")
+    .insert({ dictation_id: base.dictation_id, recipe: src.recipe, made_on: new Date().toLocaleDateString("en-CA") })
+    .select("id")
+    .single();
+  if (error || !data) {
+    console.error("[createIteration]", error);
+    redirect(`/r/${recipeId}`);
   }
-  revalidatePath("/", "layout");
+  revalidatePath(`/r/${recipeId}`);
+  redirect(`/r/${recipeId}?it=${data.id}`);
+}
+
+/** Save an iteration's date and notes. iterationId null = the original recipe (iteration 1). */
+export async function saveIterationNotes(recipeId: string, iterationId: string | null, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  const made_on = String(formData.get("made_on") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").slice(0, 5000);
+  const values = { made_on, notes };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(made_on) || Number.isNaN(Date.parse(made_on))) return { values, fieldErrors: { made_on: "Pick the date you made it." } };
+  const supabase = await supabaseForUser();
+  let error;
+  if (iterationId) {
+    ({ error } = await supabase.from("iterations").update({ made_on, notes }).eq("id", iterationId));
+  } else {
+    const { data: base } = await supabase.from("recipes").select("dictation_id").eq("id", recipeId).maybeSingle();
+    if (!base) return { values, error: "We couldn't find that recipe in your lab book." };
+    const { data: orig } = await supabase.from("iterations").select("id").eq("dictation_id", base.dictation_id).is("recipe", null).maybeSingle();
+    ({ error } = orig
+      ? await supabase.from("iterations").update({ made_on, notes }).eq("id", orig.id)
+      : await supabase.from("iterations").insert({ dictation_id: base.dictation_id, made_on, notes }));
+  }
+  if (error) {
+    console.error("[saveIterationNotes]", error);
+    return { values, error: "Couldn't save the notes. What you typed is still here. Try again." };
+  }
+  revalidatePath(`/r/${recipeId}`);
   return { saved: true };
 }
 
-export async function deleteTrial(trialId: string): Promise<void> {
+export async function deleteIteration(recipeId: string, iterationId: string): Promise<void> {
   await requireUser();
   const supabase = await supabaseForUser();
-  const { error } = await supabase.from("trials").delete().eq("id", trialId);
-  if (error) console.error("[deleteTrial]", error);
-  revalidatePath("/", "layout");
+  const { error } = await supabase.from("iterations").delete().eq("id", iterationId).not("recipe", "is", null);
+  if (error) console.error("[deleteIteration]", error);
+  revalidatePath(`/r/${recipeId}`);
+  redirect(`/r/${recipeId}`);
 }

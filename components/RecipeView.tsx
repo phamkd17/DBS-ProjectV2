@@ -19,10 +19,12 @@ type Props = {
   aside?: ReactNode;
   /** The page shows the "All notes" switch itself (on its breadcrumb line). */
   switchOutside?: boolean;
+  /** Showing (and editing) an iteration of the recipe (student, Nov 28). */
+  iterationId?: string | null;
 };
 
 /** The finished recipe: ingredients, steps, the why labeled by source, and her words. */
-export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId, aside, switchOutside }: Props) {
+export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId, aside, switchOutside, iterationId = null }: Props) {
   const allParts = partsOf([...recipe.ingredients, ...recipe.steps] as { section?: string }[]);
   return (
     <SourcesScope hasNotes={recipeHasNotes(recipe)} ownSwitch={!switchOutside}>
@@ -37,7 +39,7 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
       </header>
 
       {editableRecipeId ? (
-        <EditableIngredients recipeId={editableRecipeId} ingredients={recipe.ingredients} cookName={cookName} allParts={allParts} />
+        <EditableIngredients key={iterationId ?? "original"} recipeId={editableRecipeId} ingredients={recipe.ingredients} cookName={cookName} allParts={allParts} iterationId={iterationId} />
       ) : (
         <section aria-labelledby="ingredients" className="space-y-2">
           <h2 id="ingredients" className="font-ls-serif text-2xl leading-tight">
@@ -50,7 +52,7 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
 
       {/* "Instructions" (was "Steps"; student, Nov 28). The owner can edit them from one pencil. */}
       {editableRecipeId ? (
-        <EditableSteps recipeId={editableRecipeId} steps={recipe.steps} allParts={allParts}>
+        <EditableSteps key={iterationId ?? "original"} recipeId={editableRecipeId} steps={recipe.steps} allParts={allParts} iterationId={iterationId}>
         <StepsList steps={recipe.steps} cookName={cookName} />
         </EditableSteps>
       ) : (

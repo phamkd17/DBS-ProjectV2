@@ -17,8 +17,11 @@ export function EditableIngredients({
   ingredients,
   cookName,
   allParts = [],
+  iterationId = null,
 }: {
   recipeId: string;
+  /** Editing an iteration of the recipe instead of the original (student, Nov 28). */
+  iterationId?: string | null;
   ingredients: Recipe["ingredients"];
   cookName?: string | null;
   /** The recipe's parts, from both ingredients and instructions (student, Nov 28). */
@@ -37,7 +40,7 @@ export function EditableIngredients({
   }, [editing]);
 
   const [state, action, pending] = useActionState<ActionState, FormData>(async (prev, fd) => {
-    const result = await updateIngredients(recipeId, cookName ?? "", prev, fd);
+    const result = await updateIngredients(recipeId, cookName ?? "", iterationId, prev, fd);
     if (result.saved) setEditing(false);
     return result;
   }, {});

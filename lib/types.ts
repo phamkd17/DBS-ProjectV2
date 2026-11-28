@@ -132,5 +132,6 @@ export function runsByPart<T extends { section?: string }>(items: T[]): { part: 
   return runs;
 }
 
-// Iterations (issue #9; student, Nov 28): one row per time the recipe was made.
-export type TrialRow = { id: string; dictation_id: string; tried_on: string; changed: string; result: string; created_at: string };
+// Iterations (issue #9; student, Nov 28): versions of a recipe. recipe = null is
+// the original's notes row (iteration 1 is the recipe in public.recipes).
+export type IterationRow = { id: string; made_on: string; notes: string; has_recipe: boolean; created_at: string };

@@ -16,8 +16,7 @@ import { SharePanel } from "./SharePanel";
 import { TagPicker } from "@/components/TagPicker";
 import { EntryPhotos } from "@/components/EntryPhotos";
 import { DishPhoto } from "@/components/DishPhoto";
-import { TrialLog } from "@/components/TrialLog";
-import type { TrialRow } from "@/lib/types";
+import { IterationBar, type Iteration } from "@/components/IterationBar";
 import { AllNotesProvider, AllNotesSwitch } from "@/components/RecipeExtras";
 import { recipeHasNotes } from "@/components/IngredientList";
 import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
@@ -26,8 +25,8 @@ import type { TagRow } from "@/lib/types";
 // Pass 2 can take a while on the free tier.
 export const maxDuration = 300;
 
-export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
-  const { id } = await params;
+export default async function RecipePage({ params, searchParams }: PageProps<"/r/[id]">) {
+  const [{ id }, { it }] = await Promise.all([params, searchParams]);
   const supabase = await supabaseForUser();
 
   // RLS: each of these returns nothing unless the rows are yours.
@@ -83,15 +82,24 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
   const allPhotos = await photosFor(supabase, [dictation.id]);
-  // Iterations (issue #9): trials oldest first, so they read left to right.
-  const { data: trials } = await supabase
-    .from("trials")
-    .select("id, dictation_id, tried_on, changed, result, created_at")
+  // Iterations (issue #9; student, Nov 28): versions of this recipe. Iteration 1 is the
+  // original; the rest are copies the cook edited. ?it=<id> shows one of them.
+  const { data: itRows } = await supabase
+    .from("iterations")
+    .select("id, made_on, notes, recipe, created_at")
     .eq("dictation_id", dictation.id)
-    .order("tried_on")
+    .order("made_on")
     .order("created_at")
-    .returns<TrialRow[]>();
-  const adjustments = [...new Set(recipe.recipe.steps.flatMap((st) => st.dials.map((d) => d.setting.trim()).filter(Boolean)))].slice(0, 8);
+    .returns<{ id: string; made_on: string; notes: string; recipe: RecipeRow["recipe"]; created_at: string }[]>();
+  const origRow = (itRows ?? []).find((r) => !r.recipe);
+  const versions = (itRows ?? []).filter((r) => r.recipe);
+  const iterations: Iteration[] = [
+    { id: null, number: 1, made_on: origRow?.made_on ?? new Date(recipe.created_at).toLocaleDateString("en-CA"), notes: origRow?.notes ?? "" },
+    ...versions.map((r, i) => ({ id: r.id, number: i + 2, made_on: r.made_on, notes: r.notes })),
+  ];
+  const selected = versions.find((r) => r.id === it);
+  const current = iterations.find((x) => x.id === (selected?.id ?? null))!;
+  const shown = selected?.recipe ?? recipe.recipe;
   const dish = allPhotos.find((p) => p.kind === "dish");
   const photos = allPhotos.filter((p) => p.kind === "idea"); // inspiration photos stay in the notes
   // Tags (Recipes tab only): your list + which ones this recipe has.
@@ -117,7 +125,7 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
           </Link>
           {recipe.copied_from ? " · saved from a link" : ""}
         </p>
-        {recipeHasNotes(recipe.recipe) && <AllNotesSwitch />}
+        {recipeHasNotes(shown!) && <AllNotesSwitch />}
       </div>
 
       {dictation.edited_at && dictation.edited_at > recipe.updated_at && (
@@ -127,15 +135,16 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
         </p>
       )}
 
+      <IterationBar recipeId={recipe.id} iterations={iterations} current={current} />
+
       <RecipeView
-        recipe={recipe.recipe}
+        recipe={shown!}
         cookName={dictation.cook_name}
         editableRecipeId={recipe.id}
+        iterationId={selected?.id ?? null}
         switchOutside
         aside={<DishPhoto dictationId={dictation.id} photo={dish && { id: dish.id, url: dish.url }} />}
       />
-
-      <TrialLog dictationId={dictation.id} trials={trials ?? []} adjustments={adjustments} />
 
       {dictation.stage === "finished" && (
         <TagPicker dictationId={dictation.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
