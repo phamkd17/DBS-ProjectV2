@@ -28,7 +28,7 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
         <EditableIngredients recipeId={editableRecipeId} ingredients={recipe.ingredients} cookName={cookName} />
       ) : (
         <section aria-labelledby="ingredients" className="space-y-2">
-          <h2 id="ingredients" className="font-ls-serif text-xl leading-tight">
+          <h2 id="ingredients" className="font-ls-serif text-2xl leading-tight">
             Ingredients
           </h2>
           <IngredientList ingredients={recipe.ingredients} cookName={cookName} />
@@ -36,7 +36,7 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
       )}
 
       <section aria-labelledby="steps" className="space-y-2">
-        <h2 id="steps" className="font-ls-serif text-xl leading-tight">
+        <h2 id="steps" className="font-ls-serif text-2xl leading-tight">
           Steps
         </h2>
         <ol className="divide-y divide-ls-border border-y border-ls-ink">

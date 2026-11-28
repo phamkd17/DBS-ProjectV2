@@ -44,7 +44,7 @@ export function EditableIngredients({
   return (
     <section aria-labelledby="ingredients" className="space-y-2">
       <div className="flex items-center gap-1">
-        <h2 id="ingredients" className="font-ls-serif text-xl leading-tight">
+        <h2 id="ingredients" className="font-ls-serif text-2xl leading-tight">
           Ingredients
         </h2>
         {!editing && <PencilButton ref={pencil} label="Edit ingredients" onClick={start} />}

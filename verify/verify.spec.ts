@@ -136,6 +136,11 @@ test("served CSS matches app/globals.css (dev server not stale)", async ({ page 
       .join("\n")
   );
   const stale = tokens.filter(([name, hex]) => served.includes(name) && !served.includes(`${name}: ${hex}`));
+  // Font tokens too (Nov 28: the Figtree switch was served stale and fell back to the system font).
+  const squash = (t: string) => t.replace(/\s+/g, " ").replace(/"/g, "").trim();
+  const fonts = [...src.matchAll(/(--font-ls-[a-z]+):\s*([^;]+);/g)].map((m) => [m[1], squash(m[2])]);
+  const servedFlat = squash(served);
+  stale.push(...fonts.filter(([name, value]) => !servedFlat.includes(`${name}: ${value}`)));
   // Also every custom rule outside @theme (e.g. [data-sources="hidden"] .src-only).
   const selectors = [...src.matchAll(/^([.[][^{\n]+?)\s*\{/gm)].map((m) => m[1].trim().replace(/"/g, ""));
   const missing = selectors.filter((sel) => !served.replace(/"/g, "").includes(sel));
