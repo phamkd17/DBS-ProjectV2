@@ -1063,3 +1063,16 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   has `createRecipe … 332ms` with no "[ai] calling Gemini". After the main
   verify, `ai_calls` held only that user's 20 rows; the main user had none
   (cache hits), so another user isn't affected.
+
+## Nov 28 — Security pass (#6)
+- Checklist run: 27/27 server actions check the user; 8/8 tables have RLS
+  (live DB query); bucket private; no keys in git; `.env*` deny rule present.
+- Fresh-session review (a new agent with no context, whole project,
+  read-only): no findings at confidence ≥ 7. Two low notes, both fixed:
+  retries now count toward the AI limit, and the whole prompt is capped at
+  80k chars.
+- My own check found the v1 tables still had Supabase's default grants (anon
+  CRUD blocked by RLS; TRUNCATE etc.). Migration
+  `20261128020000_tighten_v1_grants.sql` revokes them. Verify passes, and the
+  v1/v2 live sites still load.
+- Write-up: `notes/security-pass.md`.
