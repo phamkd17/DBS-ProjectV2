@@ -989,3 +989,21 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   (`usePhotoViewer(photos, actions)`). Tapping the photo opens it large with
   them. Verify: they're absent until the photo is tapped. Fixed a race in the
   test (waits for the new photo's src before Remove). Axe clean.
+
+## Nov 28 — Crop photos; ingredient notes; science vs adjustments
+- Cropping (react-easy-crop 6, MIT, free). `PhotoCropper` is a native dialog
+  with shape radios (Original = the photo's own ratio, Square 1, Wide 4:3,
+  Tall 3:4), drag, and a zoom slider. `cropPhoto` cuts the area on a canvas
+  and shrinks it like any upload (≤1600px, ≤900KB JPEG). A new dish photo
+  opens the cropper first (after checking the browser can decode it). "Crop"
+  in the photo's view re-crops the saved photo: it's loaded with
+  `crossOrigin="anonymous"` from the signed URL (Supabase Storage allows CORS),
+  so this cuts down the saved version, not the original. Verify: Square saves
+  ~1:1 and re-crop to Wide saves ~4:3 (checked by naturalWidth/Height).
+- Ingredient notes (`IngredientNote`) hide behind an icon. Notes matching a
+  taste pattern ("to taste", "less", "optional", "prefer"…) get the sliders
+  and a blue "Adjust to taste:" panel; others get a plain note icon. The flask
+  stays only on steps (food science).
+- Panels: "Why it works" = Cypress tint + green rule; "Adjust to taste" = blue
+  tint + blue rule (existing `src-science` / `src-suggested` tokens). Axe
+  clean.

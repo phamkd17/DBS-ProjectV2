@@ -68,6 +68,8 @@
 | Nov 28 | Recipe **headings clearly different** from the ingredients and steps (larger, semibold) | |
 | Nov 28 | A **photo of the dish** on each recipe, to the right of the title and ingredients (one per recipe; it's also the list thumbnail) | |
 | Nov 28 | The title and ingredients **wrap around** the dish photo (rows below it run full width); **Change** and **Remove** appear only after tapping the photo | |
+| Nov 28 | **Crop the dish photo** (Original, Square, Wide, Tall; drag and zoom) when adding it or later, so it fits beside the ingredients with no empty space | |
+| Nov 28 | Ingredient notes hide behind an icon like the steps; **food science and adjustments look different**: flask + green for "Why it works", sliders + blue for "Adjust to taste"; taste notes on ingredients get the sliders, other notes a plain note icon | Sliders for every ingredient note; only recolor the panels |
 
 ## What the app is
 
