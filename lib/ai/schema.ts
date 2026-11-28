@@ -33,6 +33,12 @@ export const Ingredient = z.object({
   from_answers: z
     .array(Addition)
     .describe("Details of this ingredient that came from family answers or accepted suggestions. Empty in the draft."),
+  section: z
+    .string()
+    .optional()
+    .describe(
+      'The component of the dish this belongs to, in the cook\'s words (e.g. "Caramel sauce", "Custard", "Dough", "Filling"). "" when the dish has only one component, and for general steps such as preheating, assembling, baking the whole dish, or serving.'
+    ),
 });
 
 export const Why = z.object({
@@ -58,6 +64,12 @@ export const Step = z.object({
     .describe("Details of this step that came from family answers or accepted suggestions. Empty in the draft."),
   why: z.array(Why),
   dials: z.array(Dial),
+  section: z
+    .string()
+    .optional()
+    .describe(
+      'The component of the dish this belongs to, in the cook\'s words (e.g. "Caramel sauce", "Custard", "Dough", "Filling"). "" when the dish has only one component, and for general steps such as preheating, assembling, baking the whole dish, or serving.'
+    ),
 });
 
 export const Recipe = z.object({

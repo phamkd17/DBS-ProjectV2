@@ -169,17 +169,20 @@ export function StepExtras({
   const realDials = step.dials.filter((d) => d.setting?.trim() && d.effect?.trim());
   const hasWhy = cookWhy.length + otherWhy.length > 0;
   const hasDials = realDials.length > 0;
-  const text = <p className="flex-1 text-[17px] leading-relaxed">{step.text}</p>;
+  const text = <p className="flex-1 text-base leading-relaxed">{step.text}</p>;
   if (!hasWhy && !hasDials) return text;
 
   const who = cookName || "The cook";
 
   return (
-    <div className="space-y-2">
+    // flex + gap (not space-y): hidden panels take no space, so the text sits evenly between
+    // its lines (student, Nov 28). The 44px icons are centered on the first line without
+    // making the row taller.
+    <div className="flex flex-col gap-2">
       {/* Icons sit at the end of the step's first line, so steps stay compact. */}
       <div className="flex items-start gap-2">
         {text}
-        <div className="-mt-2 flex shrink-0">
+        <div className="-my-[9px] flex shrink-0">
         {hasWhy && (
           <IconToggle open={whyOpen} onClick={() => setWhyOpen((o) => !o)} controls={`${id}-why`} label={`Why step ${number} works`}>
             <FlaskIcon />
@@ -254,10 +257,10 @@ export function IngredientNote({ note, item, children }: { note: string; item: s
   const taste = TASTE.test(note);
   const label = taste ? `Adjust ${item} to taste` : `Note about ${item}`;
   return (
-    <div className="w-full space-y-1">
+    <div className="flex w-full flex-col gap-1">
       <div className="flex items-start justify-between gap-2">
         {children}
-        <div className="-my-2 shrink-0">
+        <div className="-my-2.5 shrink-0">
           <IconToggle open={open} onClick={() => setOpen((o) => !o)} controls={`${id}-note`} label={label}>
             {taste ? <SlidersIcon /> : <NoteIcon />}
           </IconToggle>

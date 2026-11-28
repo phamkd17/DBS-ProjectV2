@@ -310,6 +310,14 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await rf.getByLabel("Step 1", { exact: true }).fill("Heat the milk until it steams. Don't let it boil.");
   await rf.getByRole("button", { name: "+ Why it works" }).first().click();
   await rf.getByLabel(/Why it works/).fill("Boiling can scorch the milk.");
+  // Food science and adjustments like the recipe editor; × closes a note (student, Nov 28).
+  await rf.getByRole("button", { name: "+ Why it works" }).first().click();
+  await expect(rf.getByRole("textbox", { name: /Why it works \(step 1, note 2\)/ })).toBeFocused();
+  await rf.getByRole("button", { name: "Remove why it works 2 from step 1" }).click();
+  await expect(rf.getByRole("textbox", { name: /Why it works \(step 1, note 2\)/ })).toHaveCount(0);
+  await rf.getByRole("button", { name: "+ Adjust to taste" }).first().click();
+  await rf.getByRole("textbox", { name: "If you" }).fill("steam longer");
+  await rf.getByRole("textbox", { name: "It comes out" }).fill("a thicker yogurt");
   // Enter in a step adds the next step; Shift+Enter is a new line in the same step.
   await rf.getByLabel("Step 1", { exact: true }).press("Enter");
   await expect(rf.getByLabel("Step 2", { exact: true })).toBeFocused();
@@ -329,6 +337,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(mr.getByText("whole milk")).toBeVisible();
   await expect(mr.getByText("vanilla bean")).toBeVisible();
   await expect(mr.getByRole("button", { name: "Why step 1 works" })).toBeVisible(); // same format as AI recipes
+  await expect(mr.getByRole("button", { name: "Adjust step 1 to taste" })).toBeVisible();
   await expect(mr.getByText(/Kitchen notes/)).toHaveCount(0); // no kitchen-notes section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
 
@@ -375,6 +384,31 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   page.once("dialog", (d) => d.accept());
   await dishView.getByRole("button", { name: "Remove" }).click();
   await expect(mr.getByRole("button", { name: "Add dish photo" })).toBeVisible();
+
+  // ---- Edit the instructions: text, Why it works, Adjust to taste (student, Nov 28) ----
+  await expect(mr.getByRole("heading", { name: "Instructions" })).toBeVisible();
+  await mr.getByRole("button", { name: "Edit instructions" }).click();
+  const ed = mr.locator("form").filter({ has: page.getByRole("button", { name: "Save instructions" }) });
+  await ed.getByRole("textbox", { name: "Step 1", exact: true }).fill("Heat the milk until it steams, about 180°F. Don't let it boil.");
+  await ed.getByRole("button", { name: "+ Why it works" }).nth(1).click(); // step 2
+  await ed.getByRole("textbox", { name: /Why it works \(step 2, note 1\)/ }).fill("Sugar dissolves faster in warm milk.");
+  await ed.getByRole("button", { name: "+ Adjust to taste" }).nth(1).click();
+  await ed.getByRole("textbox", { name: "If you" }).last().fill("more sugar");
+  await ed.getByRole("textbox", { name: "It comes out" }).last().fill("sweeter");
+  await check(page, "instructions-editing", { keyboard: true });
+  await ed.getByRole("button", { name: "Save instructions" }).click();
+  await expect(mr.getByText("about 180°F", { exact: false })).toBeVisible();
+  await expect(mr.getByRole("button", { name: "Edit instructions" })).toBeFocused();
+  await mr.getByRole("button", { name: "Why step 2 works" }).click();
+  await expect(mr.getByText("Sugar dissolves faster in warm milk.")).toBeVisible();
+  await mr.getByRole("button", { name: "Adjust step 2 to taste" }).click();
+  await expect(mr.getByText("sweeter", { exact: true })).toBeVisible();
+  // Remove step 1's food-science note.
+  await mr.getByRole("button", { name: "Edit instructions" }).click();
+  await ed.getByRole("button", { name: "Remove why it works 1 from step 1" }).click();
+  await ed.getByRole("button", { name: "Save instructions" }).click();
+  await expect(mr.getByRole("button", { name: "Edit instructions" })).toBeVisible();
+  await expect(mr.getByRole("button", { name: "Why step 1 works" })).toHaveCount(0);
 
   // ---- Tags (Recipes tab): type to add, several per recipe, filter, delete (the recipe stays) ----
   const TAG = `Desserts ${RUN}`;
@@ -450,6 +484,69 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.waitForURL((u) => u.pathname === "/");
   await page.goto(manualUrl);
   await expect(page.getByRole("heading", { name: "Not in your lab book" })).toBeVisible();
+
+  // ---- Recipe components, like a flan's caramel and custard (student, Nov 28) ----
+  const FLAN = `Flan (verify ${RUN})`;
+  await page.goto("/recipes/new");
+  const ff = page.locator("main").filter({ visible: true });
+  await ff.getByLabel("Recipe name").fill(FLAN);
+  await ff.getByRole("button", { name: "+ Component" }).click();
+  await ff.getByRole("textbox", { name: "New component" }).fill("Caramel sauce");
+  await ff.getByRole("textbox", { name: "New component" }).press("Enter");
+  await ff.getByRole("textbox", { name: "New component" }).fill("Custard");
+  await ff.getByRole("textbox", { name: "New component" }).press("Enter");
+  await ff.getByRole("textbox", { name: "Ingredient 1", exact: true }).click(); // closes the part box
+  await ff.getByRole("radiogroup", { name: "Component of ingredient 1" }).getByRole("radio", { name: "Caramel sauce" }).click();
+  await ff.getByRole("textbox", { name: "Ingredient 1", exact: true }).fill("sugar");
+  await ff.getByRole("textbox", { name: "Amount 1", exact: true }).fill("100 g");
+  await ff.getByRole("textbox", { name: "Ingredient 1", exact: true }).press("Enter"); // the new row stays in Caramel sauce
+  await expect(ff.getByRole("radiogroup", { name: "Component of ingredient 2" }).getByRole("radio", { name: "Caramel sauce" })).toHaveAttribute("aria-checked", "true");
+  await ff.getByRole("textbox", { name: "Ingredient 2", exact: true }).fill("water");
+  await ff.getByRole("textbox", { name: "Ingredient 3", exact: true }).fill("whole milk");
+  await ff.getByRole("radiogroup", { name: "Component of ingredient 3" }).getByRole("radio", { name: "Custard" }).click();
+  // Bulk move: tick two rows, then one tap moves both (student, Nov 28).
+  await ff.getByRole("checkbox", { name: "Select ingredient 1" }).check();
+  await ff.getByRole("checkbox", { name: "Select ingredient 2" }).check();
+  const bulk = ff.getByRole("group", { name: "Move 2 selected ingredients" });
+  await check(page, "recipe-components-bulk");
+  await bulk.getByRole("button", { name: "Custard" }).click();
+  for (const n of [1, 2])
+    await expect(ff.getByRole("radiogroup", { name: `Component of ingredient ${n}` }).getByRole("radio", { name: "Custard" })).toHaveAttribute("aria-checked", "true");
+  await expect(ff.getByRole("group", { name: /Move \d+ selected ingredients/ })).toHaveCount(0); // cleared after the move
+  await ff.getByRole("checkbox", { name: "Select ingredient 1" }).check();
+  await ff.getByRole("checkbox", { name: "Select ingredient 2" }).check();
+  await bulk.getByRole("button", { name: "Caramel sauce" }).click();
+  await expect(ff.getByRole("radiogroup", { name: "Component of ingredient 2" }).getByRole("radio", { name: "Caramel sauce" })).toHaveAttribute("aria-checked", "true");
+  await ff.getByRole("textbox", { name: "Step 1", exact: true }).fill("Preheat the oven to 320°F.");
+  await ff.getByRole("textbox", { name: "Step 1", exact: true }).press("Enter");
+  await page.keyboard.type("Dissolve the sugar in the water over medium-low heat.");
+  await ff.getByRole("radiogroup", { name: "Component of step 2" }).getByRole("radio", { name: "Caramel sauce" }).click();
+  await ff.getByRole("button", { name: "+ Add step" }).click();
+  await ff.getByRole("textbox", { name: "Step 3", exact: true }).fill("Bring the milk to 200°F.");
+  await ff.getByRole("radiogroup", { name: "Component of step 3" }).getByRole("radio", { name: "Custard" }).click();
+  await check(page, "recipe-parts-form", { keyboard: true });
+  await ff.getByRole("button", { name: "Save recipe" }).click();
+  await page.waitForURL(/\/r\//);
+  const fr = page.locator("main").filter({ visible: true });
+  // Ingredients grouped under part headings; instructions keep their order with headings where the part changes.
+  await expect(fr.getByRole("heading", { level: 3, name: "Caramel sauce" })).toHaveCount(2);
+  await expect(fr.getByRole("heading", { level: 3, name: "Custard" })).toHaveCount(2);
+  await expect(fr.locator("ol").first().getByText("Preheat the oven", { exact: false })).toBeVisible(); // no part: first
+  await check(page, "recipe-parts", { keyboard: true });
+  // Move "water" to Custard in the ingredient editor.
+  await fr.getByRole("button", { name: "Edit ingredients" }).click();
+  // The editor box never overlaps the dish photo tile (it starts below it).
+  const tile = await fr.getByRole("button", { name: "Add dish photo" }).boundingBox();
+  const box = await fr.locator("form").filter({ has: page.getByRole("button", { name: "Save ingredients" }) }).boundingBox();
+  expect(box!.y).toBeGreaterThanOrEqual(tile!.y + tile!.height - 1);
+  await fr.getByRole("radiogroup", { name: "Component of water" }).getByRole("radio", { name: "Custard" }).click();
+  await fr.getByRole("button", { name: "Save ingredients" }).click();
+  await expect(fr.getByRole("button", { name: "Edit ingredients" })).toBeVisible();
+  const custardList = fr.getByRole("heading", { level: 3, name: "Custard" }).first().locator("xpath=following-sibling::ul[1]");
+  await expect(custardList.getByText(/^water/)).toBeVisible();
+  page.once("dialog", (d) => d.accept());
+  await fr.getByRole("button", { name: "Delete recipe" }).click();
+  await page.waitForURL((u) => u.pathname === "/");
 
   // ---- The full idea form (note + link) ----
   await page.goto("/ideas/new");
@@ -560,7 +657,8 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await wf.getByRole("button", { name: "Save recipe" }).click();
   await page.waitForURL(/\/r\//);
   const wr = page.locator("main").filter({ visible: true });
-  await expect(wr.getByRole("link", { name: "Recipes" }).first()).toBeVisible(); // moved to Recipes
+  await expect(wr.getByRole("button", { name: "Development" })).toBeVisible(); // moved to Recipes: "Move to" now offers Development
+  await expect(wr.getByRole("button", { name: "Recipes", exact: true })).toHaveCount(0);
   await expect(wr.getByText("yellow onions")).toBeVisible();
   await expect(wr.getByText(/Dry at 200°F/)).toBeHidden(); // folded away on the recipe page
   await openNotes(page);
@@ -734,7 +832,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(changed).toBeVisible();
   await expect(changed.getByText("Family answer")).toBeHidden();
   await expect(list.getByRole("listitem").filter({ hasText: "salt (verify)" })).toBeVisible();
-  await expect(list.getByRole("listitem").filter({ hasText: removedName })).toHaveCount(0);
+  await expect(list.getByRole("region", { name: "Ingredients" }).getByRole("listitem").filter({ hasText: removedName })).toHaveCount(0); // (steps may mention it)
   await expect(page.getByRole("button", { name: "Edit ingredients" })).toBeFocused();
   await expect(page.getByRole("button", { name: /^Edit amount of / })).toHaveCount(0); // one pencil, not one per row
 
@@ -764,9 +862,70 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(page.getByRole("button", { name: "Recipes" })).toBeVisible(); // now offers "Recipes"
   await expect(page.getByRole("button", { name: "Development" })).toHaveCount(0);
   await page.reload();
-  await expect(page.locator("main").getByRole("link", { name: "Development" })).toBeVisible(); // breadcrumb follows the move
+  await expect(page.getByRole("button", { name: "Recipes" })).toBeVisible(); // the move stuck (no breadcrumb on recipes now)
   await page.getByRole("button", { name: "Recipes" }).click();
   await expect(page.getByRole("button", { name: "Development" })).toBeVisible();
+
+  // ---- Iterations: versions of the recipe, each with its own notes (issue #9; student, Nov 28) ----
+  await page.goto(recipeUrl);
+  const itBox = page.locator("main").filter({ visible: true }).getByRole("region", { name: "Iterations" });
+  const itToggle = itBox.getByRole("button", { name: /^Iteration \d/ });
+  const openIt = async () => {
+    if ((await itToggle.getAttribute("aria-expanded")) !== "true") await itToggle.click();
+  };
+  const itNav = itBox.getByRole("navigation", { name: "Iterations of this recipe" });
+  await expect(itToggle).toHaveAttribute("aria-expanded", "false"); // mostly hidden
+  await expect(itNav).toBeHidden();
+  await expect(itToggle).toContainText("Iteration 1");
+  await openIt();
+  await expect(itNav.getByRole("link")).toHaveCount(1);
+  // Notes on iteration 1 (the original).
+  await itBox.getByRole("button", { name: "Edit iteration 1 notes" }).click();
+  await itBox.getByLabel("Iteration notes").fill("First batch: 8 hours, a little mild.");
+  await itBox.getByRole("button", { name: "Save notes" }).click();
+  await expect(itBox.getByText("First batch: 8 hours, a little mild.")).toBeVisible();
+  // + New iteration copies this version; edit its ingredients.
+  await itBox.getByRole("button", { name: "+ New iteration" }).click();
+  await page.waitForURL(/\?it=/);
+  const itUrl = page.url();
+  await expect(itToggle).toContainText("Iteration 2");
+  const iv = page.locator("main").filter({ visible: true });
+  await iv.getByRole("button", { name: "Edit ingredients" }).click();
+  await iv.getByRole("textbox", { name: /^Amount of / }).first().fill("3 cups (iteration 2)");
+  await iv.getByRole("button", { name: "Save ingredients" }).click();
+  await expect(iv.getByText("3 cups (iteration 2)")).toBeVisible();
+  await openIt();
+  await itBox.getByRole("button", { name: "Edit iteration 2 notes" }).click();
+  await itBox.getByLabel("Iteration notes").fill("More milk; 12 hours. Thicker and tangier.");
+  await itBox.getByRole("button", { name: "Save notes" }).click();
+  await expect(itBox.getByText("More milk; 12 hours. Thicker and tangier.")).toBeVisible();
+  await check(page, "iteration-2", { keyboard: true });
+  // The recipe opens on the latest iteration by default.
+  await page.goto(recipeUrl);
+  await expect(itToggle).toContainText("Iteration 2");
+  await expect(iv.getByText("3 cups (iteration 2)")).toBeVisible();
+  // Iteration 1 (the original) is unchanged.
+  await openIt();
+  await itNav.getByRole("link").first().click();
+  await page.waitForURL(/it=original/);
+  await expect(itToggle).toContainText("Iteration 1");
+  await expect(iv.getByText("3 cups (iteration 2)")).toHaveCount(0);
+  // Iteration summary: every iteration's date and notes on one page.
+  await page.goto(recipeUrl + "/iterations");
+  const sum = page.locator("main").filter({ visible: true });
+  await expect(sum.getByRole("heading", { name: "Iteration summary" })).toBeVisible();
+  await expect(sum.getByText("More milk; 12 hours. Thicker and tangier.")).toBeVisible();
+  await expect(sum.getByText("First batch: 8 hours, a little mild.")).toBeVisible();
+  await check(page, "iteration-summary", { keyboard: true });
+  await sum.getByRole("link", { name: "Open iteration 2" }).click();
+  await page.waitForURL(/\?it=/);
+  // Delete iteration 2.
+  await page.goto(itUrl);
+  await openIt();
+  page.once("dialog", (d) => d.accept());
+  await itBox.getByRole("button", { name: "Delete iteration 2" }).click();
+  await page.waitForURL((u) => !u.search.includes("it="));
+  await expect(itToggle).toContainText("Iteration 1");
 
   // ---- Edit their words after the recipe exists (no AI call) ----
   await page.goto(recipeUrl);

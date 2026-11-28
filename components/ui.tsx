@@ -189,3 +189,12 @@ export function Transcript({
 export function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
+
+/** A clear open/close chevron (student, Nov 28: the small ▾ didn't look clickable). Rotate it when open. */
+export function Chevron({ className = "" }: { className?: string }) {
+  return (
+    <svg aria-hidden viewBox="0 0 20 20" className={`size-4 shrink-0 transition-transform duration-150 motion-reduce:transition-none ${className}`}>
+      <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

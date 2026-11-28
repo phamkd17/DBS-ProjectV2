@@ -6,7 +6,7 @@ import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { RecipeView } from "@/components/RecipeView";
 import { DictationEditor } from "@/components/DictationEditor";
 import { EditableNotes } from "@/components/InlineEdit";
-import { Button, eyebrow, focusRing, formatDate, SourceBadge, textLink } from "@/components/ui";
+import { Button, eyebrow, focusRing, formatDate, SourceBadge, textLink, Chevron } from "@/components/ui";
 import { supabaseForUser } from "@/lib/supabase/server";
 import type { DictationRow, QuestionRow, RecipeRow } from "@/lib/types";
 import { QuestionsForm } from "./QuestionsForm";
@@ -16,6 +16,8 @@ import { SharePanel } from "./SharePanel";
 import { TagPicker } from "@/components/TagPicker";
 import { EntryPhotos } from "@/components/EntryPhotos";
 import { DishPhoto } from "@/components/DishPhoto";
+import { IterationBar } from "@/components/IterationBar";
+import { loadIterations, pickIteration } from "@/lib/iterations";
 import { AllNotesProvider, AllNotesSwitch } from "@/components/RecipeExtras";
 import { recipeHasNotes } from "@/components/IngredientList";
 import { MAX_PHOTOS_PER_ENTRY, photosFor } from "@/lib/photos";
@@ -24,8 +26,8 @@ import type { TagRow } from "@/lib/types";
 // Pass 2 can take a while on the free tier.
 export const maxDuration = 300;
 
-export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
-  const { id } = await params;
+export default async function RecipePage({ params, searchParams }: PageProps<"/r/[id]">) {
+  const [{ id }, { it }] = await Promise.all([params, searchParams]);
   const supabase = await supabaseForUser();
 
   // RLS: each of these returns nothing unless the rows are yours.
@@ -81,6 +83,12 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
   const answered = (questions ?? []).filter((q) => q.answer_source);
   const allPhotos = await photosFor(supabase, [dictation.id]);
+  // Iterations (issue #9; student, Nov 28): versions of this recipe. Opens on the latest;
+  // ?it=original shows iteration 1, ?it=<id> a specific one.
+  const { iterations, versions } = await loadIterations(supabase, dictation.id, recipe.created_at);
+  const selected = pickIteration(versions, it);
+  const current = iterations.find((x) => x.id === (selected?.id ?? null))!;
+  const shown = selected?.recipe ?? recipe.recipe;
   const dish = allPhotos.find((p) => p.kind === "dish");
   const photos = allPhotos.filter((p) => p.kind === "idea"); // inspiration photos stay in the notes
   // Tags (Recipes tab only): your list + which ones this recipe has.
@@ -99,15 +107,14 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
     <AllNotesProvider>
     <main className="space-y-6">
       {/* Breadcrumb and the "All notes" switch share one line; the recipe's name is the title below (student, Nov 28). */}
-      <div className="flex items-center justify-between gap-3">
-        <p className={eyebrow}>
-          <Link href={`/?tab=${dictation.stage}`} className={textLink}>
-            {STAGE_LABEL[dictation.stage]}
-          </Link>
-          {recipe.copied_from ? " · saved from a link" : ""}
-        </p>
-        {recipeHasNotes(recipe.recipe) && <AllNotesSwitch />}
-      </div>
+      {/* The breadcrumb is replaced by the iteration control (student, Nov 28): tap it to open
+          the iterations, their notes, and the summary. The top tabs lead back to Recipes. */}
+      <IterationBar
+        recipeId={recipe.id}
+        iterations={iterations}
+        current={current}
+        right={recipeHasNotes(shown!) ? <AllNotesSwitch /> : null}
+      />
 
       {dictation.edited_at && dictation.edited_at > recipe.updated_at && (
         <p role="note" className="border-l-2 border-ls-ink bg-ls-surface px-4 py-3 text-[15px]">
@@ -117,9 +124,10 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
       )}
 
       <RecipeView
-        recipe={recipe.recipe}
+        recipe={shown!}
         cookName={dictation.cook_name}
         editableRecipeId={recipe.id}
+        iterationId={selected?.id ?? null}
         switchOutside
         aside={<DishPhoto dictationId={dictation.id} photo={dish && { id: dish.id, url: dish.url }} />}
       />
@@ -130,15 +138,18 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       {/* Everything from Ideas and Development, folded away so the recipe page
           stays calm (student, Nov 28). Open it to see or edit them. */}
-      {/* Notes and Send are one block, set apart from the tags above (student, Nov 28). */}
-      <div className="pt-4">
+      {/* Notes and Send are one block, set well apart from the tags above (student, Nov 28). */}
+      <div className="pt-10">
       <details className="group border-y border-ls-ink">
         <summary
           className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
         >
           Notes from Ideas and Development
-          <span aria-hidden className="text-sm text-ls-muted transition-transform group-open:rotate-180">
-            ▾
+          {/* "Show"/"Hide" + a clear chevron, so it reads as something to open (student, Nov 28). */}
+          <span aria-hidden className="flex items-center gap-1.5 text-ls-ink">
+            <span className="group-open:hidden">Show</span>
+            <span className="hidden group-open:inline">Hide</span>
+            <Chevron className="group-open:rotate-180" />
           </span>
         </summary>
         <div className="space-y-5 pt-1 pb-5">
@@ -185,8 +196,9 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
       <SharePanel recipeId={recipe.id} url={shareUrl} title={recipe.recipe.title} />
       </div>
 
-      {/* Move to and Delete share one line at the bottom (compact, student Nov 27). */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 border-t border-ls-border pt-2">
+      {/* Move to and Delete share one line at the bottom (compact, student Nov 27). No top
+          line: Send's bottom line is right above it (no double lines, Nov 28). */}
+      <div className="-mt-4 flex flex-wrap items-center justify-between gap-x-4">
         <MoveTo kind="dictation" id={dictation.id} current={dictation.stage} />
         <form action={deleteDictation.bind(null, dictation.id)} className="-mr-3">
           <ConfirmSubmit

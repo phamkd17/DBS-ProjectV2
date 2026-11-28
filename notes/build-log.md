@@ -1076,3 +1076,174 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   `20261128020000_tighten_v1_grants.sql` revokes them. Verify passes, and the
   v1/v2 live sites still load.
 - Write-up: `notes/security-pass.md`.
+
+## Nov 28 — Edit the instructions (branch `edit-instructions`)
+- "Steps" → **Instructions** (the recipe page, shared view, and the hand-typed
+  recipe form). `EditableSteps` works like the ingredient editor: one pencil,
+  edit everything, Save/Cancel, Escape, focus back on the pencil. Per step:
+  the text, each Why it works (a cook's reason shows its quote), each Adjust
+  to taste as setting → effect, + Why it works / + Adjust to taste / remove,
+  + Add step / remove step.
+- `updateSteps`: RLS read of your own recipe; at most 60 steps and 8 notes
+  each, with length limits. Unchanged notes keep their original object
+  (source and quote); changed or new ones become `user_answer`. A step with
+  notes but no text is an error, and at least one step must remain.
+  `from_answers` is kept. `updated_at` isn't bumped.
+- The ingredient editor's hint no longer mentions "Family answer" (labels
+  aren't shown since Nov 27).
+- Verify: edit step 1, add Why + Adjust on step 2, save, open both icons, then
+  remove step 1's Why. Axe clean.
+- More space between Tags and the Notes/Send block (pt-4 → pt-10, the student's request). Verify ✓.
+- Hand-typed recipe form (the student's request): each step has a list of
+  Why it works notes and Adjust to taste pairs, with + buttons and × to
+  remove (the old single "+ Why it works" couldn't be closed again). New
+  boxes autofocus. `createManualRecipe` accepts `why` as a string (older) or
+  an array, plus `dials`, all saved as the cook's own (source `cook`). The
+  Adjust to taste boxes wrap onto two lines on phones (`basis-32`) in both
+  editors. Verify: add/close a second Why, add an Adjust; the saved recipe
+  shows both icons.
+
+## Nov 28 — Recipe parts
+- From the student's own recipe document (D - 2.0 Flan.docx): ingredients
+  grouped by component (Egg Mixture, Milk, Caramel Sauce), and directions with
+  one general step and then one section per component.
+- Data: an optional `section` string on each ingredient and step in the
+  recipe JSON. It isn't in the AI's output schema, so prompts and evals are
+  unchanged and older recipes have none. Helpers in `lib/types.ts`:
+  `partsOf`, `groupByPart` (ingredients: no-part first, then by first
+  appearance, order kept within each part), and `runsByPart` (steps: never
+  reordered; a new run when the part changes; numbering continues).
+- View: part headings are small uppercase Ink h3s (distinct from the 24px
+  section headings and the 17px items).
+- Editing: `PartsBar` names the parts (chips, "+ Part", Enter adds, Escape
+  closes only that box), and `PartSelect` appears on each row once there are
+  parts. New rows (Enter or + Add) start in the same part as the row above.
+  Removing a part leaves its rows with no part. Used in the hand-typed form,
+  the ingredient editor, and the instructions editor. `createManualRecipe`,
+  `updateIngredients`, and `updateSteps` save `section` (≤60 chars) or leave
+  it out.
+- Verify: a flan with Caramel sauce/Custard. Enter inherits the part; the
+  saved recipe has the headings in both lists; the preheat step comes first;
+  moving "water" to Custard in the editor works. Axe clean.
+- Renamed parts → **Components** in the UI (the stored field stays `section`).
+  The student found the dropdown slow (two taps), so `PartSelect` is now a
+  `radiogroup` of small chips (None + each component; Ink when chosen): one
+  tap. Rows are also shorter than with the full-width select. Adding a
+  component is one tap on "+ Component" (the box is focused) and Enter. Verify
+  updated (radio chips), axe clean.
+- Bulk move (the student's pick of three): once there are components, each
+  row has a checkbox before its chips. With any ticked, a sticky
+  `BulkMoveBar` ("Move N to: None · A · B · Clear") moves them all in one tap
+  and clears the selection. In the hand-typed form (ingredients and steps
+  separately) and both recipe editors. Verify: tick 2, move to Custard, both
+  set, bar gone; move back.
+- Overlap fix (from the student's screenshot): the ingredient editor's box
+  ran under the floated dish photo. The form is now `clear-both`, so it starts
+  below the photo while the heading stays beside it. Verify asserts the form's
+  top is at or below the photo tile's bottom.
+- Component headings: 19px semibold Ink (was 12px uppercase), with items and step text at 16px (was 17px), so Ingredients (24) > component (19) > items (16). Space between components 12 → 24px. Verify ✓, axe clean.
+- Bulk move polish (the student's screenshots): the checkbox moved to the row's left edge (`RowCheck`, beside the step number) in all three editors. The Move bar moved from sticky-bottom (the browser's own bars covered it) to fixed at the top of the screen like a phone's selection bar, so ticking never shifts the list. Items and steps under a component heading are indented (ml-4) in the recipe view. Verify ✓, axe clean.
+- Component headings: 19px medium in Slate (`font-ls-sans`, so not the forced 600 of `font-ls-serif`). Section headings are 24px semibold Ink. The student's pick of three. Axe clean.
+
+## Nov 28 — Prompt p5: components (part of #12)
+- Schema: optional `section` on Ingredient and Step, described for the model
+  ("in the cook's words; "" for a one-part dish and for general steps").
+- Prompt rule 8 (shared by both passes): use components only when the dish has
+  separately prepared parts; the same name on that part's ingredients and
+  steps; "" for preheating/assembling/baking/serving; never reorder to group
+  (the order rule wins). PROMPT_VERSION p4 → p5. No eval answers pasted in.
+- New eval checks (not must): components match between ingredients and steps
+  (all samples, draft and final), and the yogurt (one pot) gets no
+  components.
+- `npm run eval` (gemini-3.5-flash, 6 calls): **52/55, all must-pass**. On
+  the same 50 checks as p4: **47/50 vs 45/50**. Still missed: where the green
+  onions go (soup), which kind of milk and fridge vs freezer (yogurt). The
+  model used components sensibly: tomato-tofu → Tofu / Tomato Sauce, the soup
+  → Rice, yogurt → none. Saved as
+  `evals/results/2026-11-28T02-57-38-324Z_p5_gemini-3.5-flash.json`.
+- Still open in #12: reframe the prompt from "families preserve recipes" to
+  recipe development, and a flan dictation as a 4th sample (needs the
+  student's own dictation, verbatim).
+- Verify with the new prompt made real calls (cache miss). One check was too
+  broad ("removed ingredient" matched a step that mentions sugar), so it's now
+  scoped to the Ingredients region.
+
+## Nov 28 — Lines and buttons
+- Double line in Instructions (the student's screenshot): runs each drew top
+  and bottom lines. Now every ingredient group and step run has the same
+  indented dark top/bottom lines, with light dividers between. A step run
+  without a heading that follows another run drops its top line, so the two
+  share one line.
+- Red: Save ingredients/instructions are primary (the one red action while
+  editing); Make a link and Send… are secondary. Removed the extra line above
+  Move to.
+- Lines beside the dish photo (the student's screenshot): the list's own top/bottom borders ran under the float and touched the photo, while row dividers (flow-root rows) stopped short. The dark top/bottom lines are now on the first/last row (`border-t-ls-ink`/`border-b-ls-ink`), so every line stops the same way, and rows below the photo still run full width. Verify ✓.
+- Even row spacing (the student's screenshot: more space under the text than over it). Cause: `space-y` (Tailwind v4 adds margin-bottom to every child but the last) still reserved space for hidden note panels and hidden source details, and the 44px icon buttons made rows taller. Fix: rows use `flex flex-col gap` (display:none children take no space), and the icons sit on the first text line with negative margins (-my-2.5 ingredients, -my-[9px] steps), so they don't add height. Ingredients and steps now have equal space above and below. Verify ✓, axe clean.
+
+## Nov 28 — Iterations: the trial log (#9, branch `iterations`)
+- Migration `20261128030000_trials.sql`: `trials` (entry, `tried_on` date,
+  `changed` ≤1000, `result` ≤2000). Owner-only RLS; the insert checks the entry
+  is yours; the only column grant for update is (tried_on, changed, result),
+  so a trial can't be re-pointed. Tested as two users (rolled back): own only,
+  B can't add to A's entry (42501; a first test wrongly showed "allowed"
+  because B's select returned 0 rows, so it was re-run with A's id captured),
+  B can't edit or delete A's, re-pointing blocked, anon blocked.
+- `saveTrial` (new or edit) / `deleteTrial`. A valid date is required, plus
+  "what changed" or "how it turned out".
+- `TrialLog` on the recipe page below Instructions: "Trials N" with + Log a
+  trial. The form has a date (today by default), what you changed (chips from
+  the recipe's own dial settings, one tap appends), and how it turned out.
+  Trials are oldest first, side by side: a sideways scroll-snap row on phones
+  (85% cards so the next one peeks), two columns wider. Edit in place or
+  delete (confirm).
+- Verify: an empty trial is refused; log 2 (one via an adjustment chip);
+  date order; edit; delete. Axe clean.
+- Not yet: the AI summary of trials and its eval (#9's AI part), and photos on
+  trials.
+
+## Nov 28 — Iterations as recipe versions (replaces the trial log)
+- The student: manual only, no suggestion chips; each iteration is a slightly
+  different recipe with its own notes. Migration
+  `20261128040000_iterations.sql` drops the unmerged `trials` (test data
+  only) and adds `iterations` (entry, `made_on`, `notes` ≤5000, `recipe`
+  jsonb ≤200 KB). recipe = null is the original's notes row (a partial unique
+  index allows one). Owner-only RLS; the insert checks the entry; update
+  grant is (made_on, notes, recipe) only. Tested as two users (rolled back):
+  own only, B can't add/edit/delete A's, re-pointing and a second original
+  row blocked, anon blocked.
+- Actions: `createIteration` copies the viewed version's recipe JSON and
+  redirects to `?it=<id>`; `saveIterationNotes` (original → upsert the null
+  row); `deleteIteration` (never the original). `updateIngredients` /
+  `updateSteps` take an `iterationId` and read/write through
+  `loadRecipeJson`/`saveRecipeJson`, so the pencils edit whichever version is
+  shown.
+- Page: `?it=` picks the version. `IterationBar` (above the title):
+  "1 · Nov 27  2 · Nov 28  + New iteration", then the current iteration's
+  date and notes with a pencil (and × for non-original). Shared links and the
+  AI show the original. Tags, dish photo, and notes from Ideas/Development
+  belong to the dish (shared by all iterations).
+- Verify: notes on 1; + New iteration; change an amount in 2; notes on 2; the
+  original is unchanged; delete 2. Axe clean.
+- Iterations rework (the student's request): the breadcrumb row is now the
+  iteration control: an outlined "Iteration N · Nov 28 ⌄" button (closed by
+  default) plus All notes. Open, it shows the chips (1 → `?it=original`),
+  + New iteration, Iteration summary, and this iteration's date/notes. No
+  `?it` = the latest (`pickIteration`); `lib/iterations.ts` shares
+  `loadIterations` with the new `/r/[id]/iterations` summary page (newest
+  first, each with Open). Tests updated: the "moved to Recipes" checks no
+  longer use the breadcrumb (they use Move to).
+- Clickability: a `Chevron` SVG (rotates when open). The notes `<details>`
+  shows Show/Hide via `group-open`, and the iteration control is outlined
+  like a dropdown. Verify ✓, axe clean.
+
+## Nov 28 — Logo
+- Bigger wordmark (22px phones / 30px wider), then a logo explored in rounds of
+  static HTML sheets (`notes/design/logo-options*.html`, screenshotted): 12
+  first ideas → notebook-with-flask variations (L1–L8) → the solid cover (L8)
+  with other icons → mortar and pestle (M1–M8) → pestle designs (P1–P8) →
+  skinnier clubs (P4a–c). The student picked **P4c**.
+- `components/Logo.tsx` (inline SVG, aria-hidden; the link text is the name)
+  sits in the header at 36/44px. `app/icon.svg` is the browser-tab icon (Next
+  file convention), with heavier strokes for 16px; the default `favicon.ico`
+  was removed. On phones the header stays on one line (nowrap, Sign in px-2).
+  Verify ✓, axe clean.

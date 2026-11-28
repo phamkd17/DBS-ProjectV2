@@ -76,6 +76,17 @@
 | Nov 28 | **Send this recipe in one line**: "Send this recipe" + Make a link; once it's on, Send… / Copy link / Turn off and one short line | A Share icon at the top that opens a small window |
 | Nov 28 | **Tags set apart** from the Notes and Send rows below, which form one block | |
 | Nov 28 | **AI limits** (#5): each person can make 20 AI requests an hour and 50 a day (a recipe is 1–2); a clear message says when they can make more; every call has a token cap | |
+| Nov 28 | **"Instructions"** instead of "Steps", with a pencil to edit each step and add, change, or remove its Why it works (food science) and Adjust to taste notes | |
+| Nov 28 | The hand-typed recipe form gets the same **Why it works** and **Adjust to taste** as the recipe editor, and each can be closed again (×) | |
+| Nov 28 | **Recipe parts** (like my flan's Caramel sauce, Milk, Egg mixture): name the parts once, then pick a part for each ingredient and step; ingredients group under part headings; instructions keep their order, with a heading where the part changes and numbers running straight through | |
+| Nov 28 | Call them **Components**, and pick a row's component with **one tap** on a chip instead of a dropdown | A dropdown per row (two taps) |
+| Nov 28 | Put several ingredients or steps into a component at once: **tick the rows, then tap the component** | Paste a list into a component; edit laid out by component |
+| Nov 28 | Component headings are **gray, medium weight** (still bigger than the items), so they read as a level below Ingredients/Instructions; their items are indented | Bigger section headings; a dash marker before each component |
+| Nov 28 | The **AI uses components** too (prompt p5): it splits a dish into components only when it really has separate parts, in the cook's words | |
+| Nov 28 | On a recipe, **Save** (while editing) is the red action; **Make a link** is not red; no double lines anywhere in the lists | |
+| Nov 28 | **Iterations are versions of the recipe**: each iteration is its own slightly different copy of the recipe (edit its ingredients and instructions), with a date and my own iteration notes; no suggestions; manual only | A trial log with one-tap adjustments (built first, replaced); an AI summary of trials |
+| Nov 28 | **Iterations replace the breadcrumb** and stay mostly hidden (one line until tapped); a recipe **opens on the latest iteration**; an **Iteration summary** page shows every iteration's date and notes | |
+| Nov 28 | Make opening/closing obvious: an outlined Iteration dropdown with a chevron; the notes row says **Show/Hide** with a chevron | |
 
 ## What the app is
 
@@ -95,6 +106,7 @@
 | Nov 15 | Separate starting cards for an idea and for the cook's words | |
 | Nov 20 | Less text and minimal scrolling: the landing page fits on one screen | |
 | Nov 27 | **One font, Figtree**, instead of Instrument Serif + Jost (the two felt like they conflicted) | Six pairings (`notes/design/font-options.html`), then eight one-font options (`font-options-2.html`); Inter and Manrope were close |
+| Nov 28 | **Logo**: a solid ink notebook cover with a mortar and a slim red pestle (P4c), next to a bigger name and as the browser-tab icon | 12 first ideas (flask, lab book with spoon, whisk, monogram, mortar, recipe card, pot, egg, fork chart, notebook with flask…), then notebook variations, cover icons, mortar and pestle designs, and pestle widths (`notes/design/logo-options*.html`) |
 
 ## v2 decisions
 

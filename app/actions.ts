@@ -16,6 +16,7 @@ import { supabaseForUser } from "@/lib/supabase/server";
 import { AiLimitError, recordAiCall } from "@/lib/ai/limits";
 import { deletePhotos, MAX_PHOTOS_PER_ENTRY, readPhoto, savePhoto } from "@/lib/photos";
 import {
+  cleanPart,
   isStage,
   STARTER_TAGS,
   toQuestion,
@@ -459,15 +460,42 @@ export async function updateNotes(
 // Edit the whole ingredient list of a finished recipe at once. Changed or added
 // amounts are labeled as family answers; old values are kept in notes; removed
 // ingredients are recorded in the recipe's "What the app changed" notes.
+// The recipe JSON being edited: the original (public.recipes) or one of its
+// iterations (public.iterations, student Nov 28). RLS limits both to your own.
+type Supa = Awaited<ReturnType<typeof supabaseForUser>>;
+async function loadRecipeJson(supabase: Supa, recipeId: string, iterationId: string | null) {
+  if (!iterationId) {
+    const { data } = await supabase.from("recipes").select("recipe").eq("id", recipeId).single<Pick<RecipeRow, "recipe">>();
+    return data;
+  }
+  // The iteration must belong to this recipe's entry (security pass: no mixing rows).
+  const { data: base } = await supabase.from("recipes").select("dictation_id").eq("id", recipeId).maybeSingle();
+  if (!base) return null;
+  const { data } = await supabase
+    .from("iterations")
+    .select("recipe")
+    .eq("id", iterationId)
+    .eq("dictation_id", base.dictation_id)
+    .not("recipe", "is", null)
+    .single<Pick<RecipeRow, "recipe">>();
+  return data;
+}
+async function saveRecipeJson(supabase: Supa, recipeId: string, iterationId: string | null, recipe: NonNullable<RecipeRow["recipe"]>) {
+  if (!iterationId) return supabase.from("recipes").update({ recipe }).eq("id", recipeId);
+  const { data: base } = await supabase.from("recipes").select("dictation_id").eq("id", recipeId).maybeSingle();
+  return supabase.from("iterations").update({ recipe }).eq("id", iterationId).eq("dictation_id", base?.dictation_id ?? "");
+}
+
 // ---------------------------------------------------------------------------
 export async function updateIngredients(
   recipeId: string,
   cookName: string,
+  iterationId: string | null,
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
   await requireUser();
-  let rows: { orig: number | null; amount: string; item: string }[];
+  let rows: { orig: number | null; amount: string; item: string; section?: string }[];
   try {
     rows = JSON.parse(String(formData.get("rows") ?? "[]"));
     if (!Array.isArray(rows) || rows.length > 80) throw new Error("bad");
@@ -476,8 +504,8 @@ export async function updateIngredients(
   }
 
   const supabase = await supabaseForUser();
-  // RLS: only your own recipe comes back.
-  const { data: row } = await supabase.from("recipes").select("recipe").eq("id", recipeId).single<Pick<RecipeRow, "recipe">>();
+  // RLS: only your own recipe (or iteration of it) comes back.
+  const row = await loadRecipeJson(supabase, recipeId, iterationId);
   if (!row?.recipe) return { error: "We couldn't find that recipe in your lab book." };
   const old = row.recipe.ingredients;
 
@@ -492,18 +520,22 @@ export async function updateIngredients(
     const item = String(r.item ?? "").trim().slice(0, 120);
     if (!item && !amount) continue; // empty new row
     if (!item) return { error: `Give the ingredient with “${amount}” a name, or remove it.` };
+    const section = cleanPart(r.section); // the recipe part (student, Nov 28); "" = none
     const o = typeof r.orig === "number" && Number.isInteger(r.orig) ? old[r.orig] : undefined;
     if (o && typeof r.orig === "number") {
       kept.add(r.orig);
       const history: string[] = [];
       if (amount !== o.amount) history.push(o.amount ? `Changed from “${o.amount}” (${whoSaid(o.source)}) on ${when}.` : `Amount added on ${when}.`);
       if (item !== o.item) history.push(`Renamed from “${o.item}” on ${when}.`);
+      const { section: _old, ...rest } = o as typeof o & { section?: string };
+      void _old;
       ingredients.push({
-        ...o,
+        ...rest,
         item,
         amount,
         source: amount !== o.amount ? (amount ? "user_answer" : "not_stated") : o.source,
         note: [o.note, ...history].filter(Boolean).join(" "),
+        ...(section ? { section } : {}),
       });
     } else {
       ingredients.push({
@@ -512,20 +544,85 @@ export async function updateIngredients(
         source: amount ? "user_answer" : "not_stated",
         note: `Added on ${when}.`,
         from_answers: [],
+        ...(section ? { section } : {}),
       });
     }
   }
   const removed = old.filter((_, i) => !kept.has(i)).map((o) => `Removed “${[o.amount, o.item].filter(Boolean).join(" ")}” (${whoSaid(o.source)}) on ${when}.`);
 
-  const { error } = await supabase
-    .from("recipes")
-    // Not bumping updated_at: it marks when the AI made the recipe, which the
-    // "words edited after this recipe was made" notice compares against.
-    .update({ recipe: { ...row.recipe, ingredients, notes: [...row.recipe.notes, ...removed] } })
-    .eq("id", recipeId);
+  // Not bumping updated_at: it marks when the AI made the recipe, which the
+  // "words edited after this recipe was made" notice compares against.
+  const { error } = await saveRecipeJson(supabase, recipeId, iterationId, { ...row.recipe, ingredients, notes: [...row.recipe.notes, ...removed] });
   if (error) {
     console.error("[updateIngredients]", error);
     return { error: "Couldn't save the ingredients. Your changes are still here. Try again." };
+  }
+  revalidatePath(`/r/${recipeId}`);
+  return { saved: true };
+}
+
+// ---------------------------------------------------------------------------
+// Edit the instructions (student, Nov 28): each step's text, its "Why it works"
+// (food science) and "Adjust to taste" notes. Unchanged parts keep their source;
+// anything changed or added is labeled as yours (user_answer).
+// ---------------------------------------------------------------------------
+type StepRow = {
+  orig: number | null;
+  text: string;
+  section?: string;
+  why: { orig: number | null; text: string }[];
+  dials: { orig: number | null; setting: string; effect: string }[];
+};
+
+export async function updateSteps(recipeId: string, iterationId: string | null, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  let rows: StepRow[];
+  try {
+    rows = JSON.parse(String(formData.get("rows") ?? "[]"));
+    if (!Array.isArray(rows) || rows.length > 60) throw new Error("bad");
+  } catch {
+    return { error: "Something went wrong reading the steps. Refresh and try again." };
+  }
+  const supabase = await supabaseForUser();
+  // RLS: only your own recipe (or iteration of it) comes back.
+  const row = await loadRecipeJson(supabase, recipeId, iterationId);
+  if (!row?.recipe) return { error: "We couldn't find that recipe in your lab book." };
+  const old = row.recipe.steps;
+  const idx = (v: unknown, list: unknown[]) => (typeof v === "number" && Number.isInteger(v) && v >= 0 && v < list.length ? v : null);
+  const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
+
+  const steps: typeof old = [];
+  for (const r of rows) {
+    const text = clip(r.text, 2000);
+    const o = old[idx(r.orig, old) ?? -1];
+    const whyIn = (Array.isArray(r.why) ? r.why : []).slice(0, 8);
+    const dialsIn = (Array.isArray(r.dials) ? r.dials : []).slice(0, 8);
+    const why = whyIn.flatMap((w) => {
+      const t = clip(w.text, 1000);
+      if (!t) return [];
+      const ow = o?.why[idx(w.orig, o?.why ?? []) ?? -1];
+      const shown = ow ? (ow.source === "cook" && ow.quote?.trim() ? ow.quote : ow.text) : null;
+      return [ow && shown === t ? ow : { source: "user_answer" as const, text: t, quote: "" }];
+    });
+    const dials = dialsIn.flatMap((d) => {
+      const setting = clip(d.setting, 120);
+      const effect = clip(d.effect, 200);
+      if (!setting && !effect) return [];
+      const od = o?.dials[idx(d.orig, o?.dials ?? []) ?? -1];
+      return [od && od.setting === setting && od.effect === effect ? od : { setting, effect, source: "user_answer" as const }];
+    });
+    if (!text && why.length === 0 && dials.length === 0) continue; // an empty new step
+    if (!text) return { error: "A step has notes but no instructions. Add the step's text, or remove it." };
+    const section = cleanPart(r.section);
+    steps.push({ text, from_answers: o?.from_answers ?? [], why, dials, ...(section ? { section } : {}) });
+  }
+  if (steps.length === 0) return { error: "Keep at least one step." };
+
+  // Not bumping updated_at (see updateIngredients).
+  const { error } = await saveRecipeJson(supabase, recipeId, iterationId, { ...row.recipe, steps });
+  if (error) {
+    console.error("[updateSteps]", error);
+    return { error: "Couldn't save the instructions. Your changes are still here. Try again." };
   }
   revalidatePath(`/r/${recipeId}`);
   return { saved: true };
@@ -611,8 +708,10 @@ export async function deletePhoto(photoId: string): Promise<void> {
 // recipe. Everything is labeled as the cook's (the "Whose recipe?" name).
 // ---------------------------------------------------------------------------
 type ManualRows = {
-  ingredients: { amount: string; item: string }[];
-  steps: { text: string; why: string }[];
+  ingredients: { amount: string; item: string; section?: string }[];
+  // section = the part of the recipe, e.g. "Caramel sauce" (student, Nov 28).
+  // why: one string (older form) or several; dials: "Adjust to taste" pairs (student, Nov 28).
+  steps: { text: string; section?: string; why: string | string[]; dials?: { setting: string; effect: string }[] }[];
 };
 
 export async function createManualRecipe(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -629,11 +728,19 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
   }
   const ingredients = rows.ingredients
     .slice(0, 80)
-    .map((r) => ({ amount: String(r?.amount ?? "").trim().slice(0, 60), item: String(r?.item ?? "").trim().slice(0, 120) }))
+    .map((r) => ({ amount: String(r?.amount ?? "").trim().slice(0, 60), item: String(r?.item ?? "").trim().slice(0, 120), section: cleanPart(r?.section) }))
     .filter((r) => r.item || r.amount);
   const steps = rows.steps
     .slice(0, 80)
-    .map((r) => ({ text: String(r?.text ?? "").trim().slice(0, 2000), why: String(r?.why ?? "").trim().slice(0, 1000) }))
+    .map((r) => ({
+      text: String(r?.text ?? "").trim().slice(0, 2000),
+      section: cleanPart(r?.section),
+      why: (Array.isArray(r?.why) ? r.why : [r?.why]).slice(0, 8).map((w) => String(w ?? "").trim().slice(0, 1000)).filter(Boolean),
+      dials: (Array.isArray(r?.dials) ? r.dials : [])
+        .slice(0, 8)
+        .map((d) => ({ setting: String(d?.setting ?? "").trim().slice(0, 120), effect: String(d?.effect ?? "").trim().slice(0, 200) }))
+        .filter((d) => d.setting || d.effect),
+    }))
     .filter((r) => r.text);
 
   const fieldErrors: Record<string, string> = {};
@@ -652,12 +759,14 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
       source: r.amount ? ("cook" as const) : ("not_stated" as const),
       note: "",
       from_answers: [],
+      ...(r.section ? { section: r.section } : {}),
     })),
     steps: steps.map((r) => ({
       text: r.text,
+      ...(r.section ? { section: r.section } : {}),
       from_answers: [],
-      dials: [],
-      why: r.why ? [{ source: "cook" as const, text: r.why, quote: r.why }] : [],
+      dials: r.dials.map((d) => ({ ...d, source: "cook" as const })),
+      why: r.why.map((w) => ({ source: "cook" as const, text: w, quote: w })),
     })),
     notes: ["Added by hand (no AI)."],
   };
@@ -863,4 +972,66 @@ export async function untagEntry(dictationId: string, rawName: string): Promise<
   if (error) console.error("[untagEntry]", error);
   revalidatePath("/", "layout");
   return { ok: !error };
+}
+
+// ---------------------------------------------------------------------------
+// Iterations (issue #9; student, Nov 28): versions of a recipe. A new iteration
+// copies the version you're looking at; you then edit its ingredients and
+// instructions. Each has a date and the cook's own notes. Iteration 1 is the
+// original recipe (its notes live in a row with recipe = null).
+// ---------------------------------------------------------------------------
+export async function createIteration(recipeId: string, fromIterationId: string | null): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  // RLS: your own recipe only.
+  const { data: base } = await supabase.from("recipes").select("dictation_id").eq("id", recipeId).maybeSingle();
+  const src = base ? await loadRecipeJson(supabase, recipeId, fromIterationId) : null;
+  if (!base || !src?.recipe) redirect(`/r/${recipeId}`);
+  const { data, error } = await supabase
+    .from("iterations")
+    .insert({ dictation_id: base.dictation_id, recipe: src.recipe, made_on: new Date().toLocaleDateString("en-CA") })
+    .select("id")
+    .single();
+  if (error || !data) {
+    console.error("[createIteration]", error);
+    redirect(`/r/${recipeId}`);
+  }
+  revalidatePath(`/r/${recipeId}`);
+  redirect(`/r/${recipeId}?it=${data.id}`);
+}
+
+/** Save an iteration's date and notes. iterationId null = the original recipe (iteration 1). */
+export async function saveIterationNotes(recipeId: string, iterationId: string | null, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireUser();
+  const made_on = String(formData.get("made_on") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").slice(0, 5000);
+  const values = { made_on, notes };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(made_on) || Number.isNaN(Date.parse(made_on))) return { values, fieldErrors: { made_on: "Pick the date you made it." } };
+  const supabase = await supabaseForUser();
+  let error;
+  if (iterationId) {
+    ({ error } = await supabase.from("iterations").update({ made_on, notes }).eq("id", iterationId));
+  } else {
+    const { data: base } = await supabase.from("recipes").select("dictation_id").eq("id", recipeId).maybeSingle();
+    if (!base) return { values, error: "We couldn't find that recipe in your lab book." };
+    const { data: orig } = await supabase.from("iterations").select("id").eq("dictation_id", base.dictation_id).is("recipe", null).maybeSingle();
+    ({ error } = orig
+      ? await supabase.from("iterations").update({ made_on, notes }).eq("id", orig.id)
+      : await supabase.from("iterations").insert({ dictation_id: base.dictation_id, made_on, notes }));
+  }
+  if (error) {
+    console.error("[saveIterationNotes]", error);
+    return { values, error: "Couldn't save the notes. What you typed is still here. Try again." };
+  }
+  revalidatePath(`/r/${recipeId}`);
+  return { saved: true };
+}
+
+export async function deleteIteration(recipeId: string, iterationId: string): Promise<void> {
+  await requireUser();
+  const supabase = await supabaseForUser();
+  const { error } = await supabase.from("iterations").delete().eq("id", iterationId).not("recipe", "is", null);
+  if (error) console.error("[deleteIteration]", error);
+  revalidatePath(`/r/${recipeId}`);
+  redirect(`/r/${recipeId}`);
 }

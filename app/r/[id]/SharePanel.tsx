@@ -10,6 +10,7 @@ export function SharePanel({ recipeId, url, title }: { recipeId: string; url: st
 
   const toggle = (on: boolean) => start(() => setSharing(recipeId, on));
 
+  // Buttons aren't red: on the recipe page, red is kept for Save while editing (student, Nov 28).
   // One line (student, Nov 28): "Send this recipe" + Make a link; once it's on,
   // Send… / Copy link / Turn off, with one short line about who can open it.
   return (
@@ -19,12 +20,13 @@ export function SharePanel({ recipeId, url, title }: { recipeId: string; url: st
           {url ? "Send · link on" : "Send this recipe"}
         </h2>
         {!url ? (
-          <Button onClick={() => toggle(true)} disabled={pending} className="min-h-10 px-4">
+          <Button variant="secondary" onClick={() => toggle(true)} disabled={pending} className="min-h-10 px-4">
             {pending && <Spinner />} Make a link
           </Button>
         ) : (
           <div className="-mr-3 flex flex-wrap items-center">
             <Button
+              variant="secondary"
               className="min-h-10 px-4"
               onClick={async () => {
                 if (navigator.share) {

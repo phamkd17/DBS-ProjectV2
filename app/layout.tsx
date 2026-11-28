@@ -9,6 +9,7 @@ import { focusRing } from "@/components/ui";
 import { HelpButton } from "@/components/HelpButton";
 import { HowItWorks } from "@/components/HowItWorks";
 import { TopTabs } from "@/components/TopTabs";
+import { Logo } from "@/components/Logo";
 
 // One font for everything (student, Nov 27): Figtree. Headings use it in semibold.
 const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"] });
@@ -42,7 +43,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <body className="flex min-h-full flex-col bg-ls-bg font-ls-sans text-ls-ink">
           <header className="border-b border-ls-ink">
             <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3">
-              <Link href="/" className={`font-ls-serif text-2xl leading-none ${focusRing}`}>
+              {/* Logo + bigger wordmark (student, Nov 28). */}
+              <Link href="/" className={`flex items-center gap-2 whitespace-nowrap font-ls-serif text-[1.375rem] leading-none sm:text-3xl ${focusRing}`}>
+                <Logo className="-my-1 size-9 shrink-0 sm:size-11" />
                 Culinary Lab Book
               </Link>
               <div className="flex items-center gap-1">
@@ -56,7 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <Show when="signed-out">
                   <SignInButton mode="modal">
                     <button
-                      className={`min-h-11 px-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 hover:decoration-ls-ink active:text-ls-muted ${focusRing}`}
+                      className={`min-h-11 whitespace-nowrap px-2 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] underline decoration-ls-rule underline-offset-4 hover:decoration-ls-ink active:text-ls-muted ${focusRing}`}
                     >
                       Sign in
                     </button>

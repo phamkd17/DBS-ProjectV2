@@ -66,6 +66,14 @@ function commonChecks(transcript: string, r: Recipe, label: string): Check[] {
       pass: badAmounts.length === 0,
       detail: badAmounts.map((i) => `${i.item}: ${i.amount}`).join(", "),
     },
+    // p5: components (rule 8). The steps' components are the ingredients' components.
+    (() => {
+      const comp = (xs: { section?: string }[]) => new Set(xs.map((x) => (x.section ?? "").trim().toLowerCase()).filter(Boolean));
+      const ings = comp(r.ingredients);
+      const steps = comp(r.steps);
+      const odd = [...steps].filter((c) => !ings.has(c)).concat([...ings].filter((c) => !steps.has(c)));
+      return { name: `${label}: components match between ingredients and steps`, pass: odd.length === 0, detail: odd.join(", ") };
+    })(),
   ];
 }
 
@@ -112,6 +120,11 @@ const SPECS: Record<string, Spec> = {
       {
         name: "incubation dial: 8 h milder vs 12 h tangy",
         pass: allDials(draft).some((d) => /8/.test(d.setting)) && allDials(draft).some((d) => /12/.test(d.setting)),
+      },
+      // p5 rule 8: a one-pot dish isn't split into components.
+      {
+        name: "no needless components (one-pot dish)",
+        pass: [...draft.ingredients, ...draft.steps].every((x) => !(x.section ?? "").trim()),
       },
     ],
     answers: [
