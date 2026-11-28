@@ -1007,3 +1007,14 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
 - Panels: "Why it works" = Cypress tint + green rule; "Adjust to taste" = blue
   tint + blue rule (existing `src-science` / `src-suggested` tokens). Axe
   clean.
+- "Show all notes" (the student's request): `AllNotesProvider` holds
+  `{all, gen}`. Each note uses `useFollowAll()`, so it follows every flip but
+  can still be toggled by hand. A step's Why and Adjust can now be open
+  together. The switch shows only when `recipeHasNotes()`.
+- The student didn't like the blue/green, so all note panels are muted: a 1px
+  `ls-rule` left rule, no tint, a plain Adjust list, and the open icon is a
+  light `ink/8%` square instead of solid Ink.
+- The switch moved onto the breadcrumb line (the student asked; I suggested
+  dropping the recipe name from the breadcrumb, since it's the title right
+  below, so both fit on a phone). Label: "All notes". Shared links keep their
+  own switch above the recipe. Verify ✓ (opens all, closes all), axe clean.

@@ -70,6 +70,8 @@
 | Nov 28 | The title and ingredients **wrap around** the dish photo (rows below it run full width); **Change** and **Remove** appear only after tapping the photo | |
 | Nov 28 | **Crop the dish photo** (Original, Square, Wide, Tall; drag and zoom) when adding it or later, so it fits beside the ingredients with no empty space | |
 | Nov 28 | Ingredient notes hide behind an icon like the steps; **food science and adjustments look different**: flask + green for "Why it works", sliders + blue for "Adjust to taste"; taste notes on ingredients get the sliders, other notes a plain note icon | Sliders for every ingredient note; only recolor the panels |
+| Nov 28 | One **"All notes" switch** opens or closes every note on a recipe; it sits on the breadcrumb line, and the breadcrumb is just the tab (the recipe's name is the title) | Its own row above the title |
+| Nov 28 | **Muted notes**: no blue/green; a thin gray rule and a softer open icon (the icons and headings tell food science and adjustments apart) | Tinted panels (tried first) |
 
 ## What the app is
 
