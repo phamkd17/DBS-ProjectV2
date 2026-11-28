@@ -1102,3 +1102,26 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   Adjust to taste boxes wrap onto two lines on phones (`basis-32`) in both
   editors. Verify: add/close a second Why, add an Adjust; the saved recipe
   shows both icons.
+
+## Nov 28 — Recipe parts
+- From the student's own recipe document (D - 2.0 Flan.docx): ingredients
+  grouped by component (Egg Mixture, Milk, Caramel Sauce), and directions with
+  one general step and then one section per component.
+- Data: an optional `section` string on each ingredient and step in the
+  recipe JSON. It isn't in the AI's output schema, so prompts and evals are
+  unchanged and older recipes have none. Helpers in `lib/types.ts`:
+  `partsOf`, `groupByPart` (ingredients: no-part first, then by first
+  appearance, order kept within each part), and `runsByPart` (steps: never
+  reordered; a new run when the part changes; numbering continues).
+- View: part headings are small uppercase Ink h3s (distinct from the 24px
+  section headings and the 17px items).
+- Editing: `PartsBar` names the parts (chips, "+ Part", Enter adds, Escape
+  closes only that box), and `PartSelect` appears on each row once there are
+  parts. New rows (Enter or + Add) start in the same part as the row above.
+  Removing a part leaves its rows with no part. Used in the hand-typed form,
+  the ingredient editor, and the instructions editor. `createManualRecipe`,
+  `updateIngredients`, and `updateSteps` save `section` (≤60 chars) or leave
+  it out.
+- Verify: a flan with Caramel sauce/Custard. Enter inherits the part; the
+  saved recipe has the headings in both lists; the preheat step comes first;
+  moving "water" to Custard in the editor works. Axe clean.

@@ -78,6 +78,7 @@
 | Nov 28 | **AI limits** (#5): each person can make 20 AI requests an hour and 50 a day (a recipe is 1–2); a clear message says when they can make more; every call has a token cap | |
 | Nov 28 | **"Instructions"** instead of "Steps", with a pencil to edit each step and add, change, or remove its Why it works (food science) and Adjust to taste notes | |
 | Nov 28 | The hand-typed recipe form gets the same **Why it works** and **Adjust to taste** as the recipe editor, and each can be closed again (×) | |
+| Nov 28 | **Recipe parts** (like my flan's Caramel sauce, Milk, Egg mixture): name the parts once, then pick a part for each ingredient and step; ingredients group under part headings; instructions keep their order, with a heading where the part changes and numbers running straight through | |
 
 ## What the app is
 
