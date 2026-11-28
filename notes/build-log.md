@@ -943,3 +943,9 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   py-3 → py-2 with gap 4 → 3; the step number is 17px on the first text line
   (was a 2xl numeral). At 390px: 2534 → 2272px (2967 before any compaction).
   Verify ✓, axe clean.
+- Recipe page (the student: "too busy"): Inspiration, Photos, Kitchen notes
+  (with Edit/Delete) and "Questions the app asked" now sit inside one native
+  `<details>` ("Notes from Ideas and Development"), closed by default. Tags
+  and Send stay outside. The "edited after this recipe was made" warning stays
+  at the top. At 390px: 2272 → 1999px. Verify: an `openNotes()` helper opens
+  it before editing; idea notes are hidden until opened. Axe clean.
