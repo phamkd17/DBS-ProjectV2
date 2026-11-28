@@ -109,47 +109,61 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
 
       <RecipeView recipe={recipe.recipe} cookName={dictation.cook_name} editableRecipeId={recipe.id} />
 
-      <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
-
-      <EntryPhotos dictationId={dictation.id} photos={photos} max={MAX_PHOTOS_PER_ENTRY} />
-
       {dictation.stage === "finished" && (
         <TagPicker dictationId={dictation.id} allTags={sections ?? []} selected={(links ?? []).map((l) => l.section_id)} />
       )}
 
-      {/* Hand-typed recipes (model "manual") have no kitchen notes to show or add. */}
-      {(recipe.model !== "manual" || dictation.transcript) && (
-        <section aria-label="Kitchen notes" className="space-y-3">
-          <DictationEditor dictation={dictation} />
-        </section>
-      )}
+      {/* Everything from Ideas and Development, folded away so the recipe page
+          stays calm (student, Nov 28). Open it to see or edit them. */}
+      <details className="group border-y border-ls-ink">
+        <summary
+          className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-3 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}
+        >
+          Notes from Ideas and Development
+          <span aria-hidden className="text-sm text-ls-muted transition-transform group-open:rotate-180">
+            ▾
+          </span>
+        </summary>
+        <div className="space-y-5 pt-1 pb-5">
+        <EditableNotes kind="dictation" id={dictation.id} note={dictation.notes} link={dictation.link} />
 
-      {answered.length > 0 && (
-        <details className="border border-ls-border bg-ls-surface">
-          <summary className={`flex min-h-11 cursor-pointer items-center px-4 py-3 text-[15px] hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}>
-            Questions the app asked ({answered.length})
-          </summary>
-          <ol className="divide-y divide-ls-border border-t border-ls-border px-4">
-            {answered.map((q) => (
-              <li key={q.id} className="space-y-1.5 py-3 text-[15px]">
-                <p className="font-medium">{q.question}</p>
-                {q.answer_source === "skipped" ? (
-                  <p className="flex flex-wrap items-baseline gap-2 text-ls-muted">
-                    <SourceBadge source="not_stated" /> Nobody knew yet
-                  </p>
-                ) : (
-                  <p className="flex flex-wrap items-baseline gap-2">
-                    <SourceBadge source={q.answer_source === "user_answer" ? "user_answer" : "suggested"} /> {q.answer}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ol>
-          <p className={`border-t border-ls-border px-4 py-3 ${eyebrow}`}>
-            Made with {recipe.model} · prompt {recipe.prompt_version}
-          </p>
-        </details>
-      )}
+        <EntryPhotos dictationId={dictation.id} photos={photos} max={MAX_PHOTOS_PER_ENTRY} />
+
+        {/* Hand-typed recipes (model "manual") have no kitchen notes to show or add. */}
+        {(recipe.model !== "manual" || dictation.transcript) && (
+          <section aria-label="Kitchen notes" className="space-y-3">
+            <DictationEditor dictation={dictation} />
+          </section>
+        )}
+
+        {answered.length > 0 && (
+          <details className="border border-ls-border bg-ls-surface">
+            <summary className={`flex min-h-11 cursor-pointer items-center px-4 py-3 text-[15px] hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] ${focusRing}`}>
+              Questions the app asked ({answered.length})
+            </summary>
+            <ol className="divide-y divide-ls-border border-t border-ls-border px-4">
+              {answered.map((q) => (
+                <li key={q.id} className="space-y-1.5 py-3 text-[15px]">
+                  <p className="font-medium">{q.question}</p>
+                  {q.answer_source === "skipped" ? (
+                    <p className="flex flex-wrap items-baseline gap-2 text-ls-muted">
+                      <SourceBadge source="not_stated" /> Nobody knew yet
+                    </p>
+                  ) : (
+                    <p className="flex flex-wrap items-baseline gap-2">
+                      <SourceBadge source={q.answer_source === "user_answer" ? "user_answer" : "suggested"} /> {q.answer}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ol>
+            <p className={`border-t border-ls-border px-4 py-3 ${eyebrow}`}>
+              Made with {recipe.model} · prompt {recipe.prompt_version}
+            </p>
+          </details>
+        )}
+        </div>
+      </details>
 
       <SharePanel recipeId={recipe.id} url={shareUrl} title={recipe.recipe.title} />
 

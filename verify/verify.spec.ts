@@ -26,6 +26,12 @@ const YOGURT =
 const report: string[] = ["# Verify report", "", `Run: ${new Date().toISOString()}`, ""];
 let n = 0;
 
+/** Recipe page: idea and development notes are folded away until opened (student, Nov 28). */
+async function openNotes(page: Page) {
+  const details = page.locator("main").filter({ visible: true }).locator('details:has(> summary:has-text("Notes from Ideas and Development"))');
+  if (!(await details.evaluate((d: HTMLDetailsElement) => d.open))) await details.locator("> summary").click();
+}
+
 /** The image really loaded (not a broken or still-loading signed URL). */
 async function expectLoaded(img: import("@playwright/test").Locator) {
   await expect(img).toBeVisible();
@@ -188,7 +194,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(page.locator("main").getByText(`${IDEA} (quick)`, { exact: true })).toBeVisible(); // in the list
   await expect(quick).toHaveValue(""); // ready for the next one
   await expect(quickInspiration).toHaveValue("");
-  await expect(page.locator("main").getByText("Had it at the night market. Silky, not too sweet.")).toBeVisible(); // saved with it
+  await expect(page.locator("main").getByText("Had it at the night market. Silky, not too sweet.").first()).toBeVisible(); // saved with it
   await expect(quick).toBeFocused();
   await check(page, "ideas-quick-add", { keyboard: true });
 
@@ -503,6 +509,8 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   const wr = page.locator("main").filter({ visible: true });
   await expect(wr.getByRole("link", { name: "Recipes" }).first()).toBeVisible(); // moved to Recipes
   await expect(wr.getByText("yellow onions")).toBeVisible();
+  await expect(wr.getByText(/Dry at 200°F/)).toBeHidden(); // folded away on the recipe page
+  await openNotes(page);
   await expect(wr.getByText(/Dry at 200°F/)).toBeVisible(); // its idea notes came along
 
   // Delete it (this removes the item too).
@@ -691,6 +699,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
 
   // ---- Edit their words after the recipe exists (no AI call) ----
   await page.goto(recipeUrl);
+  await openNotes(page);
   await view.getByRole("button", { name: "Edit kitchen notes" }).click();
   await view.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill(`${YOGURT} oh and let the milk cool down first`);
   await check(page, "recipe-words-edit-in-place", { keyboard: true });
@@ -700,6 +709,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(view.getByText(/Kitchen notes · edited/)).toBeVisible();
   await expect(view.getByText("See the original words")).toHaveCount(0); // no original versions are kept
   await check(page, "recipe-after-edit");
+  await openNotes(page);
   await view.getByRole("button", { name: "Edit kitchen notes" }).click();
   await view.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill("");
   await view.getByRole("button", { name: "Save changes" }).click();
