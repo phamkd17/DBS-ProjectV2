@@ -964,3 +964,19 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   The guard now also compares every `--font-ls-*` token.
 - Recipe section headings 2xl semibold (24px) vs 17px regular items, so they
   read as headings. Verify ✓, axe clean.
+
+## Nov 28 — Dish photo
+- Migration `20261128000000_dish_photo.sql` (additive): `entry_photos.kind`
+  ('idea' default | 'dish') and a partial unique index for one dish photo per
+  entry. The existing RLS and Storage policies (own entry, own folder) apply
+  unchanged.
+- `setDishPhoto` checks the entry under RLS, deletes the old dish photo (files
+  too), and saves the new one with kind 'dish'. The 6-photo limit in
+  `addPhoto` counts only 'idea' photos. The idea page and the folded notes
+  show only 'idea' photos. The list thumbnail prefers the dish photo.
+- `RecipeView` takes an `aside`: a flex row with the title + ingredients and
+  the photo (112px wide on phones, 224px wider; max 176/288px tall, its own
+  shape). Empty: a dashed "Add dish photo" tile. Shared links don't show it
+  (a recipient can't sign the owner's file).
+- Verify: add (tall photo), loads, zoom, Change replaces it (still one), Remove
+  brings back the tile. Axe clean.

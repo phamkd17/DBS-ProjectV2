@@ -66,6 +66,7 @@
 | Nov 27 | **Remove "Show sources"** and every source label from the recipe page (labels are still saved with each recipe, just not shown), including the "Suggested" tag | Remove the switch but keep a small "Suggested" tag (recommended, to keep AI suggestions distinguishable) |
 | Nov 28 | On a recipe, **hide everything from Ideas and Development** (inspiration, photos, kitchen notes, the AI's questions) in one closed section; the page shows the recipe, tags, and Send | |
 | Nov 28 | Recipe **headings clearly different** from the ingredients and steps (larger, semibold) | |
+| Nov 28 | A **photo of the dish** on each recipe, to the right of the title and ingredients (one per recipe; it's also the list thumbnail) | |
 
 ## What the app is
 
