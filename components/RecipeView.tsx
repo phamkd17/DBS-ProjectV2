@@ -116,7 +116,7 @@ function StepsList({ steps, cookName }: { steps: Recipe["steps"]; cookName?: str
                   <span aria-hidden className="w-5 shrink-0 font-ls-serif text-base leading-relaxed text-ls-muted">
                     {i + 1}
                   </span>
-                  <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <StepExtras step={step} number={i + 1} cookName={cookName} />
                     {step.from_answers.length > 0 && (
                       <ul className="src-only space-y-1.5">

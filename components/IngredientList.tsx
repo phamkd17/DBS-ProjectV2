@@ -59,7 +59,7 @@ export function IngredientList({ ingredients, cookName }: { ingredients: Recipe[
                 </p>
               );
               return (
-                <li key={i} className="flow-root space-y-0.5 py-2 first:border-t first:border-t-ls-ink last:border-b last:border-b-ls-ink">
+                <li key={i} className="flex flex-col gap-0.5 py-2 first:border-t first:border-t-ls-ink last:border-b last:border-b-ls-ink">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     {rest ? (
                       <IngredientNote note={rest} item={ing.item}>
