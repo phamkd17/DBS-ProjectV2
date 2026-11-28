@@ -1247,3 +1247,33 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   file convention), with heavier strokes for 16px; the default `favicon.ico`
   was removed. On phones the header stays on one line (nowrap, Sign in px-2).
   Verify ✓, axe clean.
+
+## Nov 28 — Nutrition estimate with tool calling (#14)
+- The AI focus asks for "models… with tools, and evals". Nutrition facts were
+  already a v2 plan item, so the tool is a **USDA FoodData Central** lookup.
+- `lib/ai/usda.ts`: `searchFood(query)` → up to 5 generic foods (Foundation,
+  SR Legacy, Survey/FNDDS; no brands) with nutrients per 100 g and USDA's own
+  portion weights ("1 cup = 244 g"). Key from `USDA_API_KEY` in a header
+  (DEMO_KEY fallback: only ~10 lookups an hour). Cached in memory, and on disk
+  outside production (also during evals: USDA is a reference table, caching it
+  doesn't change what the model sees).
+- `lib/ai/nutrition.ts`: Gemini function calling with `search_food` and
+  `report_nutrition` (mode ANY, so every turn is a tool call; the last of 5
+  rounds may only report). The model sends back each ingredient's fdc_id,
+  grams, and how it got the grams. **The server** checks every fdc_id came
+  from a search this session (otherwise "couldn't match it") and grams are
+  0–10 kg, then does all the math. Each real Gemini round is one AI request
+  toward the per-user limit (`ai_calls.kind = 'nutrition'`, migration
+  `20261128050000`). Only ingredients and steps are sent (no title, no notes).
+- Stored in the recipe JSON as `nutrition` (so each iteration has its own),
+  with the ingredient list it was made from; edits make it "out of date".
+- Page: a folded **Nutrition** row above the notes, with "≈ N kcal a serving"
+  visible when closed; inside, a per-serving grid, servings labeled Suggested
+  when the AI picked them, "How it was counted" (each ingredient → USDA food,
+  linked, grams and how), and what wasn't counted and why.
+- Eval `npm run eval:nutrition`: 3 recipes with hand-worked answers (yogurt,
+  flan, tomato soup). Must-pass: no made-up fdc_id, every ingredient counted or
+  skipped, no-amount / removed / no-calorie items skipped. Also: each match is
+  the right kind of food, grams within 35%, total kcal within 20–25%, servings
+  labeled right. n1 yogurt: 8/8, but 4 rounds (it re-searched milk), so n2
+  asks for every search in the first turn and a report as soon as each fits.
