@@ -382,6 +382,10 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   const tagsBox = mr.getByRole("region", { name: "Tags" });
   const tagInput = tagsBox.getByRole("textbox", { name: "Add a tag" });
   const onRecipe = tagsBox.getByRole("list", { name: "Tags on this recipe" });
+  // Mobile-app style: a "+ Tag" chip opens a small box in the row (student, Nov 28).
+  await expect(tagInput).toHaveCount(0);
+  await tagsBox.getByRole("button", { name: "+ Tag" }).click();
+  await expect(tagInput).toBeFocused();
   await tagInput.fill(TAG);
   await expect(tagsBox.getByText(`Press Enter to make the new tag “${TAG}”.`)).toBeVisible();
   await tagInput.press("Enter");

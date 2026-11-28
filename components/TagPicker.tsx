@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useOptimistic, useRef, useState, useTransition } from "react";
 import { tagEntry, untagEntry } from "@/app/actions";
 import { STARTER_TAGS, type TagRow } from "@/lib/types";
-import { Button, chipClass, eyebrow, fieldClass, focusRing, textLink } from "./ui";
+import { eyebrow, focusRing, textLink } from "./ui";
 
 type Tag = { id: string; name: string };
 type Change = { add: Tag } | { remove: string }; // remove = by name
@@ -27,7 +27,9 @@ export function TagPicker({ dictationId, allTags, selected }: { dictationId: str
   const [saving, start] = useTransition();
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const plus = useRef<HTMLButtonElement>(null);
 
   const typed = text.trim().replace(/\s+/g, " ");
   const on = new Set(tags.map((t) => t.name.toLowerCase()));
@@ -54,7 +56,6 @@ export function TagPicker({ dictationId, allTags, selected }: { dictationId: str
   };
   const remove = (t: Tag) => {
     setError(null);
-    input.current?.focus();
     start(async () => {
       change({ remove: t.name });
       const { ok } = await untagEntry(dictationId, t.name);
@@ -62,92 +63,125 @@ export function TagPicker({ dictationId, allTags, selected }: { dictationId: str
     });
   };
 
+  const close = () => {
+    setEditing(false);
+    setText("");
+    setError(null);
+    requestAnimationFrame(() => plus.current?.focus());
+  };
+
+  // Mobile-app style (student, Nov 28): one row of small chips ending in "+ Tag";
+  // tapping it turns into a small box in the row. Suggestions show only while typing.
+  const chip = "inline-flex h-8 items-center border font-ls-sans text-[14px]";
   return (
-    <section aria-labelledby="tags-heading" aria-busy={saving} className="space-y-3">
+    <section aria-labelledby="tags-heading" aria-busy={saving} className="space-y-2">
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="tags-heading" className={eyebrow}>
           Tags
         </h2>
         {allTags.length > 0 && (
-          <Link href="/tags" className={`font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
+          <Link href="/tags" className={`-my-3 inline-flex min-h-11 items-center font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
             All tags
           </Link>
         )}
       </div>
 
-      {tags.length > 0 && (
-        <ul className="flex flex-wrap gap-2" aria-label="Tags on this recipe">
-          {tags.map((t) => (
-            <li key={t.id} className="inline-flex min-h-11 items-center border border-ls-ink bg-ls-ink pl-3 font-ls-sans text-[15px] text-ls-surface">
-              <span>{t.name}</span>
-              <button
-                type="button"
-                aria-label={`Remove ${t.name}`}
-                title="Remove"
-                onClick={() => remove(t)}
-                className={`grid size-11 cursor-pointer place-items-center text-lg hover:bg-ls-surface/15 active:bg-ls-surface/25 ${focusRing}`}
-              >
-                <span aria-hidden>×</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul className="flex flex-wrap items-center gap-2" aria-label="Tags on this recipe">
+        {tags.map((t) => (
+          <li key={t.id} className={`${chip} border-ls-ink bg-ls-ink pl-2.5 text-ls-surface`}>
+            <span>{t.name}</span>
+            <button
+              type="button"
+              aria-label={`Remove ${t.name}`}
+              title="Remove"
+              onClick={() => remove(t)}
+              className={`grid h-full w-7 cursor-pointer place-items-center text-base hover:bg-ls-surface/15 active:bg-ls-surface/25 ${focusRing}`}
+            >
+              <span aria-hidden>×</span>
+            </button>
+          </li>
+        ))}
+        <li>
+          {editing ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                add(text);
+              }}
+            >
+              <label htmlFor="tag-input" className="sr-only">
+                Add a tag
+              </label>
+              <input
+                ref={input}
+                id="tag-input"
+                autoFocus
+                value={text}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  setError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") close();
+                }}
+                onBlur={(e) => {
+                  // Close when you tap away from the tags with nothing typed (tapping a tag or suggestion keeps it open).
+                  const next = e.relatedTarget as Node | null;
+                  if (!text.trim() && !(next && e.currentTarget.closest("section")?.contains(next))) {
+                    setEditing(false);
+                    setError(null);
+                  }
+                }}
+                maxLength={40}
+                autoComplete="off"
+                enterKeyHint="done"
+                placeholder="New tag"
+                aria-invalid={!!error}
+                aria-describedby="tag-hint"
+                className={`${chip} w-36 border-ls-ink bg-ls-surface px-2.5 text-ls-ink placeholder:text-ls-muted/80 placeholder:italic ${focusRing}`}
+              />
+            </form>
+          ) : (
+            <button
+              ref={plus}
+              type="button"
+              onClick={() => setEditing(true)}
+              className={`${chip} cursor-pointer border-dashed border-ls-ink/50 px-2.5 text-ls-ink hover:border-ls-ink hover:bg-ls-surface active:bg-ls-ink/[0.08] ${focusRing}`}
+            >
+              + Tag
+            </button>
+          )}
+        </li>
+      </ul>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          add(text);
-        }}
-        className="space-y-1.5"
-      >
-        <label htmlFor="tag-input" className="sr-only">
-          Add a tag
-        </label>
-        <div className="flex gap-2">
-          <input
-            ref={input}
-            id="tag-input"
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              setError(null);
-            }}
-            maxLength={40}
-            autoComplete="off"
-            enterKeyHint="done"
-            placeholder={tags.length ? "Add another tag" : "Add a tag, like Desserts"}
-            aria-invalid={!!error}
-            aria-describedby="tag-hint"
-            className={`${fieldClass} min-w-0 flex-1`}
-          />
-          <Button type="submit" variant="secondary" disabled={!typed} className="shrink-0">
-            Add
-          </Button>
-        </div>
-        <p id="tag-hint" aria-live="polite" className="text-[15px]">
-          {error ? (
-            <span className="text-ls-error">{error}</span>
-          ) : isNew ? (
-            <span className="text-ls-muted">Press Enter to make the new tag “{typed}”.</span>
-          ) : null}
-        </p>
-      </form>
-
-      {suggestions.length > 0 && (
-        <div className="space-y-2">
-          <p className={eyebrow}>{typed ? "Matching tags" : allTags.length ? "Your tags" : "Ideas to start with"}</p>
-          <ul className="flex flex-wrap gap-2" aria-label="Tap a tag to add it">
-            {suggestions.map((t) => (
-              <li key={t.id}>
-                <button type="button" onClick={() => add(t.name)} className={chipClass(false)}>
-                  <span aria-hidden>+</span>
-                  <span className="sr-only">Add </span>
-                  {t.name}
-                </button>
-              </li>
-            ))}
-          </ul>
+      {editing && (
+        <div className="space-y-1.5">
+          <p id="tag-hint" aria-live="polite" className="text-[14px]">
+            {error ? (
+              <span className="text-ls-error">{error}</span>
+            ) : isNew ? (
+              <span className="text-ls-muted">Press Enter to make the new tag “{typed}”.</span>
+            ) : (
+              <span className="text-ls-muted">Type a tag and press Enter, or tap one below.</span>
+            )}
+          </p>
+          {suggestions.length > 0 && (
+            <ul data-tag-suggestions className="flex flex-wrap gap-2" aria-label="Tap a tag to add it">
+              {suggestions.map((t) => (
+                <li key={t.id}>
+                  <button
+                    type="button"
+                    onClick={() => add(t.name)}
+                    className={`${chip} cursor-pointer border-ls-ink/40 bg-ls-surface px-2.5 text-ls-ink hover:border-ls-ink hover:bg-white ${focusRing}`}
+                  >
+                    <span aria-hidden>+&nbsp;</span>
+                    <span className="sr-only">Add </span>
+                    {t.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </section>
