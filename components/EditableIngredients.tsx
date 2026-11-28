@@ -42,7 +42,7 @@ export function EditableIngredients({
   const update = (key: string, patch: Partial<Row>) => setRows((r) => r.map((x) => (x.key === key ? { ...x, ...patch } : x)));
 
   return (
-    <section aria-labelledby="ingredients" className="space-y-3">
+    <section aria-labelledby="ingredients" className="space-y-2">
       <div className="flex items-center gap-1">
         <h2 id="ingredients" className="font-ls-serif text-2xl leading-tight">
           Ingredients

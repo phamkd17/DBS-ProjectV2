@@ -64,6 +64,17 @@
 | Nov 27 | In lists, **tags go on the same line as the name**, and fewer text styles (name, small label, preview) | |
 | Nov 27 | Each tab's header is **just the tab's name** (no "Your lab book", no count or description line) | Tab name + one line; keep "Your lab book" without the line |
 | Nov 27 | **Remove "Show sources"** and every source label from the recipe page (labels are still saved with each recipe, just not shown), including the "Suggested" tag | Remove the switch but keep a small "Suggested" tag (recommended, to keep AI suggestions distinguishable) |
+| Nov 28 | On a recipe, **hide everything from Ideas and Development** (inspiration, photos, kitchen notes, the AI's questions) in one closed section; the page shows the recipe, tags, and Send | |
+| Nov 28 | Recipe **headings clearly different** from the ingredients and steps (larger, semibold) | |
+| Nov 28 | A **photo of the dish** on each recipe, to the right of the title and ingredients (one per recipe; it's also the list thumbnail) | |
+| Nov 28 | The title and ingredients **wrap around** the dish photo (rows below it run full width); **Change** and **Remove** appear only after tapping the photo | |
+| Nov 28 | **Crop the dish photo** (Original, Square, Wide, Tall; drag and zoom) when adding it or later, so it fits beside the ingredients with no empty space | |
+| Nov 28 | Ingredient notes hide behind an icon like the steps; **food science and adjustments look different**: flask + green for "Why it works", sliders + blue for "Adjust to taste"; taste notes on ingredients get the sliders, other notes a plain note icon | Sliders for every ingredient note; only recolor the panels |
+| Nov 28 | One **"All notes" switch** opens or closes every note on a recipe; it sits on the breadcrumb line, and the breadcrumb is just the tab (the recipe's name is the title) | Its own row above the title |
+| Nov 28 | **Muted notes**: no blue/green; a thin gray rule and a softer open icon (the icons and headings tell food science and adjustments apart) | Tinted panels (tried first) |
+| Nov 28 | **Tags like a mobile app**: one row of small chips ending in "+ Tag" (it turns into a small box in the row); suggestions only while typing; no Add button | |
+| Nov 28 | **Send this recipe in one line**: "Send this recipe" + Make a link; once it's on, Send… / Copy link / Turn off and one short line | A Share icon at the top that opens a small window |
+| Nov 28 | **Tags set apart** from the Notes and Send rows below, which form one block | |
 
 ## What the app is
 

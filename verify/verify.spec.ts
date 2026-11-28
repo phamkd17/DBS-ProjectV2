@@ -26,6 +26,12 @@ const YOGURT =
 const report: string[] = ["# Verify report", "", `Run: ${new Date().toISOString()}`, ""];
 let n = 0;
 
+/** Recipe page: idea and development notes are folded away until opened (student, Nov 28). */
+async function openNotes(page: Page) {
+  const details = page.locator("main").filter({ visible: true }).locator('details:has(> summary:has-text("Notes from Ideas and Development"))');
+  if (!(await details.evaluate((d: HTMLDetailsElement) => d.open))) await details.locator("> summary").click();
+}
+
 /** The image really loaded (not a broken or still-loading signed URL). */
 async function expectLoaded(img: import("@playwright/test").Locator) {
   await expect(img).toBeVisible();
@@ -130,6 +136,11 @@ test("served CSS matches app/globals.css (dev server not stale)", async ({ page 
       .join("\n")
   );
   const stale = tokens.filter(([name, hex]) => served.includes(name) && !served.includes(`${name}: ${hex}`));
+  // Font tokens too (Nov 28: the Figtree switch was served stale and fell back to the system font).
+  const squash = (t: string) => t.replace(/\s+/g, " ").replace(/"/g, "").trim();
+  const fonts = [...src.matchAll(/(--font-ls-[a-z]+):\s*([^;]+);/g)].map((m) => [m[1], squash(m[2])]);
+  const servedFlat = squash(served);
+  stale.push(...fonts.filter(([name, value]) => !servedFlat.includes(`${name}: ${value}`)));
   // Also every custom rule outside @theme (e.g. [data-sources="hidden"] .src-only).
   const selectors = [...src.matchAll(/^([.[][^{\n]+?)\s*\{/gm)].map((m) => m[1].trim().replace(/"/g, ""));
   const missing = selectors.filter((sel) => !served.replace(/"/g, "").includes(sel));
@@ -188,7 +199,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(page.locator("main").getByText(`${IDEA} (quick)`, { exact: true })).toBeVisible(); // in the list
   await expect(quick).toHaveValue(""); // ready for the next one
   await expect(quickInspiration).toHaveValue("");
-  await expect(page.locator("main").getByText("Had it at the night market. Silky, not too sweet.")).toBeVisible(); // saved with it
+  await expect(page.locator("main").getByText("Had it at the night market. Silky, not too sweet.").first()).toBeVisible(); // saved with it
   await expect(quick).toBeFocused();
   await check(page, "ideas-quick-add", { keyboard: true });
 
@@ -321,12 +332,60 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(mr.getByText(/Kitchen notes/)).toHaveCount(0); // no kitchen-notes section on hand-typed recipes
   await check(page, "manual-recipe", { keyboard: true });
 
+  // ---- Dish photo beside the title and ingredients, with cropping (student, Nov 28) ----
+  await expect(mr.getByRole("button", { name: "Add dish photo" })).toBeVisible();
+  const dishInput = mr.locator('input[type="file"][aria-label="Dish photo"]');
+  const cropper = page.getByRole("dialog", { name: "Crop the photo" });
+  const ratio = (img: import("@playwright/test").Locator) => img.evaluate((el: HTMLImageElement) => el.naturalWidth / el.naturalHeight);
+  await dishInput.setInputFiles("verify/fixtures/tall.jpg");
+  await expect(cropper).toBeVisible(); // a new photo opens the cropper first
+  await cropper.getByRole("radio", { name: "Square" }).click();
+  await expect(cropper.getByRole("radio", { name: "Square" })).toHaveAttribute("aria-checked", "true");
+  await check(page, "dish-photo-crop");
+  await cropper.getByRole("button", { name: "Save photo" }).click();
+  await expect(cropper).toBeHidden();
+  const dishImg = mr.getByRole("img", { name: "The dish" });
+  await expectLoaded(dishImg);
+  expect(Math.abs((await ratio(dishImg)) - 1)).toBeLessThan(0.02); // saved square
+  await check(page, "recipe-dish-photo", { keyboard: true });
+  // Change/Remove/Crop only show once the photo is tapped (in the large view).
+  await expect(mr.getByRole("button", { name: "Remove", exact: true })).toHaveCount(0);
+  await mr.getByRole("button", { name: /^Dish photo: zoom in/ }).click();
+  const dishView = page.getByRole("dialog", { name: "Photo 1 of 1" });
+  await expect(dishView.getByRole("button", { name: "Change" })).toBeVisible();
+  await check(page, "dish-photo-open");
+  // Re-crop the saved photo (reads it back from private Storage) to Wide.
+  let oldSrc = await dishImg.getAttribute("src");
+  await dishView.getByRole("button", { name: "Crop" }).click();
+  await expect(cropper).toBeVisible();
+  await cropper.getByRole("radio", { name: "Wide" }).click();
+  await cropper.getByRole("button", { name: "Save photo" }).click();
+  await expect(cropper).toBeHidden();
+  await expect(dishImg).not.toHaveAttribute("src", oldSrc ?? "");
+  await expectLoaded(dishImg);
+  expect(Math.abs((await ratio(dishImg)) - 4 / 3)).toBeLessThan(0.03); // saved wide
+  // Change: pick another photo; it replaces the old one.
+  oldSrc = await dishImg.getAttribute("src");
+  await dishInput.setInputFiles("verify/fixtures/onions.jpg");
+  await cropper.getByRole("button", { name: "Save photo" }).click();
+  await expect(dishImg).not.toHaveAttribute("src", oldSrc ?? "");
+  await expect(mr.getByRole("img", { name: "The dish" })).toHaveCount(1);
+  await expectLoaded(dishImg);
+  await mr.getByRole("button", { name: /^Dish photo: zoom in/ }).click();
+  page.once("dialog", (d) => d.accept());
+  await dishView.getByRole("button", { name: "Remove" }).click();
+  await expect(mr.getByRole("button", { name: "Add dish photo" })).toBeVisible();
+
   // ---- Tags (Recipes tab): type to add, several per recipe, filter, delete (the recipe stays) ----
   const TAG = `Desserts ${RUN}`;
   const TAG2 = `Breakfast ${RUN}`;
   const tagsBox = mr.getByRole("region", { name: "Tags" });
   const tagInput = tagsBox.getByRole("textbox", { name: "Add a tag" });
   const onRecipe = tagsBox.getByRole("list", { name: "Tags on this recipe" });
+  // Mobile-app style: a "+ Tag" chip opens a small box in the row (student, Nov 28).
+  await expect(tagInput).toHaveCount(0);
+  await tagsBox.getByRole("button", { name: "+ Tag" }).click();
+  await expect(tagInput).toBeFocused();
   await tagInput.fill(TAG);
   await expect(tagsBox.getByText(`Press Enter to make the new tag “${TAG}”.`)).toBeVisible();
   await tagInput.press("Enter");
@@ -503,6 +562,8 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   const wr = page.locator("main").filter({ visible: true });
   await expect(wr.getByRole("link", { name: "Recipes" }).first()).toBeVisible(); // moved to Recipes
   await expect(wr.getByText("yellow onions")).toBeVisible();
+  await expect(wr.getByText(/Dry at 200°F/)).toBeHidden(); // folded away on the recipe page
+  await openNotes(page);
   await expect(wr.getByText(/Dry at 200°F/)).toBeVisible(); // its idea notes came along
 
   // Delete it (this removes the item too).
@@ -632,9 +693,27 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   if (await dials.count()) {
     await dials.click();
     await expect(dials).toHaveAttribute("aria-expanded", "true");
-    await expect(main.getByText("Adjust to taste").first()).toBeVisible();
+    await expect(main.getByText("Adjust to taste", { exact: true }).filter({ visible: true }).first()).toBeVisible();
   }
   await check(page, "recipe-science-and-dials-open");
+  // "Show all notes" opens every note at once, and closes them again (student, Nov 28).
+  const allNotes = main.getByRole("switch", { name: "All notes" });
+  await allNotes.click();
+  await expect(allNotes).toHaveAttribute("aria-checked", "true");
+  for (const b of await main.getByRole("button", { name: /^(Why step \d+ works|Adjust step \d+ to taste|Note about .*|Adjust .* to taste)$/ }).all())
+    await expect(b).toHaveAttribute("aria-expanded", "true");
+  await check(page, "recipe-all-notes-open");
+  await allNotes.click();
+  for (const b of await main.getByRole("button", { name: /^(Why step \d+ works|Adjust step \d+ to taste|Note about .*|Adjust .* to taste)$/ }).all())
+    await expect(b).toHaveAttribute("aria-expanded", "false");
+  // Ingredient notes hide behind an icon: sliders for taste notes, a note icon otherwise (student, Nov 28).
+  await expect(main.getByRole("button", { name: /^Why .* works$/ }).first()).toBeVisible(); // the flask is for steps' food science
+  const noteBtn = main.getByRole("button", { name: /^(Note about|Adjust) / }).first();
+  if (await noteBtn.count()) {
+    await expect(noteBtn).toHaveAttribute("aria-expanded", "false");
+    await noteBtn.click();
+    await expect(noteBtn).toHaveAttribute("aria-expanded", "true");
+  }
 
   // ---- Edit the whole ingredient list from one pencil ----
   await page.getByRole("button", { name: "Edit ingredients" }).click();
@@ -673,7 +752,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(sp.getByRole("button", { name: "Edit ingredients" })).toHaveCount(0); // shared links are read-only
   await check(sp, "shared-signed-out", { keyboard: true });
 
-  await page.getByRole("button", { name: "Turn off link" }).click();
+  await page.getByRole("button", { name: "Turn off", exact: true }).click();
   await expect(page.getByRole("button", { name: "Make a link" })).toBeVisible();
   await sp.reload();
   await expect(sp.getByRole("heading", { name: /isn.t shared anymore/ })).toBeVisible();
@@ -691,6 +770,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
 
   // ---- Edit their words after the recipe exists (no AI call) ----
   await page.goto(recipeUrl);
+  await openNotes(page);
   await view.getByRole("button", { name: "Edit kitchen notes" }).click();
   await view.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill(`${YOGURT} oh and let the milk cool down first`);
   await check(page, "recipe-words-edit-in-place", { keyboard: true });
@@ -700,6 +780,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(view.getByText(/Kitchen notes · edited/)).toBeVisible();
   await expect(view.getByText("See the original words")).toHaveCount(0); // no original versions are kept
   await check(page, "recipe-after-edit");
+  await openNotes(page);
   await view.getByRole("button", { name: "Edit kitchen notes" }).click();
   await view.getByRole("textbox", { name: "Kitchen notes", exact: true }).fill("");
   await view.getByRole("button", { name: "Save changes" }).click();

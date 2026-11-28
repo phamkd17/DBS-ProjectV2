@@ -570,9 +570,28 @@ export async function addPhoto(dictationId: string, formData: FormData): Promise
   // RLS: only your own entry comes back, and the insert re-checks it.
   const { data: entry } = await supabase.from("dictations").select("id").eq("id", dictationId).maybeSingle();
   if (!entry) return { error: "Couldn't find this idea." };
-  const { count } = await supabase.from("entry_photos").select("id", { count: "exact", head: true }).eq("dictation_id", dictationId);
+  const { count } = await supabase
+    .from("entry_photos")
+    .select("id", { count: "exact", head: true })
+    .eq("dictation_id", dictationId)
+    .eq("kind", "idea");
   if ((count ?? 0) >= MAX_PHOTOS_PER_ENTRY) return { error: `Up to ${MAX_PHOTOS_PER_ENTRY} photos each. Delete one to add another.` };
   if (!(await savePhoto(supabase, userId, dictationId, photo)).ok) return { error: "The photo didn't upload. Try again." };
+  revalidatePath("/", "layout");
+  return {};
+}
+
+/** The photo of the finished dish on a recipe (student, Nov 28): one per recipe; a new one replaces the old. */
+export async function setDishPhoto(dictationId: string, formData: FormData): Promise<{ error?: string }> {
+  const userId = await requireUser();
+  const photo = await readPhoto(formData.get("photo"));
+  if (!photo.ok) return { error: photo.error };
+  const supabase = await supabaseForUser();
+  const { data: entry } = await supabase.from("dictations").select("id").eq("id", dictationId).maybeSingle();
+  if (!entry) return { error: "Couldn't find this recipe." };
+  const { data: old } = await supabase.from("entry_photos").select("id").eq("dictation_id", dictationId).eq("kind", "dish");
+  if (old?.length) await deletePhotos(supabase, { ids: old.map((o) => o.id) });
+  if (!(await savePhoto(supabase, userId, dictationId, photo, "dish")).ok) return { error: "The photo didn't upload. Try again." };
   revalidatePath("/", "layout");
   return {};
 }

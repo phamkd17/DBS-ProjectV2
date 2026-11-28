@@ -933,3 +933,109 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   "Saved" so it fits on one line.
 - At 390px: 1658 → 1226px (with long notes), and 1231 → 995px with no notes.
   Verify ✓ (Show all/less), axe clean.
+
+## Nov 28 — Compact recipe body (branch `compact-recipe`)
+- PR 16 merged and live (Vercel ✓). `/security-review` before the merge found
+  no issues at confidence ≥ 8; the live `photos` bucket is private. v1 still
+  loads.
+- The student asked for a more compact recipe. Title 4xl/5xl → 3xl/4xl;
+  Ingredients/Steps headings 2xl → xl; ingredient rows py-3 → py-2; step rows
+  py-3 → py-2 with gap 4 → 3; the step number is 17px on the first text line
+  (was a 2xl numeral). At 390px: 2534 → 2272px (2967 before any compaction).
+  Verify ✓, axe clean.
+- Recipe page (the student: "too busy"): Inspiration, Photos, Kitchen notes
+  (with Edit/Delete) and "Questions the app asked" now sit inside one native
+  `<details>` ("Notes from Ideas and Development"), closed by default. Tags
+  and Send stay outside. The "edited after this recipe was made" warning stays
+  at the top. At 390px: 2272 → 1999px. Verify: an `openNotes()` helper opens
+  it before editing; idea notes are hidden until opened. Axe clean.
+
+## Nov 28 — Correction: Figtree wasn't showing locally
+- The student said headings and items looked too similar. Computed styles
+  showed weight 400 in the **system font**: the dev server was still serving
+  the old CSS (Instrument Serif/Jost variables, which no longer exist), so
+  everything fell back to the system font, and the semibold heading rule was
+  missing. My Nov 27 "verified" screenshots were of that fallback; I didn't
+  catch it. The stale-CSS guard only compared color tokens and selectors.
+- Production was fine: Vercel builds fresh, and its CSS has the Figtree tokens
+  and the 600 weight (checked with curl).
+- Fix: stopped the server and waited for the port to free before clearing
+  `.next` (last time the old process may have rewritten it), then restarted.
+  The guard now also compares every `--font-ls-*` token.
+- Recipe section headings 2xl semibold (24px) vs 17px regular items, so they
+  read as headings. Verify ✓, axe clean.
+
+## Nov 28 — Dish photo
+- Migration `20261128000000_dish_photo.sql` (additive): `entry_photos.kind`
+  ('idea' default | 'dish') and a partial unique index for one dish photo per
+  entry. The existing RLS and Storage policies (own entry, own folder) apply
+  unchanged.
+- `setDishPhoto` checks the entry under RLS, deletes the old dish photo (files
+  too), and saves the new one with kind 'dish'. The 6-photo limit in
+  `addPhoto` counts only 'idea' photos. The idea page and the folded notes
+  show only 'idea' photos. The list thumbnail prefers the dish photo.
+- `RecipeView` takes an `aside`: a flex row with the title + ingredients and
+  the photo (112px wide on phones, 224px wider; max 176/288px tall, its own
+  shape). Empty: a dashed "Add dish photo" tile. Shared links don't show it
+  (a recipient can't sign the owner's file).
+- Verify: add (tall photo), loads, zoom, Change replaces it (still one), Remove
+  brings back the tile. Axe clean.
+- Wrap (the student's request): the photo is a `float-right` (`w-fit`, max
+  112/224px) inside a `flow-root`. Each ingredient row is `flow-root`, so rows
+  beside the photo narrow and their lines stop at it, and rows below it run
+  full width. The list's outer borders moved onto the first/last row
+  (`border-t-ls-ink` / `border-b-ls-ink`, since Tailwind v4's `divide-y`
+  uses border-bottom). Change/Remove live in the viewer's bottom bar
+  (`usePhotoViewer(photos, actions)`). Tapping the photo opens it large with
+  them. Verify: they're absent until the photo is tapped. Fixed a race in the
+  test (waits for the new photo's src before Remove). Axe clean.
+
+## Nov 28 — Crop photos; ingredient notes; science vs adjustments
+- Cropping (react-easy-crop 6, MIT, free). `PhotoCropper` is a native dialog
+  with shape radios (Original = the photo's own ratio, Square 1, Wide 4:3,
+  Tall 3:4), drag, and a zoom slider. `cropPhoto` cuts the area on a canvas
+  and shrinks it like any upload (≤1600px, ≤900KB JPEG). A new dish photo
+  opens the cropper first (after checking the browser can decode it). "Crop"
+  in the photo's view re-crops the saved photo: it's loaded with
+  `crossOrigin="anonymous"` from the signed URL (Supabase Storage allows CORS),
+  so this cuts down the saved version, not the original. Verify: Square saves
+  ~1:1 and re-crop to Wide saves ~4:3 (checked by naturalWidth/Height).
+- Ingredient notes (`IngredientNote`) hide behind an icon. Notes matching a
+  taste pattern ("to taste", "less", "optional", "prefer"…) get the sliders
+  and a blue "Adjust to taste:" panel; others get a plain note icon. The flask
+  stays only on steps (food science).
+- Panels: "Why it works" = Cypress tint + green rule; "Adjust to taste" = blue
+  tint + blue rule (existing `src-science` / `src-suggested` tokens). Axe
+  clean.
+- "Show all notes" (the student's request): `AllNotesProvider` holds
+  `{all, gen}`. Each note uses `useFollowAll()`, so it follows every flip but
+  can still be toggled by hand. A step's Why and Adjust can now be open
+  together. The switch shows only when `recipeHasNotes()`.
+- The student didn't like the blue/green, so all note panels are muted: a 1px
+  `ls-rule` left rule, no tint, a plain Adjust list, and the open icon is a
+  light `ink/8%` square instead of solid Ink.
+- The switch moved onto the breadcrumb line (the student asked; I suggested
+  dropping the recipe name from the breadcrumb, since it's the title right
+  below, so both fit on a phone). Label: "All notes". Shared links keep their
+  own switch above the recipe. Verify ✓ (opens all, closes all), axe clean.
+- Tags, mobile-app style (the student's request: less space, like tagging in
+  phone apps). The chips are 32px tall (Ink when set, with a 28px ×). The row
+  ends in a dashed "+ Tag" chip that turns into a 144px box in the row
+  (autofocus; Enter adds and stays open; Escape or tapping away empty closes
+  it and focus returns to "+ Tag"). The hint and suggestions show only while
+  it's open. No Add button. The tags block went from ~250px to ~60px when not
+  editing. Verify: the box is hidden until "+ Tag", then the existing tag flow
+  runs. Axe clean.
+- Removed the "All tags" link from a recipe's Tags (the student's request). The
+  Tags page is still one tap away from the Recipes tab filter row. Verify ✓.
+- Send (the student picked "one line" over a Share icon at the top): an
+  eyebrow and a compact Make a link (min-h-10). With the link on: "Send · link
+  on", Send… (`navigator.share`, falling back to copy), Copy link, Turn off,
+  the URL as a small read-only line (sr-only label "Private link"), and one
+  short sentence. ~190px → ~50px.
+- Tags vs the rows below (the student's request): Notes + Send are wrapped as
+  one block with `pt-4` above, and Send has only a bottom rule, so there's no
+  doubled line between them. Verify ✓, axe clean.
+
+## Nov 28 — PR for compact-recipe
+- /security-review on the branch (fresh subagent): no findings ≥ 8. PR opened; merge waits for the student.

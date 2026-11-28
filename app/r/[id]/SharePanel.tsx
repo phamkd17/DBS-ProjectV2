@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { setSharing } from "@/app/actions";
-import { Button, Spinner } from "@/components/ui";
+import { Button, eyebrow, focusRing, Spinner } from "@/components/ui";
 
 export function SharePanel({ recipeId, url, title }: { recipeId: string; url: string | null; title: string }) {
   const [pending, start] = useTransition();
@@ -10,36 +10,22 @@ export function SharePanel({ recipeId, url, title }: { recipeId: string; url: st
 
   const toggle = (on: boolean) => start(() => setSharing(recipeId, on));
 
+  // One line (student, Nov 28): "Send this recipe" + Make a link; once it's on,
+  // Send… / Copy link / Turn off, with one short line about who can open it.
   return (
-    <section aria-labelledby="send" className="space-y-3 border border-ls-ink bg-ls-surface p-4">
-      <h2 id="send" className="font-ls-serif text-2xl leading-tight">
-        Send this recipe
-      </h2>
-
-      {!url ? (
-        <>
-          <p className="max-w-prose text-[15px] leading-relaxed text-ls-muted">
-            Make a private link to text or email. Anyone with the link can read this recipe and save a copy to their
-            own lab book. You can turn the link off at any time.
-          </p>
-          <Button onClick={() => toggle(true)} disabled={pending}>
+    <section aria-labelledby="send" className="space-y-1 border-b border-ls-ink py-2">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <h2 id="send" className={eyebrow}>
+          {url ? "Send · link on" : "Send this recipe"}
+        </h2>
+        {!url ? (
+          <Button onClick={() => toggle(true)} disabled={pending} className="min-h-10 px-4">
             {pending && <Spinner />} Make a link
           </Button>
-        </>
-      ) : (
-        <>
-          <label htmlFor="share-url" className="block text-[15px] font-medium">
-            Private link
-          </label>
-          <input
-            id="share-url"
-            readOnly
-            value={url}
-            onFocus={(e) => e.currentTarget.select()}
-            className="w-full border border-ls-border bg-ls-bg px-3 py-2.5 text-[15px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ls-ink"
-          />
-          <div className="flex flex-wrap gap-2">
+        ) : (
+          <div className="-mr-3 flex flex-wrap items-center">
             <Button
+              className="min-h-10 px-4"
               onClick={async () => {
                 if (navigator.share) {
                   await navigator.share({ title, text: `Here's the recipe for ${title}`, url }).catch(() => {});
@@ -52,7 +38,7 @@ export function SharePanel({ recipeId, url, title }: { recipeId: string; url: st
               Send…
             </Button>
             <Button
-              variant="secondary"
+              variant="quiet"
               onClick={async () => {
                 await navigator.clipboard.writeText(url);
                 setCopied(true);
@@ -61,11 +47,25 @@ export function SharePanel({ recipeId, url, title }: { recipeId: string; url: st
               {copied ? "Copied ✓" : "Copy link"}
             </Button>
             <Button variant="quiet" onClick={() => toggle(false)} disabled={pending}>
-              {pending && <Spinner />} Turn off link
+              {pending && <Spinner />} Turn off
             </Button>
           </div>
-          <p aria-live="polite" className="text-[15px] text-ls-muted">
-            {copied ? "Link copied. Paste it into a text or email." : "Only people you send it to will have the link."}
+        )}
+      </div>
+      {url && (
+        <>
+          <label htmlFor="share-url" className="sr-only">
+            Private link
+          </label>
+          <input
+            id="share-url"
+            readOnly
+            value={url}
+            onFocus={(e) => e.currentTarget.select()}
+            className={`block w-full truncate bg-transparent text-[13px] text-ls-muted ${focusRing}`}
+          />
+          <p aria-live="polite" className="text-[14px] text-ls-muted">
+            {copied ? "Link copied. Paste it into a text or email." : "Anyone with the link can read it and save a copy. Turn it off any time."}
           </p>
         </>
       )}

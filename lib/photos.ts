@@ -38,6 +38,7 @@ export async function savePhoto(
   userId: string,
   dictationId: string,
   photo: { bytes: Uint8Array; type: string; ext: string },
+  kind: PhotoKind = "idea",
 ): Promise<{ ok: boolean }> {
   const path = `${userId}/${dictationId}/${randomUUID()}.${photo.ext}`;
   const up = await supabase.storage.from(BUCKET).upload(path, photo.bytes, { contentType: photo.type, upsert: false });
@@ -45,7 +46,7 @@ export async function savePhoto(
     console.error("[savePhoto upload]", up.error);
     return { ok: false };
   }
-  const { error } = await supabase.from("entry_photos").insert({ dictation_id: dictationId, path });
+  const { error } = await supabase.from("entry_photos").insert({ dictation_id: dictationId, path, kind });
   if (error) {
     console.error("[savePhoto row]", error);
     await supabase.storage.from(BUCKET).remove([path]);
@@ -54,14 +55,16 @@ export async function savePhoto(
   return { ok: true };
 }
 
-export type Photo = { id: string; dictation_id: string; url: string };
+/** "idea" = inspiration photos; "dish" = the one photo of the finished dish on a recipe. */
+export type PhotoKind = "idea" | "dish";
+export type Photo = { id: string; dictation_id: string; url: string; kind: PhotoKind };
 
 /** Signed URLs (1 hour) for photos you can see, newest entry order kept. */
 export async function photosFor(supabase: SupabaseClient, dictationIds: string[]): Promise<Photo[]> {
   if (dictationIds.length === 0) return [];
   const { data: rows, error } = await supabase
     .from("entry_photos")
-    .select("id, dictation_id, path")
+    .select("id, dictation_id, path, kind")
     .in("dictation_id", dictationIds)
     .order("created_at");
   if (error || !rows?.length) return [];
@@ -70,7 +73,9 @@ export async function photosFor(supabase: SupabaseClient, dictationIds: string[]
     60 * 60,
   );
   const urlByPath = new Map((signed ?? []).filter((s) => s.signedUrl).map((s) => [s.path, s.signedUrl]));
-  return rows.flatMap((r) => (urlByPath.has(r.path) ? [{ id: r.id, dictation_id: r.dictation_id, url: urlByPath.get(r.path)! }] : []));
+  return rows.flatMap((r) =>
+    urlByPath.has(r.path) ? [{ id: r.id, dictation_id: r.dictation_id, url: urlByPath.get(r.path)!, kind: r.kind as PhotoKind }] : [],
+  );
 }
 
 /** Delete photos (rows + files). Pass ids, or an entry id for all of its photos. */

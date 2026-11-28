@@ -1,8 +1,9 @@
 import type { Recipe } from "@/lib/ai/schema";
 import { EditableIngredients } from "./EditableIngredients";
 import { SourcesScope, StepExtras } from "./RecipeExtras";
-import { IngredientList } from "./IngredientList";
+import { IngredientList, recipeHasNotes } from "./IngredientList";
 import { SourceBadge, Transcript } from "./ui";
+import type { ReactNode } from "react";
 
 type Props = {
   recipe: Recipe;
@@ -12,40 +13,50 @@ type Props = {
   editedAt?: string | null;
   /** Owner's own recipe: amounts get a pencil to edit them. Omit for read-only (shared links). */
   editableRecipeId?: string;
+  /** Shown to the right of the title and ingredients (the dish photo, student Nov 28). */
+  aside?: ReactNode;
+  /** The page shows the "All notes" switch itself (on its breadcrumb line). */
+  switchOutside?: boolean;
 };
 
 /** The finished recipe: ingredients, steps, the why labeled by source, and her words. */
-export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId }: Props) {
+export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId, aside, switchOutside }: Props) {
   return (
-    <SourcesScope>
-    <article className="space-y-6">
-      <header className="space-y-3">
-        <h1 className="font-ls-serif text-4xl leading-tight sm:text-5xl">{recipe.title}</h1>
+    <SourcesScope hasNotes={recipeHasNotes(recipe)} ownSwitch={!switchOutside}>
+    <article className="space-y-5">
+      {/* The dish photo floats right; the title and ingredient rows wrap around it,
+          and rows below it run full width (student, Nov 28). */}
+      <div className="flow-root">
+      {aside && <div className="float-right mb-3 ml-4 w-fit max-w-28 sm:ml-6 sm:max-w-56">{aside}</div>}
+      <header className="mb-5 space-y-2">
+        <h1 className="font-ls-serif text-3xl leading-tight sm:text-4xl">{recipe.title}</h1>
         <Legend cookName={cookName} />
       </header>
 
       {editableRecipeId ? (
         <EditableIngredients recipeId={editableRecipeId} ingredients={recipe.ingredients} cookName={cookName} />
       ) : (
-        <section aria-labelledby="ingredients" className="space-y-3">
+        <section aria-labelledby="ingredients" className="space-y-2">
           <h2 id="ingredients" className="font-ls-serif text-2xl leading-tight">
             Ingredients
           </h2>
           <IngredientList ingredients={recipe.ingredients} cookName={cookName} />
         </section>
       )}
+      </div>
 
-      <section aria-labelledby="steps" className="space-y-3">
+      <section aria-labelledby="steps" className="space-y-2">
         <h2 id="steps" className="font-ls-serif text-2xl leading-tight">
           Steps
         </h2>
         <ol className="divide-y divide-ls-border border-y border-ls-ink">
           {recipe.steps.map((step, i) => (
-            <li key={i} className="flex gap-4 py-3">
-              <span aria-hidden className="w-6 shrink-0 font-ls-serif text-2xl leading-none text-ls-muted">
+            <li key={i} className="flex gap-3 py-2">
+              {/* The number sits on the first line of the step (compact, Nov 28). */}
+              <span aria-hidden className="w-5 shrink-0 font-ls-serif text-[17px] leading-relaxed text-ls-muted">
                 {i + 1}
               </span>
-              <div className="min-w-0 flex-1 space-y-4">
+              <div className="min-w-0 flex-1 space-y-2">
                 <StepExtras step={step} number={i + 1} cookName={cookName} />
                 {step.from_answers.length > 0 && (
                   <ul className="src-only space-y-1.5">
