@@ -14,7 +14,8 @@
     "verify": "node --env-file=.env.local ./node_modules/@playwright/test/cli.js test verify/verify.spec.ts",
     "verify:fresh": "rm -rf .ai-cache && npm run verify",
     "verify:limits": "node --env-file=.env.local ./node_modules/@playwright/test/cli.js test verify/limits.spec.ts",
-    "words": "node --env-file=.env.local ./node_modules/@playwright/test/cli.js test verify/words.spec.ts"
+    "words": "node --env-file=.env.local ./node_modules/@playwright/test/cli.js test verify/words.spec.ts",
+    "eval:nutrition": "AI_CACHE=off node --env-file=.env.local --import tsx evals/nutrition.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.10.0",

@@ -34,7 +34,7 @@ export class ModelError extends Error {
   }
 }
 
-function getConfig() {
+export function getConfig() {
   const apiKey = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL;
   if (!apiKey) throw new ModelError("GEMINI_API_KEY is not set.");

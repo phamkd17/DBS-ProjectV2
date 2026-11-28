@@ -1,0 +1,129 @@
+{
+  "model": "gemini-3.5-flash",
+  "version": "n1",
+  "results": [
+    {
+      "name": "yogurt",
+      "ms": 42872,
+      "nutrition": {
+        "version": "n1",
+        "model": "gemini-3.5-flash",
+        "made_at": "2026-11-28T04:51:57.794Z",
+        "servings": 8,
+        "servings_source": "suggested",
+        "items": [
+          {
+            "ingredient": "1/2 gallon whole milk",
+            "fdc_id": 2705385,
+            "food": "Milk, whole",
+            "grams": 1952,
+            "grams_basis": "0.5 gallon = 8 cups × 244 g (USDA: 1 cup = 244 g)",
+            "kcal": 1190.7,
+            "protein_g": 63.8,
+            "fat_g": 62.5,
+            "carbs_g": 90.4,
+            "sugar_g": 93.9,
+            "sodium_mg": 741.8
+          },
+          {
+            "ingredient": "2 tablespoons plain yogurt with live cultures",
+            "fdc_id": 2705418,
+            "food": "Yogurt, whole milk, plain",
+            "grams": 31,
+            "grams_basis": "2 tbsp = 1/8 cup × 245 g (USDA: 1 cup = 245 g)",
+            "kcal": 23.9,
+            "protein_g": 1.2,
+            "fat_g": 1.4,
+            "carbs_g": 1.7,
+            "sugar_g": 1.3,
+            "sodium_mg": 12.9
+          }
+        ],
+        "skipped": [],
+        "total": {
+          "kcal": 1214.6,
+          "protein_g": 65,
+          "fat_g": 63.8,
+          "carbs_g": 92.1,
+          "sugar_g": 95.1,
+          "sodium_mg": 754.6
+        },
+        "for_ingredients": "1/2 gallon|whole milk\n2 tablespoons|plain yogurt with live cultures"
+      },
+      "trace": {
+        "rounds": 4,
+        "geminiCalls": 4,
+        "searches": [
+          "milk whole fluid",
+          "yogurt plain whole milk",
+          "milk whole cow fluid",
+          "milk whole 3.25"
+        ],
+        "ungrounded": [],
+        "badGrams": [],
+        "report": {
+          "items": [
+            {
+              "ingredient": "1/2 gallon whole milk",
+              "fdc_id": 2705385,
+              "grams": 1952,
+              "grams_basis": "0.5 gallon = 8 cups × 244 g (USDA: 1 cup = 244 g)"
+            },
+            {
+              "ingredient": "2 tablespoons plain yogurt with live cultures",
+              "fdc_id": 2705418,
+              "grams": 30.6,
+              "grams_basis": "2 tbsp = 1/8 cup × 245 g (USDA: 1 cup = 245 g)"
+            }
+          ],
+          "skipped": [],
+          "servings": 8,
+          "servings_source": "suggested"
+        }
+      },
+      "checks": [
+        {
+          "name": "yogurt: every food came from a USDA search (no made-up fdc_id)",
+          "must": true,
+          "pass": true
+        },
+        {
+          "name": "yogurt: every ingredient is counted or skipped with a reason",
+          "must": true,
+          "pass": true,
+          "detail": "2 counted + 0 skipped of 2"
+        },
+        {
+          "name": "yogurt: milk matches a USDA milk food",
+          "pass": true,
+          "detail": "Milk, whole (2705385)"
+        },
+        {
+          "name": "yogurt: milk ≈ 1952 g (±35%)",
+          "pass": true,
+          "detail": "1952 g: 0.5 gallon = 8 cups × 244 g (USDA: 1 cup = 244 g)"
+        },
+        {
+          "name": "yogurt: yogurt matches a USDA yogurt food",
+          "pass": true,
+          "detail": "Yogurt, whole milk, plain (2705418)"
+        },
+        {
+          "name": "yogurt: yogurt ≈ 30 g (±35%)",
+          "pass": true,
+          "detail": "31 g: 2 tbsp = 1/8 cup × 245 g (USDA: 1 cup = 245 g)"
+        },
+        {
+          "name": "yogurt: total ≈ 1210 kcal (±20%)",
+          "pass": true,
+          "detail": "1214.6 kcal"
+        },
+        {
+          "name": "yogurt: servings not stated → labeled suggested",
+          "pass": true,
+          "detail": "8 (suggested)"
+        }
+      ]
+    }
+  ]
+}

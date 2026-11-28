@@ -19,6 +19,8 @@ console.log(ok(pk.startsWith("pk_test_") && trimmed(pk)), "NEXT_PUBLIC_CLERK_PUB
 console.log(ok(sk.startsWith("sk_test_") && trimmed(sk)), "CLERK_SECRET_KEY:", sk.startsWith("sk_test_") ? `sk_test_…, ${shape(sk)}` : shape(sk));
 console.log(ok(gk.length > 20 && trimmed(gk)), "GEMINI_API_KEY:", shape(gk));
 console.log(ok(!!e.GEMINI_MODEL), "GEMINI_MODEL:", e.GEMINI_MODEL || "missing");
+const uk = e.USDA_API_KEY ?? "";
+console.log(uk ? ok(uk.length >= 30 && trimmed(uk)) : "~", "USDA_API_KEY:", uk ? shape(uk) : "missing (nutrition uses DEMO_KEY, ~30 lookups an hour)");
 
 for (const [k, v] of Object.entries({ url, anon, pk, sk, gk })) {
   if (/^[A-Z_]+=/.test(v)) console.log("✗", k, "has its name doubled (NAME=NAME=…)");
