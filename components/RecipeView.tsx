@@ -102,15 +102,15 @@ function Legend({ cookName }: { cookName?: string | null }) {
 function StepsList({ steps, cookName }: { steps: Recipe["steps"]; cookName?: string | null }) {
   const runs = runsByPart(steps as (Recipe["steps"][number] & { section?: string })[]);
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {runs.map((run, r) => (
-        <div key={r} className="space-y-1">
-          {run.part && <h3 className={`pt-1 ${partHeading}`}>{run.part}</h3>}
+        <div key={r} className="space-y-1.5">
+          {run.part && <h3 className={partHeading}>{run.part}</h3>}
           <ol className="divide-y divide-ls-border border-y border-ls-ink">
             {run.items.map(({ item: step, index: i }) => (
                 <li key={i} className="flex gap-3 py-2">
                   {/* The number sits on the first line of the step (compact, Nov 28). */}
-                  <span aria-hidden className="w-5 shrink-0 font-ls-serif text-[17px] leading-relaxed text-ls-muted">
+                  <span aria-hidden className="w-5 shrink-0 font-ls-serif text-base leading-relaxed text-ls-muted">
                     {i + 1}
                   </span>
                   <div className="min-w-0 flex-1 space-y-2">

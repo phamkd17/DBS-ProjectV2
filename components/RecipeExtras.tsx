@@ -169,7 +169,7 @@ export function StepExtras({
   const realDials = step.dials.filter((d) => d.setting?.trim() && d.effect?.trim());
   const hasWhy = cookWhy.length + otherWhy.length > 0;
   const hasDials = realDials.length > 0;
-  const text = <p className="flex-1 text-[17px] leading-relaxed">{step.text}</p>;
+  const text = <p className="flex-1 text-base leading-relaxed">{step.text}</p>;
   if (!hasWhy && !hasDials) return text;
 
   const who = cookName || "The cook";

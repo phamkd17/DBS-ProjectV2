@@ -28,22 +28,25 @@ export function splitNote(note: string) {
  * Read-only ingredient rows. Labels, answer details, and edit history carry
  * .src-only, so they show only when "Show sources" is on.
  */
-/** The small heading over a part ("CARAMEL SAUCE"): Ink, so it reads as a heading, not a label. */
-export const partHeading = "font-ls-sans text-xs font-semibold uppercase tracking-[0.18em] text-ls-ink";
+/**
+ * The heading over a component ("Caramel sauce"): bigger than its items, smaller than
+ * "Ingredients"/"Instructions" (student, Nov 28: 24px > 19px > 16px items).
+ */
+export const partHeading = "font-ls-serif text-[19px] leading-tight text-ls-ink";
 
 export function IngredientList({ ingredients, cookName }: { ingredients: Recipe["ingredients"]; cookName?: string | null }) {
   // Grouped under part headings when the recipe has parts (student, Nov 28).
   const groups = groupByPart(ingredients as (Recipe["ingredients"][number] & { section?: string })[]);
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {groups.map((g) => (
-        <div key={g.part || "_"} className="space-y-1">
-          {g.part && <h3 className={`pt-1 ${partHeading}`}>{g.part}</h3>}
+        <div key={g.part || "_"} className="space-y-1.5">
+          {g.part && <h3 className={partHeading}>{g.part}</h3>}
           <ul className="divide-y divide-ls-border">
             {g.items.map(({ item: ing, index: i }) => {
               const { rest, history } = splitNote(ing.note);
               const line = (
-                <p className="text-[17px]">
+                <p className="text-base">
                   {ing.amount ? <span className="font-medium">{ing.amount} </span> : null}
                   {ing.item}
                   {!ing.amount && <span className="text-ls-muted"> · amount not stated</span>}
