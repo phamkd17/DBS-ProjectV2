@@ -1093,3 +1093,4 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   aren't shown since Nov 27).
 - Verify: edit step 1, add Why + Adjust on step 2, save, open both icons, then
   remove step 1's Why. Axe clean.
+- More space between Tags and the Notes/Send block (pt-4 → pt-10, the student's request). Verify ✓.
