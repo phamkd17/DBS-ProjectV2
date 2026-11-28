@@ -39,12 +39,14 @@ export function IngredientList({ ingredients, cookName }: { ingredients: Recipe[
   // Grouped under part headings when the recipe has parts (student, Nov 28).
   const groups = groupByPart(ingredients as (Recipe["ingredients"][number] & { section?: string })[]);
   return (
-    <div className="space-y-6">
-      {groups.map((g) => (
-        <div key={g.part || "_"} className="space-y-1.5">
+    // Every group looks the same (student, Nov 28): a dark line above and below, light lines
+    // between items, all indented with the items under a component; space before each heading.
+    <div>
+      {groups.map((g, gi) => (
+        <div key={g.part || "_"} className={g.part ? `space-y-1.5 ${gi > 0 ? "pt-6" : ""}` : ""}>
           {g.part && <h3 className={partHeading}>{g.part}</h3>}
           {/* Items under a component are indented a little (student, Nov 28). */}
-          <ul className={`divide-y divide-ls-border ${g.part ? "ml-4" : ""}`}>
+          <ul className={`divide-y divide-ls-border border-y border-ls-ink ${g.part ? "ml-4" : ""}`}>
             {g.items.map(({ item: ing, index: i }) => {
               const { rest, history } = splitNote(ing.note);
               const line = (
@@ -55,7 +57,7 @@ export function IngredientList({ ingredients, cookName }: { ingredients: Recipe[
                 </p>
               );
               return (
-                <li key={i} className="flow-root space-y-0.5 py-2 first:border-t first:border-t-ls-ink last:border-b last:border-b-ls-ink">
+                <li key={i} className="flow-root space-y-0.5 py-2">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     {rest ? (
                       <IngredientNote note={rest} item={ing.item}>

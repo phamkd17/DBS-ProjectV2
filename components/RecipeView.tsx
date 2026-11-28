@@ -102,12 +102,14 @@ function Legend({ cookName }: { cookName?: string | null }) {
 function StepsList({ steps, cookName }: { steps: Recipe["steps"]; cookName?: string | null }) {
   const runs = runsByPart(steps as (Recipe["steps"][number] & { section?: string })[]);
   return (
-    <div className="space-y-6">
+    // Every run looks the same (student, Nov 28): a dark line above and below, light lines
+    // between steps. A run with no heading that follows another shares its line (never two).
+    <div>
       {runs.map((run, r) => (
-        <div key={r} className="space-y-1.5">
+        <div key={r} className={run.part ? `space-y-1.5 ${r > 0 ? "pt-6" : ""}` : ""}>
           {run.part && <h3 className={partHeading}>{run.part}</h3>}
           {/* Steps under a component are indented a little (student, Nov 28). */}
-          <ol className={`divide-y divide-ls-border border-y border-ls-ink ${run.part ? "ml-4" : ""}`}>
+          <ol className={`divide-y divide-ls-border border-b border-ls-ink ${run.part || r === 0 ? "border-t" : ""} ${run.part ? "ml-4" : ""}`}>
             {run.items.map(({ item: step, index: i }) => (
                 <li key={i} className="flex gap-3 py-2">
                   {/* The number sits on the first line of the step (compact, Nov 28). */}

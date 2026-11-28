@@ -831,7 +831,7 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await expect(changed).toBeVisible();
   await expect(changed.getByText("Family answer")).toBeHidden();
   await expect(list.getByRole("listitem").filter({ hasText: "salt (verify)" })).toBeVisible();
-  await expect(list.getByRole("listitem").filter({ hasText: removedName })).toHaveCount(0);
+  await expect(list.getByRole("region", { name: "Ingredients" }).getByRole("listitem").filter({ hasText: removedName })).toHaveCount(0); // (steps may mention it)
   await expect(page.getByRole("button", { name: "Edit ingredients" })).toBeFocused();
   await expect(page.getByRole("button", { name: /^Edit amount of / })).toHaveCount(0); // one pencil, not one per row
 

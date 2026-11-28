@@ -248,7 +248,8 @@ export function EditableSteps({
           </button>
           {state.error && <ErrorNote>{state.error}</ErrorNote>}
           <div className="flex flex-wrap items-center gap-2 border-t border-ls-border pt-4">
-            <Button type="submit" variant="secondary" disabled={pending}>
+            {/* The one red action while editing (student, Nov 28). */}
+            <Button type="submit" disabled={pending}>
               {pending && <Spinner />}
               {pending ? "Saving…" : "Save instructions"}
             </Button>

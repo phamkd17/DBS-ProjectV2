@@ -185,8 +185,9 @@ export default async function RecipePage({ params }: PageProps<"/r/[id]">) {
       <SharePanel recipeId={recipe.id} url={shareUrl} title={recipe.recipe.title} />
       </div>
 
-      {/* Move to and Delete share one line at the bottom (compact, student Nov 27). */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 border-t border-ls-border pt-2">
+      {/* Move to and Delete share one line at the bottom (compact, student Nov 27). No top
+          line: Send's bottom line is right above it (no double lines, Nov 28). */}
+      <div className="-mt-4 flex flex-wrap items-center justify-between gap-x-4">
         <MoveTo kind="dictation" id={dictation.id} current={dictation.stage} />
         <form action={deleteDictation.bind(null, dictation.id)} className="-mr-3">
           <ConfirmSubmit
