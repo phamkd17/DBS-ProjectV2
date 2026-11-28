@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import type { Recipe } from "@/lib/ai/schema";
 import { eyebrow, focusRing } from "./ui";
 
@@ -9,13 +9,59 @@ import { eyebrow, focusRing } from "./ui";
 // history notes are marked .src-only and hidden. The student removed the
 // "Show sources" switch (Nov 27).
 // ---------------------------------------------------------------------------
-export function SourcesScope({ children }: { children: ReactNode }) {
+// "Show all notes" (student, Nov 28): one switch opens or closes every note at
+// once. Each note can still be opened on its own. `gen` changes on every flip,
+// so the notes follow the switch even if one was opened or closed by hand.
+const AllNotes = createContext<{ all: boolean; gen: number }>({ all: false, gen: 0 });
+
+/** Follow the "Show all notes" switch: returns [open, setOpen] that resets whenever it flips. */
+function useFollowAll(): [boolean, (f: (o: boolean) => boolean) => void] {
+  const { all, gen } = useContext(AllNotes);
+  const [open, setOpen] = useState(all);
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setOpen(all);
+  }, [all, gen]);
+  return [open, setOpen];
+}
+
+export function SourcesScope({ children, hasNotes = false }: { children: ReactNode; hasNotes?: boolean }) {
   // The "Show sources" switch was removed (student, Nov 27: not needed). The
   // labels are still saved with every recipe; they're just never shown.
+  const [state, setState] = useState({ all: false, gen: 0 });
   return (
-    <div data-sources="hidden" className="group/sources">
-      {children}
-    </div>
+    <AllNotes.Provider value={state}>
+      <div data-sources="hidden" className="group/sources">
+        {hasNotes && (
+          <div className="-mt-2 mb-1 flex justify-end">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={state.all}
+              onClick={() => setState((s) => ({ all: !s.all, gen: s.gen + 1 }))}
+              className={`inline-flex min-h-11 cursor-pointer items-center gap-3 px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-muted hover:text-ls-ink ${focusRing}`}
+            >
+              <span
+                aria-hidden
+                className={`relative h-5 w-9 shrink-0 rounded-full border border-ls-ink transition-colors ${state.all ? "bg-ls-ink" : "bg-ls-surface"}`}
+              >
+                <span
+                  className={`absolute top-1/2 left-[3px] size-3 -translate-y-1/2 rounded-full transition-transform duration-150 motion-reduce:transition-none ${
+                    state.all ? "translate-x-4 bg-ls-surface" : "bg-ls-ink"
+                  }`}
+                />
+              </span>
+              Show all notes
+            </button>
+          </div>
+        )}
+        {children}
+      </div>
+    </AllNotes.Provider>
   );
 }
 
@@ -96,7 +142,8 @@ export function StepExtras({
   number: number;
   cookName?: string | null;
 }) {
-  const [open, setOpen] = useState<"why" | "dials" | null>(null);
+  const [whyOpen, setWhyOpen] = useFollowAll();
+  const [dialsOpen, setDialsOpen] = useFollowAll();
   const id = useId();
   // Only show an icon when there's something real behind it (blank entries don't count).
   const cookWhy = step.why.filter((w) => w.source === "cook" && w.quote?.trim());
@@ -106,7 +153,7 @@ export function StepExtras({
   const hasDials = realDials.length > 0;
   const text = <p className="flex-1 text-[17px] leading-relaxed">{step.text}</p>;
   if (!hasWhy && !hasDials) return text;
-  const toggle = (k: "why" | "dials") => setOpen((o) => (o === k ? null : k));
+
   const who = cookName || "The cook";
 
   return (
@@ -116,12 +163,12 @@ export function StepExtras({
         {text}
         <div className="-mt-2 flex shrink-0">
         {hasWhy && (
-          <IconToggle open={open === "why"} onClick={() => toggle("why")} controls={`${id}-why`} label={`Why step ${number} works`}>
+          <IconToggle open={whyOpen} onClick={() => setWhyOpen((o) => !o)} controls={`${id}-why`} label={`Why step ${number} works`}>
             <FlaskIcon />
           </IconToggle>
         )}
         {hasDials && (
-          <IconToggle open={open === "dials"} onClick={() => toggle("dials")} controls={`${id}-dials`} label={`Adjust step ${number} to taste`}>
+          <IconToggle open={dialsOpen} onClick={() => setDialsOpen((o) => !o)} controls={`${id}-dials`} label={`Adjust step ${number} to taste`}>
             <SlidersIcon />
           </IconToggle>
         )}
@@ -130,7 +177,7 @@ export function StepExtras({
 
       {hasWhy && (
         // Food science: Cypress tint, flask (student, Nov 28: tell it apart from adjustments).
-        <div id={`${id}-why`} hidden={open !== "why"} className="space-y-3 border-l-2 border-src-science-ink bg-src-science px-4 py-3">
+        <div id={`${id}-why`} hidden={!whyOpen} className="space-y-3 border-l-2 border-src-science-ink bg-src-science px-4 py-3">
           <p className={`${eyebrow} text-src-science-ink`}>Why it works</p>
           {cookWhy.map((w, j) => (
             <div key={`c${j}`} className="space-y-0.5">
@@ -151,7 +198,7 @@ export function StepExtras({
 
       {hasDials && (
         // Adjust to taste: blue tint, sliders.
-        <div id={`${id}-dials`} hidden={open !== "dials"} className="space-y-1.5 border-l-2 border-src-suggested-ink bg-src-suggested px-4 py-3">
+        <div id={`${id}-dials`} hidden={!dialsOpen} className="space-y-1.5 border-l-2 border-src-suggested-ink bg-src-suggested px-4 py-3">
           <p className={`${eyebrow} text-src-suggested-ink`}>Adjust to taste</p>
           <ul className="divide-y divide-ls-rule/60 border border-ls-border bg-ls-surface">
             {realDials.map((d, j) => (
@@ -184,7 +231,7 @@ function NoteIcon() {
 
 /** An ingredient row whose extra note hides behind an icon: sliders for taste notes, a note icon otherwise. */
 export function IngredientNote({ note, item, children }: { note: string; item: string; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useFollowAll();
   const id = useId();
   const taste = TASTE.test(note);
   const label = taste ? `Adjust ${item} to taste` : `Note about ${item}`;

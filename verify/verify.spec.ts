@@ -692,6 +692,16 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
     await expect(main.getByText("Adjust to taste", { exact: true }).filter({ visible: true }).first()).toBeVisible();
   }
   await check(page, "recipe-science-and-dials-open");
+  // "Show all notes" opens every note at once, and closes them again (student, Nov 28).
+  const allNotes = main.getByRole("switch", { name: "Show all notes" });
+  await allNotes.click();
+  await expect(allNotes).toHaveAttribute("aria-checked", "true");
+  for (const b of await main.getByRole("button", { name: /^(Why step \d+ works|Adjust step \d+ to taste|Note about .*|Adjust .* to taste)$/ }).all())
+    await expect(b).toHaveAttribute("aria-expanded", "true");
+  await check(page, "recipe-all-notes-open");
+  await allNotes.click();
+  for (const b of await main.getByRole("button", { name: /^(Why step \d+ works|Adjust step \d+ to taste|Note about .*|Adjust .* to taste)$/ }).all())
+    await expect(b).toHaveAttribute("aria-expanded", "false");
   // Ingredient notes hide behind an icon: sliders for taste notes, a note icon otherwise (student, Nov 28).
   await expect(main.getByRole("button", { name: /^Why .* works$/ }).first()).toBeVisible(); // the flask is for steps' food science
   const noteBtn = main.getByRole("button", { name: /^(Note about|Adjust) / }).first();

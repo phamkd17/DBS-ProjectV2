@@ -1,7 +1,7 @@
 import type { Recipe } from "@/lib/ai/schema";
 import { EditableIngredients } from "./EditableIngredients";
 import { SourcesScope, StepExtras } from "./RecipeExtras";
-import { IngredientList } from "./IngredientList";
+import { IngredientList, recipeHasNotes } from "./IngredientList";
 import { SourceBadge, Transcript } from "./ui";
 import type { ReactNode } from "react";
 
@@ -20,7 +20,7 @@ type Props = {
 /** The finished recipe: ingredients, steps, the why labeled by source, and her words. */
 export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId, aside }: Props) {
   return (
-    <SourcesScope>
+    <SourcesScope hasNotes={recipeHasNotes(recipe)}>
     <article className="space-y-5">
       {/* The dish photo floats right; the title and ingredient rows wrap around it,
           and rows below it run full width (student, Nov 28). */}

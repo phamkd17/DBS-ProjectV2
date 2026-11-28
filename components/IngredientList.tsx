@@ -5,6 +5,18 @@ import { IngredientNote } from "./RecipeExtras";
 // History sentences the app appends when someone edits an ingredient.
 const HISTORY = /(Changed from “[^”]*” \([^)]*\) on [^.]*\.|Renamed from “[^”]*” on [^.]*\.|Amount added on [^.]*\.|Added on [^.]*\.)/g;
 
+/** Does this recipe have any notes for "Show all notes" to open? (Same rules as the icons.) */
+export function recipeHasNotes(recipe: Recipe) {
+  return (
+    recipe.ingredients.some((i) => !!splitNote(i.note ?? "").rest) ||
+    recipe.steps.some(
+      (st) =>
+        st.why.some((w) => (w.source === "cook" && w.quote?.trim()) || w.text?.trim()) ||
+        st.dials.some((d) => d.setting?.trim() && d.effect?.trim()),
+    )
+  );
+}
+
 export function splitNote(note: string) {
   const history = note.match(HISTORY) ?? [];
   const rest = note.replace(HISTORY, "").replace(/\s+/g, " ").trim();
