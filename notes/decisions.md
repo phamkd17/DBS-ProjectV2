@@ -65,6 +65,7 @@
 | Nov 27 | Each tab's header is **just the tab's name** (no "Your lab book", no count or description line) | Tab name + one line; keep "Your lab book" without the line |
 | Nov 27 | **Remove "Show sources"** and every source label from the recipe page (labels are still saved with each recipe, just not shown), including the "Suggested" tag | Remove the switch but keep a small "Suggested" tag (recommended, to keep AI suggestions distinguishable) |
 | Nov 28 | On a recipe, **hide everything from Ideas and Development** (inspiration, photos, kitchen notes, the AI's questions) in one closed section; the page shows the recipe, tags, and Send | |
+| Nov 28 | Recipe **headings clearly different** from the ingredients and steps (larger, semibold) | |
 
 ## What the app is
 

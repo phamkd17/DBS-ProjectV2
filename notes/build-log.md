@@ -949,3 +949,18 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   and Send stay outside. The "edited after this recipe was made" warning stays
   at the top. At 390px: 2272 → 1999px. Verify: an `openNotes()` helper opens
   it before editing; idea notes are hidden until opened. Axe clean.
+
+## Nov 28 — Correction: Figtree wasn't showing locally
+- The student said headings and items looked too similar. Computed styles
+  showed weight 400 in the **system font**: the dev server was still serving
+  the old CSS (Instrument Serif/Jost variables, which no longer exist), so
+  everything fell back to the system font, and the semibold heading rule was
+  missing. My Nov 27 "verified" screenshots were of that fallback; I didn't
+  catch it. The stale-CSS guard only compared color tokens and selectors.
+- Production was fine: Vercel builds fresh, and its CSS has the Figtree tokens
+  and the 600 weight (checked with curl).
+- Fix: stopped the server and waited for the port to free before clearing
+  `.next` (last time the old process may have rewritten it), then restarted.
+  The guard now also compares every `--font-ls-*` token.
+- Recipe section headings 2xl semibold (24px) vs 17px regular items, so they
+  read as headings. Verify ✓, axe clean.
