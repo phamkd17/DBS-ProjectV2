@@ -1224,3 +1224,14 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   belong to the dish (shared by all iterations).
 - Verify: notes on 1; + New iteration; change an amount in 2; notes on 2; the
   original is unchanged; delete 2. Axe clean.
+- Iterations rework (the student's request): the breadcrumb row is now the
+  iteration control: an outlined "Iteration N · Nov 28 ⌄" button (closed by
+  default) plus All notes. Open, it shows the chips (1 → `?it=original`),
+  + New iteration, Iteration summary, and this iteration's date/notes. No
+  `?it` = the latest (`pickIteration`); `lib/iterations.ts` shares
+  `loadIterations` with the new `/r/[id]/iterations` summary page (newest
+  first, each with Open). Tests updated: the "moved to Recipes" checks no
+  longer use the breadcrumb (they use Move to).
+- Clickability: a `Chevron` SVG (rotates when open). The notes `<details>`
+  shows Show/Hide via `group-open`, and the iteration control is outlined
+  like a dropdown. Verify ✓, axe clean.

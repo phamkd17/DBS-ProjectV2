@@ -85,6 +85,8 @@
 | Nov 28 | The **AI uses components** too (prompt p5): it splits a dish into components only when it really has separate parts, in the cook's words | |
 | Nov 28 | On a recipe, **Save** (while editing) is the red action; **Make a link** is not red; no double lines anywhere in the lists | |
 | Nov 28 | **Iterations are versions of the recipe**: each iteration is its own slightly different copy of the recipe (edit its ingredients and instructions), with a date and my own iteration notes; no suggestions; manual only | A trial log with one-tap adjustments (built first, replaced); an AI summary of trials |
+| Nov 28 | **Iterations replace the breadcrumb** and stay mostly hidden (one line until tapped); a recipe **opens on the latest iteration**; an **Iteration summary** page shows every iteration's date and notes | |
+| Nov 28 | Make opening/closing obvious: an outlined Iteration dropdown with a chevron; the notes row says **Show/Hide** with a chevron | |
 
 ## What the app is
 
