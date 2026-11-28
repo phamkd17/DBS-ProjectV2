@@ -59,6 +59,12 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * notes ≤ 20,000 characters, answers ≤ 2,000 each).
  */
 const MAX_OUTPUT_TOKENS = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS) || 16_384;
+/**
+ * Input cap on the whole prompt (security pass #6): the kitchen notes are capped at
+ * 20,000 characters, but pass 2 also sends the draft and the questions, which a user
+ * could make huge by writing to the database directly. A real recipe is far below this.
+ */
+const MAX_PROMPT_CHARS = 80_000;
 
 async function generate<T>(
   schema: z.ZodType<T>,
@@ -79,10 +85,15 @@ async function generate<T>(
     console.log(`[ai] cache hit (${cacheKey.slice(0, 8)}): no Gemini call`);
     return { data: cached.data, model, ms: 0 };
   }
-  await beforeCall?.(); // throws AiLimitError when over the limit: no call is made
+  if (system.length + user.length > MAX_PROMPT_CHARS) {
+    throw new ModelError("That's too much to send to the recipe helper at once. Try shorter kitchen notes.");
+  }
   console.log(`[ai] calling Gemini (${model})`);
 
   for (let attempt = 0; ; attempt++) {
+    // Every real call counts toward the per-user limit, retries included (security pass #6).
+    // Throws AiLimitError when over: no call is made.
+    await beforeCall?.();
     try {
       const res = await ai.models.generateContent({
         model,
