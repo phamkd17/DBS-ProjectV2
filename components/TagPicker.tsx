@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useOptimistic, useRef, useState, useTransition } from "react";
 import { tagEntry, untagEntry } from "@/app/actions";
 import { STARTER_TAGS, type TagRow } from "@/lib/types";
-import { eyebrow, focusRing, textLink } from "./ui";
+import { eyebrow, focusRing } from "./ui";
 
 type Tag = { id: string; name: string };
 type Change = { add: Tag } | { remove: string }; // remove = by name
@@ -75,16 +74,10 @@ export function TagPicker({ dictationId, allTags, selected }: { dictationId: str
   const chip = "inline-flex h-8 items-center border font-ls-sans text-[14px]";
   return (
     <section aria-labelledby="tags-heading" aria-busy={saving} className="space-y-2">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="tags-heading" className={eyebrow}>
-          Tags
-        </h2>
-        {allTags.length > 0 && (
-          <Link href="/tags" className={`-my-3 inline-flex min-h-11 items-center font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}>
-            All tags
-          </Link>
-        )}
-      </div>
+      {/* No "All tags" link here (student, Nov 28); it's on the Recipes tab. */}
+      <h2 id="tags-heading" className={eyebrow}>
+        Tags
+      </h2>
 
       <ul className="flex flex-wrap items-center gap-2" aria-label="Tags on this recipe">
         {tags.map((t) => (
