@@ -5,7 +5,7 @@
  * Rule for editing: keep these general. Do not paste eval answers in here
  * (e.g. "10 in means Dannon"), or the evals stop measuring anything.
  */
-export const PROMPT_VERSION = "p4";
+export const PROMPT_VERSION = "p5"; // p5: recipe components (student, Nov 28)
 
 const SHARED_RULES = `
 You help families preserve recipes from home cooks who cook by feel.
@@ -33,6 +33,14 @@ Hard rules:
 6. Keep variations the cook describes ("8 hours if you don't like it too tangy, 12 for
    super tangy") as dials on the step, with source "cook".
 7. Write plainly, for someone who has never made this dish.
+8. Components: when the dish is clearly made of separate parts that are each prepared
+   on their own (e.g. a caramel and a custard, a dough and a filling, a sauce and a
+   protein), set "section" on each ingredient and step to that part's name, using the
+   cook's own words when they name it. Use the same name on the ingredients and the
+   steps of that part. Steps that bring the parts together or apply to the whole dish
+   (preheating, assembling, baking, serving) get "". For a dish with one part (a soup,
+   a single pot or pan), leave every "section" "". Never reorder steps to group them by
+   component; the order rule above still wins.
 `.trim();
 
 export const PASS1_SYSTEM = `

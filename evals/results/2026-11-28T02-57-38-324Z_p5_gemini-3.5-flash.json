@@ -1,0 +1,1275 @@
+{
+  "prompt_version": "p5",
+  "model": "gemini-3.5-flash",
+  "thinking": "default",
+  "results": [
+    {
+      "name": "pork-mango-soup",
+      "model": "gemini-3.5-flash",
+      "ms": {
+        "pass1": 22165
+      },
+      "pass1": {
+        "scan": [
+          {
+            "quote": "start off by making rice you know how to do that",
+            "issue": "No rice type, quantity, or cooking instructions are provided."
+          },
+          {
+            "quote": "cut up pork ribs into tiny little chunks",
+            "issue": "No quantity or weight given for the pork ribs."
+          },
+          {
+            "quote": "boil the meat real quick with salted water",
+            "issue": "No amount of salt or water specified for the initial boil."
+          },
+          {
+            "quote": "add oil to the pot or you add oil to a different pan you turn up the heat test up the chopstick make sure that the chopsticks boiling",
+            "issue": "Ambiguous choice of pot vs pan, no oil amount, and unclear explanation of the chopstick oil test."
+          },
+          {
+            "quote": "give it about like a 32nd so that the fish house tries and the cracked black pepper uh reese's it's aroma",
+            "issue": "Multiple dictation errors ('a 32nd', 'fish house tries', 'reese's') and no quantities for pepper or fish sauce."
+          },
+          {
+            "quote": "add water to the soup I see add water and then you put the pork pieces back in",
+            "issue": "No water quantity for the soup broth; also implies pork was taken out during onion searing, which was not explicitly stated."
+          },
+          {
+            "quote": "simmer it for like 30 minutes an hour",
+            "issue": "Vague time range (30 minutes to 1 hour)."
+          },
+          {
+            "quote": "slice up white onions... get a little bit cilantro and then you get uh green onions... cut mangoes into one inch strips green mangoes",
+            "issue": "No amounts specified for white onions, cilantro, green onions, or green mangoes."
+          },
+          {
+            "quote": "cook the mangoes for about 5 minutes or until it's slightly soft... once the mango is soft after 10 minutes",
+            "issue": "Contradiction on mango cooking time (5 minutes vs 10 minutes)."
+          },
+          {
+            "quote": "add a little bit of Chili Peppers as a garnish",
+            "issue": "No specific type or quantity of chili peppers specified."
+          }
+        ],
+        "draft": {
+          "title": "Pork and Green Mango Soup",
+          "ingredients": [
+            {
+              "item": "Rice",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Mentioned as a side to serve with the soup.",
+              "from_answers": [],
+              "section": "Rice"
+            },
+            {
+              "item": "Pork ribs (bone-in)",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Cut into small chunks with bone left on for flavor.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Salt",
+              "amount": "",
+              "source": "not_stated",
+              "note": "For blanching the pork.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Cooking oil",
+              "amount": "",
+              "source": "not_stated",
+              "note": "For searing pork and onions.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Cracked black pepper",
+              "amount": "",
+              "source": "not_stated",
+              "note": "",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Fish sauce",
+              "amount": "",
+              "source": "not_stated",
+              "note": "",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Water",
+              "amount": "",
+              "source": "not_stated",
+              "note": "For initial boil and main broth base.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "White onions",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Divided use: cooked in broth base and sliced thin for finishing.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Green mangoes",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Must be sour green mangoes, cut into 1-inch strips.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Cilantro",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Chopped for garnish/finishing.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Green onions",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Cut into small pieces.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Chili peppers",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Optional garnish for heat and color.",
+              "from_answers": [],
+              "section": ""
+            }
+          ],
+          "steps": [
+            {
+              "text": "Cook the rice to serve with the finished soup.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": "Rice"
+            },
+            {
+              "text": "Chop the pork ribs into small chunks, keeping the bones attached.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "Leaving the bone on adds extra richness and depth to the broth.",
+                  "quote": "you want the porks with the bone on them 'cause the bone gives a little bit more flavor to the broth"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Place pork pieces in a pot of salted water, bring to a rapid boil briefly, then drain completely and rinse off scum and blood.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "Blanching removes impurities so the broth stays clear and clean-tasting.",
+                  "quote": "you want to get rid of all the blood and the scum and all the gunk that comes off of the bone that adds a weird flavor to this soup and makes it a little cloudy I don't like those extra proteins and collagens and all that stuff floating around I like crystal clear broth"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Heat oil in a pot or pan until hot (test heat by inserting a wooden chopstick; oil should bubble around it). Sear the pork chunks until golden brown on all sides.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Add cracked black pepper, then pour in the fish sauce. Let it sizzle for about 30 seconds until the fish sauce reduces slightly and the pepper releases its aroma.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Add chopped onions and stir-fry, scraping up the browned bits stuck to the bottom of the pan, until translucent.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Add water to create the broth base, return the seared pork pieces to the pot, and simmer for 30 minutes to 1 hour until tender.",
+              "from_answers": [],
+              "why": [],
+              "dials": [
+                {
+                  "setting": "30 minutes to 1 hour simmer",
+                  "effect": "pork becomes soft and easy to chew",
+                  "source": "cook"
+                }
+              ],
+              "section": ""
+            },
+            {
+              "text": "While the pork simmers, slice sour green mangoes into 1-inch strips, slice white onions into thin strips, chop green onions, and chop cilantro.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "White onions are used because they are less sweet, balancing the sour green mangoes.",
+                  "quote": "slice up white onions 'cause I don't like onions to be a little too sweet in this soup 'cause there's a fruit component and the fruits are a sweet and sour"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "When the pork is tender, add the green mango strips to the pot and simmer for 5 to 10 minutes until slightly softened.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "Cooking softens the hard raw mango and releases its sour flavor into the soup.",
+                  "quote": "raw mangoes it's very crunchy and hard you just want to cook it down so that I release it sourness and blends all the flavor together"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Stir in the freshly sliced white onions, cilantro, and green onions just before removing from heat.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Ladle soup over cooked rice and garnish with sliced chili peppers if desired.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": ""
+            }
+          ],
+          "notes": [
+            "Corrected dictation error 'a 32nd' to '30 seconds'.",
+            "Corrected dictation error 'fish house tries' to 'fish sauce dries'.",
+            "Corrected dictation error 'reese's it's aroma' to 'releases its aroma'.",
+            "Corrected dictation error 'pin' to 'pan'.",
+            "Reordered the ingredient slicing (mangoes, onions, herbs) to occur while the pork simmers, prior to adding them to the pot."
+          ]
+        },
+        "questions": [
+          {
+            "kind": "amount",
+            "quote": "cut up pork ribs into tiny little chunks",
+            "question": "How many pounds of pork ribs should be used for this recipe?",
+            "why_it_matters": "Using too little meat yields a thin broth, while too much overpowers the soup ratio.",
+            "suggestion": "2 pounds pork spare ribs or baby back ribs"
+          },
+          {
+            "kind": "amount",
+            "quote": "add water to the soup",
+            "question": "How much water should be added for the soup broth base?",
+            "why_it_matters": "Too much water dilutes the fish sauce and pork flavor; too little makes it overly concentrated.",
+            "suggestion": "6 to 8 cups of water"
+          },
+          {
+            "kind": "amount",
+            "quote": "put your fish sauce in... first you add your pepper then your fish sauce",
+            "question": "How much fish sauce and black pepper should be added during searing?",
+            "why_it_matters": "Fish sauce provides the primary saltiness; getting the wrong amount will ruin the seasoning.",
+            "suggestion": "3 tablespoons fish sauce and 1/2 teaspoon freshly cracked black pepper"
+          },
+          {
+            "kind": "ambiguity",
+            "quote": "add water to the soup I see add water and then you put the pork pieces back in",
+            "question": "Were the pork pieces removed from the pan while searing the onions, or did they stay in the pot?",
+            "why_it_matters": "Leaving the pork in while searing onions can overcrowd the pan and prevent proper onion softening.",
+            "suggestion": "Transfer seared pork to a plate, sear onions in the remaining fat, then add water and return pork to pot."
+          },
+          {
+            "kind": "amount",
+            "quote": "cut mangoes into one inch strips green mangoes",
+            "question": "How many green mangoes are needed for this soup?",
+            "why_it_matters": "Green mango is the main acid component; too few leaves it bland, too many makes it intensely sour.",
+            "suggestion": "2 large green (unripe) mangoes"
+          },
+          {
+            "kind": "contradiction",
+            "quote": "cook the mangoes for about 5 minutes or until it's slightly soft... once the mango is soft after 10 minutes",
+            "question": "How long should the green mangoes simmer in the broth?",
+            "why_it_matters": "Overcooking mangoes makes them turn to mush and dissolve completely into the broth.",
+            "suggestion": "Simmer for 5 to 7 minutes until tender-firm."
+          },
+          {
+            "kind": "dictation_error",
+            "quote": "test up the chopstick make sure that the chopsticks boiling",
+            "question": "Can you clarify the chopstick trick for testing the oil heat?",
+            "why_it_matters": "Searing pork in cold oil will boil the meat in grease rather than creating a brown crust.",
+            "suggestion": "Place the tip of a dry wooden chopstick into hot oil; when steady bubbles form around it, the oil is hot enough."
+          },
+          {
+            "kind": "ambiguity",
+            "quote": "start off by making rice you know how to do that",
+            "question": "What type of rice is typically served with this dish and how much should be prepared?",
+            "why_it_matters": "The choice of starch completes the meal balance.",
+            "suggestion": "2 cups of cooked jasmine rice"
+          }
+        ],
+        "model": "gemini-3.5-flash",
+        "ms": 22165,
+        "prompt_version": "p5"
+      },
+      "checks": [
+        {
+          "name": "transcript unchanged",
+          "pass": true,
+          "must": true
+        },
+        {
+          "name": "draft: has title, ingredients, ordered steps",
+          "pass": true
+        },
+        {
+          "name": "draft: every \"cook\" why quotes the transcript exactly",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no \"cook\" amount has a number she never said",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: components match between ingredients and steps",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "asks mango: 5 or 10 minutes (contradiction)",
+          "pass": true
+        },
+        {
+          "name": "asks when the green onions go in",
+          "pass": false
+        },
+        {
+          "name": "asks same pot or separate pan",
+          "pass": true
+        },
+        {
+          "name": "asks how many parboils is \"a couple\"",
+          "pass": true
+        },
+        {
+          "name": "pepper goes in before fish sauce",
+          "pass": true
+        },
+        {
+          "name": "simmer shown as 30–60 min",
+          "pass": true
+        },
+        {
+          "name": "draft: no invented amount for pork",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no invented amount for fish sauce",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no invented amount for water",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no invented amount for mangoes",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no invented amount for cilantro",
+          "pass": true,
+          "detail": ""
+        }
+      ]
+    },
+    {
+      "name": "tomato-tofu",
+      "model": "gemini-3.5-flash",
+      "ms": {
+        "pass1": 22480
+      },
+      "pass1": {
+        "scan": [
+          {
+            "quote": "these tomatoes into little pieces dice them down",
+            "issue": "Initial quantity and type of tomatoes are not specified."
+          },
+          {
+            "quote": "chop the in onions into little strips",
+            "issue": "Dictation error ('in onions') creates ambiguity about whether regular onions or green onions (scallions) are meant, and the quantity is missing."
+          },
+          {
+            "quote": "put a little bit of oil into the pan",
+            "issue": "Amount and type of cooking oil are not specified."
+          },
+          {
+            "quote": "add a little bit of fish sauce before it gets way too hot and burns everything just about that much",
+            "issue": "Amount of fish sauce is indicated by a visual gesture ('just about that much') which cannot be determined from text."
+          },
+          {
+            "quote": "throw in your onions with like a lot of juices",
+            "issue": "It is unclear what 'juices' refers to or where they come from."
+          },
+          {
+            "quote": "couple pieces of garlic maybe 2 here that is garlic so old let's put 5 in",
+            "issue": "Cook self-corrects garlic quantity from 2 to 5 cloves because the garlic was old."
+          },
+          {
+            "quote": "stirring around for 5 minutes... let's do it 7 minutes I want a little bit of sweeter today",
+            "issue": "Cook changes cooking time from 5 minutes to 7 minutes to increase sweetness."
+          },
+          {
+            "quote": "maybe 5 tomatoes so far",
+            "issue": "Cook adds tomatoes in batches; final total count of tomatoes remains uncertain."
+          },
+          {
+            "quote": "oh I forgot I gotta fry the tofu",
+            "issue": "Tofu preparation step was remembered out of order in the middle of cooking the tomato sauce base."
+          },
+          {
+            "quote": "deep fry the tofu same concept get the oil hot",
+            "issue": "Amount of tofu, type of tofu (firm, medium, silken), and volume of oil for deep frying are not stated."
+          },
+          {
+            "quote": "lightly yellow... spongy... or golden and crispy",
+            "issue": "Cook describes two texture preferences (less cooked/creamier vs golden/crispy)."
+          },
+          {
+            "quote": "add a little bit more water because the tomato is getting too dry",
+            "issue": "Exact amount of water to add to the sauce is not specified."
+          },
+          {
+            "quote": "cook it for about 5 to 10 minutes until everything melts together",
+            "issue": "Simmer time is given as a range (5 to 10 minutes)."
+          },
+          {
+            "quote": "throw a little bit of a soy sauce and chili in the dipping dish if you wan",
+            "issue": "Transcript ends mid-sentence ('if you wan'), and proportions for dipping sauce are omitted."
+          }
+        ],
+        "draft": {
+          "title": "Tomato Tofu",
+          "ingredients": [
+            {
+              "item": "Tofu",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Cut into pieces for frying.",
+              "from_answers": [],
+              "section": "Tofu"
+            },
+            {
+              "item": "Oil for deep-frying",
+              "amount": "",
+              "source": "not_stated",
+              "note": "For frying the tofu.",
+              "from_answers": [],
+              "section": "Tofu"
+            },
+            {
+              "item": "Tomatoes",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Cook mentioned 'maybe 5 tomatoes so far'. Diced.",
+              "from_answers": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "item": "Onions",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Dictation said 'in onions'; chopped into strips.",
+              "from_answers": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "item": "Cooking oil",
+              "amount": "",
+              "source": "not_stated",
+              "note": "For starting the sauce pan.",
+              "from_answers": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "item": "Fish sauce",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Cook gestured 'just about that much'.",
+              "from_answers": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "item": "Garlic",
+              "amount": "5 cloves",
+              "source": "cook",
+              "note": "Cook adjusted from 2 to 5 cloves because garlic was old.",
+              "from_answers": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "item": "Water",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Added to keep tomatoes from drying out and to extract flavor into tofu.",
+              "from_answers": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "item": "Steamed white rice",
+              "amount": "",
+              "source": "not_stated",
+              "note": "For serving.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Soy sauce",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Optional, for dipping dish.",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Chili",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Optional, for dipping dish.",
+              "from_answers": [],
+              "section": ""
+            }
+          ],
+          "steps": [
+            {
+              "text": "Heat oil for deep-frying in a pot or deep pan until hot enough that a wooden chopstick bubbles when inserted.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": "Tofu"
+            },
+            {
+              "text": "Add the tofu pieces to the hot oil and deep-fry. Remove tofu once cooked to desired texture.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "So different family members can have their preferred texture.",
+                  "quote": "so you can both have whatever you want"
+                }
+              ],
+              "dials": [
+                {
+                  "setting": "Lightly yellow and spongy on the inside",
+                  "effect": "Creamier texture",
+                  "source": "cook"
+                },
+                {
+                  "setting": "Very golden and crispy",
+                  "effect": "Absorbs more sauce",
+                  "source": "cook"
+                }
+              ],
+              "section": "Tofu"
+            },
+            {
+              "text": "Heat a little oil in a pan over medium heat until hot enough that a chopstick sizzles.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "text": "Add the fish sauce to the oil before the pan gets too hot.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "To avoid burning the sauce.",
+                  "quote": "before it gets way too hot and burns everything"
+                }
+              ],
+              "dials": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "text": "Wait until the fish sauce bubbles and then stops bubbling, sticking slightly to the bottom of the pan.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "text": "Immediately add the chopped onions along with their juices and stir continuously.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "The liquid cools down the pan so the fish sauce doesn't burn.",
+                  "quote": "you want to get all the juices to cool down the pan so it doesn't burn the fish sauce"
+                }
+              ],
+              "dials": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "text": "Add 5 cloves of garlic and stir-fry for 5 to 7 minutes until soft and golden.",
+              "from_answers": [],
+              "why": [],
+              "dials": [
+                {
+                  "setting": "7 minutes",
+                  "effect": "Sweeter flavor",
+                  "source": "cook"
+                }
+              ],
+              "section": "Tomato Sauce"
+            },
+            {
+              "text": "Add the diced tomatoes and cook for about 2 minutes to caramelize them before adding water.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "Caramelizing tomatoes enhances savory richness.",
+                  "quote": "caramelize tomato adds a really meaty touch to the dish"
+                }
+              ],
+              "dials": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "text": "Add a little bit of water to the pan if the tomatoes get too dry.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": "Tomato Sauce"
+            },
+            {
+              "text": "Add the fried tofu into the tomato pan with a little extra water.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Simmer everything together for 5 to 10 minutes until flavors blend and soften together.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "Allows the tofu to absorb sauce flavor deep inside.",
+                  "quote": "so the water extract all the flavor from the sauce tomato fish sauce into the inner parts of the tofu"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Serve hot over steamed white rice, accompanied by a small dish of soy sauce and sliced chili if desired.",
+              "from_answers": [],
+              "why": [],
+              "dials": [],
+              "section": ""
+            }
+          ],
+          "notes": [
+            "Reordered the tofu frying steps to occur before finishing the sauce, so the sauce pan does not sit off heat while frying.",
+            "Adjusted garlic quantity from 2 to 5 cloves based on cook's self-correction.",
+            "Adjusted onion stir-fry duration to 7 minutes based on cook's self-correction for sweetness.",
+            "Corrected dictation phrase 'in onions' to 'onions' in step text and flagged for clarification."
+          ]
+        },
+        "questions": [
+          {
+            "kind": "dictation_error",
+            "quote": "chop the in onions into little strips",
+            "question": "The speech transcript says 'in onions'. Does this mean yellow onions, sweet onions, or green onions (scallions)?",
+            "why_it_matters": "Using the wrong onion type significantly alters the flavor and texture profile of the sauce.",
+            "suggestion": "1 medium yellow onion (or 4 green onions)."
+          },
+          {
+            "kind": "amount",
+            "quote": "deep fry the tofu",
+            "question": "How much tofu should be used, and what block type works best (firm, extra-firm, or medium)?",
+            "why_it_matters": "Using the wrong type or amount of tofu can cause it to break apart during deep frying or simmer improperly in the sauce.",
+            "suggestion": "14 oz (1 block) firm tofu, cut into 1-inch cubes."
+          },
+          {
+            "kind": "amount",
+            "quote": "just about that much",
+            "question": "How much fish sauce did the cook add to the pan?",
+            "why_it_matters": "Fish sauce is very salty and potent; too much will overwhelm the dish while too little leaves it unseasoned.",
+            "suggestion": "1 tablespoon fish sauce."
+          },
+          {
+            "kind": "amount",
+            "quote": "maybe 5 tomatoes so far",
+            "question": "How many tomatoes of what size should be used in total?",
+            "why_it_matters": "Tomatoes form the base of the sauce; too few will dry out the pan and too many will dilute the seasoning.",
+            "suggestion": "5 medium Roma tomatoes (about 1 lb)."
+          },
+          {
+            "kind": "ambiguity",
+            "quote": "throw in your onions with like a lot of juices",
+            "question": "What juices are added along with the onions to cool down the pan?",
+            "why_it_matters": "If cold water or liquid is expected here, adding dry onions could scorch the fish sauce.",
+            "suggestion": "Use 2 tablespoons of water or accumulated onion juices when adding onions to the hot pan."
+          },
+          {
+            "kind": "amount",
+            "quote": "add a little bit of water simmer it",
+            "question": "How much water should be added to simmer the tomato sauce and tofu?",
+            "why_it_matters": "Too little water will scorch the sauce, whereas too much creates a watery broth instead of a rich sauce.",
+            "suggestion": "1/4 cup to 1/2 cup water."
+          }
+        ],
+        "model": "gemini-3.5-flash",
+        "ms": 22480,
+        "prompt_version": "p5"
+      },
+      "checks": [
+        {
+          "name": "transcript unchanged",
+          "pass": true,
+          "must": true
+        },
+        {
+          "name": "draft: has title, ingredients, ordered steps",
+          "pass": true
+        },
+        {
+          "name": "draft: every \"cook\" why quotes the transcript exactly",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no \"cook\" amount has a number she never said",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: components match between ingredients and steps",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "garlic = 5 (her self-correction wins)",
+          "pass": true,
+          "detail": "5 cloves"
+        },
+        {
+          "name": "tomatoes ≈ 5",
+          "pass": true
+        },
+        {
+          "name": "draft: no invented amount for fish sauce",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no invented amount for tofu",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no invented amount for onions",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no invented amount for oil",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no invented amount for water",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "asks how much fish sauce (\"just about that much\")",
+          "pass": true
+        },
+        {
+          "name": "asks how much / what kind of tofu",
+          "pass": true
+        },
+        {
+          "name": "asks how many onions",
+          "pass": true
+        },
+        {
+          "name": "notes the tofu frying was moved",
+          "pass": true
+        },
+        {
+          "name": "onion dial: 5 min vs 7 min sweeter",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "name": "yogurt",
+      "model": "gemini-3.5-flash",
+      "ms": {
+        "pass1": 12350,
+        "pass2": 16220
+      },
+      "pass1": {
+        "scan": [
+          {
+            "quote": "small 10 in yogurt container",
+            "issue": "Dictation error: '10 in' is unclear and likely misheard (e.g., 10 oz, Dannon, etc.). The specific size and brand/type of yogurt starter are not clear."
+          },
+          {
+            "quote": "heat up the milk make sure it doesn't boil uh just until it steams a little bit and then from there you add 1/3 a cup of sugar... and then you mix in the yogurt with the milk",
+            "issue": "Missing critical step: adding yogurt cultures directly to hot steaming milk (around 180°F) will kill the live bacteria. Milk must be cooled to around 110°F first."
+          },
+          {
+            "quote": "heat up the milk make sure it doesn't boil uh just until it steams a little bit",
+            "issue": "No specific temperature or visual target given for heating milk."
+          },
+          {
+            "quote": "this incubator",
+            "issue": "Unclear what type of incubator or temperature setting is used to culture the yogurt."
+          },
+          {
+            "quote": "these little jars",
+            "issue": "The size or number of jars is not specified."
+          }
+        ],
+        "draft": {
+          "title": "Homemade Sweetened Yogurt",
+          "ingredients": [
+            {
+              "item": "Milk",
+              "amount": "1/2 gallon",
+              "source": "cook",
+              "note": "",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Plain unflavored yogurt (starter)",
+              "amount": "",
+              "source": "not_stated",
+              "note": "Cook mentioned a small unflavored container ('10 in' in transcript dictation).",
+              "from_answers": [],
+              "section": ""
+            },
+            {
+              "item": "Sugar",
+              "amount": "1/3 cup",
+              "source": "cook",
+              "note": "Use less if you prefer it less sweet.",
+              "from_answers": [],
+              "section": ""
+            }
+          ],
+          "steps": [
+            {
+              "text": "Heat 1/2 gallon of milk in a saucepan until it steams slightly, being careful not to let it boil.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "heat up the milk make sure it doesn't boil uh just until it steams a little bit",
+                  "quote": "heat up the milk make sure it doesn't boil uh just until it steams a little bit"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Stir in 1/3 cup of sugar (or less to taste) until completely dissolved in the milk.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "add 1/3 a cup of sugar maybe less if you like it less sweet",
+                  "quote": "add 1/3 a cup of sugar maybe less if you like it less sweet"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Mix the plain unflavored yogurt into the warm milk, stirring until everything is thoroughly blended.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "mix in the yogurt with the milk you stir it into everything blends",
+                  "quote": "mix in the yogurt with the milk you stir it into everything blends"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Divide the milk mixture into small jars.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "put it into these little jars",
+                  "quote": "put it into these little jars"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            },
+            {
+              "text": "Place all the jars into the incubator and let sit undisturbed to culture.",
+              "from_answers": [],
+              "why": [],
+              "dials": [
+                {
+                  "setting": "8 hours",
+                  "effect": "milder flavor, not too tangy",
+                  "source": "cook"
+                },
+                {
+                  "setting": "12 hours",
+                  "effect": "super tangy flavor",
+                  "source": "cook"
+                }
+              ],
+              "section": ""
+            },
+            {
+              "text": "Store the finished yogurt in the refrigerator or freezer before serving.",
+              "from_answers": [],
+              "why": [
+                {
+                  "source": "cook",
+                  "text": "keep it in the fridge or freeze it and then serve",
+                  "quote": "keep it in the fridge or freeze it and then serve"
+                }
+              ],
+              "dials": [],
+              "section": ""
+            }
+          ],
+          "notes": [
+            "Preserved cook's step order.",
+            "Flagged dictation error '10 in yogurt container' for clarification."
+          ]
+        },
+        "questions": [
+          {
+            "kind": "missing_step",
+            "quote": "",
+            "question": "Do you cool the milk before mixing in the yogurt starter?",
+            "why_it_matters": "If live yogurt cultures are added to steaming hot milk above 120°F, the heat will kill the bacteria and the yogurt will not set.",
+            "suggestion": "Cool the milk down to about 110°F (warm to the touch, but not hot) before stirring in the yogurt starter."
+          },
+          {
+            "kind": "dictation_error",
+            "quote": "small 10 in yogurt container",
+            "question": "What brand and size of unflavored yogurt starter do you normally use?",
+            "why_it_matters": "The transcript says '10 in', which is likely a misheard brand or container size; using the wrong amount or a flavored/pasteurized brand without live cultures will cause fermentation to fail.",
+            "suggestion": "Use 6 oz to 8 oz of plain, unflavored yogurt with live active cultures (such as Dannon or Fage)."
+          },
+          {
+            "kind": "ambiguity",
+            "quote": "this incubator",
+            "question": "What kind of incubator or setting do you use (e.g., yogurt maker, oven with light on, Instant Pot)?",
+            "why_it_matters": "Yogurt cultures require a steady warm temperature around 105°F–110°F to incubate properly.",
+            "suggestion": "Use a electric yogurt maker set to 110°F or an Instant Pot on the 'Yogurt' setting."
+          },
+          {
+            "kind": "ambiguity",
+            "quote": "heat up the milk make sure it doesn't boil uh just until it steams a little bit",
+            "question": "Do you use a food thermometer to check the milk temperature when heating?",
+            "why_it_matters": "Scalding milk to around 180°F denatures proteins to yield a thicker yogurt texture without scorching.",
+            "suggestion": "Heat milk to 180°F over medium-low heat while stirring occasionally."
+          }
+        ],
+        "model": "gemini-3.5-flash",
+        "ms": 12350,
+        "prompt_version": "p5"
+      },
+      "final": {
+        "title": "Homemade Sweetened Yogurt",
+        "ingredients": [
+          {
+            "item": "Milk",
+            "amount": "1/2 gallon",
+            "source": "cook",
+            "note": "",
+            "from_answers": [],
+            "section": ""
+          },
+          {
+            "item": "Plain unflavored yogurt (starter)",
+            "amount": "1 container",
+            "source": "cook",
+            "note": "",
+            "from_answers": [
+              {
+                "text": "Plain Dannon yogurt, single-serve cup",
+                "source": "user_answer"
+              }
+            ],
+            "section": ""
+          },
+          {
+            "item": "Sugar",
+            "amount": "1/3 cup",
+            "source": "cook",
+            "note": "Use less if you prefer it less sweet.",
+            "from_answers": [],
+            "section": ""
+          }
+        ],
+        "steps": [
+          {
+            "text": "Heat 1/2 gallon of milk in a pot over medium-low heat, stirring occasionally, until it steams and reaches 180°F, being careful not to let it boil.",
+            "from_answers": [
+              {
+                "text": "Heat milk to 180°F over medium-low heat while stirring occasionally",
+                "source": "suggested"
+              }
+            ],
+            "why": [
+              {
+                "source": "cook",
+                "text": "heat up the milk make sure it doesn't boil uh just until it steams a little bit",
+                "quote": "heat up the milk make sure it doesn't boil uh just until it steams a little bit"
+              }
+            ],
+            "dials": [],
+            "section": ""
+          },
+          {
+            "text": "Stir in 1/3 cup of sugar (or less to taste) until completely dissolved in the warm milk.",
+            "from_answers": [],
+            "why": [
+              {
+                "source": "cook",
+                "text": "add 1/3 a cup of sugar maybe less if you like it less sweet",
+                "quote": "add 1/3 a cup of sugar maybe less if you like it less sweet"
+              }
+            ],
+            "dials": [],
+            "section": ""
+          },
+          {
+            "text": "Allow the milk mixture to cool down before mixing in the yogurt starter.",
+            "from_answers": [
+              {
+                "text": "Lets the milk cool before adding the yogurt",
+                "source": "user_answer"
+              }
+            ],
+            "why": [
+              {
+                "source": "food_science",
+                "text": "Adding active bacteria to hot milk will kill the cultures needed for fermentation.",
+                "quote": ""
+              }
+            ],
+            "dials": [],
+            "section": ""
+          },
+          {
+            "text": "Mix the plain Dannon yogurt starter into the cooled milk mixture, stirring until everything is thoroughly blended.",
+            "from_answers": [],
+            "why": [
+              {
+                "source": "cook",
+                "text": "mix in the yogurt with the milk you stir it into everything blends",
+                "quote": "mix in the yogurt with the milk you stir it into everything blends"
+              }
+            ],
+            "dials": [],
+            "section": ""
+          },
+          {
+            "text": "Divide the milk mixture evenly into small jars.",
+            "from_answers": [],
+            "why": [
+              {
+                "source": "cook",
+                "text": "put it into these little jars",
+                "quote": "put it into these little jars"
+              }
+            ],
+            "dials": [],
+            "section": ""
+          },
+          {
+            "text": "Place all the jars into an incubator, such as an electric yogurt maker set to 110°F or an Instant Pot on the 'Yogurt' setting, and let sit undisturbed to culture.",
+            "from_answers": [
+              {
+                "text": "Electric yogurt maker set to 110°F or Instant Pot on 'Yogurt' setting",
+                "source": "suggested"
+              }
+            ],
+            "why": [],
+            "dials": [
+              {
+                "setting": "8 hours",
+                "effect": "milder flavor, not too tangy",
+                "source": "cook"
+              },
+              {
+                "setting": "12 hours",
+                "effect": "super tangy flavor",
+                "source": "cook"
+              }
+            ],
+            "section": ""
+          },
+          {
+            "text": "Store the finished yogurt in the refrigerator or freezer before serving.",
+            "from_answers": [],
+            "why": [
+              {
+                "source": "cook",
+                "text": "keep it in the fridge or freeze it and then serve",
+                "quote": "keep it in the fridge or freeze it and then serve"
+              }
+            ],
+            "dials": [],
+            "section": ""
+          }
+        ],
+        "notes": [
+          "Corrected dictation error '10 in yogurt container' to plain Dannon single cup based on family answer.",
+          "Added missing step to cool milk before adding yogurt starter, clarified by family answer.",
+          "Added recommended milk heating temperature (180°F) and incubator options (110°F yogurt maker or Instant Pot) based on accepted suggestions."
+        ]
+      },
+      "checks": [
+        {
+          "name": "transcript unchanged",
+          "pass": true,
+          "must": true
+        },
+        {
+          "name": "draft: has title, ingredients, ordered steps",
+          "pass": true
+        },
+        {
+          "name": "draft: every \"cook\" why quotes the transcript exactly",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: no \"cook\" amount has a number she never said",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "draft: components match between ingredients and steps",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "asks about the \"10 in\" yogurt container",
+          "pass": true
+        },
+        {
+          "name": "asks the starter's brand or live cultures, not just size",
+          "must": true,
+          "pass": true
+        },
+        {
+          "name": "flags the missing cooling step",
+          "must": true,
+          "pass": true
+        },
+        {
+          "name": "milk is heated and not boiled",
+          "pass": true
+        },
+        {
+          "name": "asks which kind of milk",
+          "pass": false
+        },
+        {
+          "name": "asks the incubator temperature",
+          "pass": true
+        },
+        {
+          "name": "asks fridge or freezer",
+          "pass": false
+        },
+        {
+          "name": "incubation dial: 8 h milder vs 12 h tangy",
+          "pass": true
+        },
+        {
+          "name": "no needless components (one-pot dish)",
+          "pass": true
+        },
+        {
+          "name": "final: has title, ingredients, ordered steps",
+          "pass": true
+        },
+        {
+          "name": "final: every \"cook\" why quotes the transcript exactly",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "final: no \"cook\" amount has a number she never said",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "final: components match between ingredients and steps",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "final: starter is Dannon, credited to the family answer",
+          "must": true,
+          "pass": true
+        },
+        {
+          "name": "final: has a cooling step",
+          "must": true,
+          "pass": true
+        },
+        {
+          "name": "final: accepted suggestions are labeled suggested",
+          "must": true,
+          "pass": true
+        },
+        {
+          "name": "final: no suggestion hidden under a cook/family label",
+          "must": true,
+          "pass": true
+        }
+      ]
+    }
+  ]
+}
