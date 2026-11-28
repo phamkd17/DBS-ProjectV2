@@ -105,16 +105,33 @@ export function PartSelect({
   parts,
   value,
   onChange,
+  selected,
+  onSelect,
 }: {
   id: string;
   label: string;
   parts: string[];
   value: string;
   onChange: (v: string) => void;
+  /** Bulk move (student, Nov 28): tick several rows, then pick a component once. */
+  selected?: boolean;
+  onSelect?: (on: boolean) => void;
 }) {
   if (parts.length === 0) return null;
   const current = parts.includes(value) ? value : "";
   return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {onSelect && (
+        <label className="-my-2 -ml-1 inline-flex min-h-11 cursor-pointer items-center px-1">
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={(e) => onSelect(e.target.checked)}
+            className="size-5 cursor-pointer accent-ls-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ls-ink"
+          />
+          <span className="sr-only">Select {label}</span>
+        </label>
+      )}
     <div id={id} role="radiogroup" aria-label={`Component of ${label}`} className="flex flex-wrap gap-1.5">
       {["", ...parts].map((p) => {
         const on = current === p;
@@ -133,6 +150,44 @@ export function PartSelect({
           </button>
         );
       })}
+    </div>
+    </div>
+  );
+}
+
+/** Shown while rows are ticked: move them all into one component with one tap. Sticks to the bottom while you scroll. */
+export function BulkMoveBar({
+  count,
+  parts,
+  noun,
+  onMove,
+  onClear,
+}: {
+  count: number;
+  parts: string[];
+  noun: string;
+  onMove: (part: string) => void;
+  onClear: () => void;
+}) {
+  if (count === 0 || parts.length === 0) return null;
+  return (
+    <div role="group" aria-label={`Move ${count} selected ${noun}`} className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center gap-1.5 border-t border-ls-ink bg-ls-bg px-4 py-2">
+      <span className="mr-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-ink">
+        Move {count} to
+      </span>
+      {["", ...parts].map((p) => (
+        <button
+          key={p || "_none"}
+          type="button"
+          onClick={() => onMove(p)}
+          className={`inline-flex h-8 cursor-pointer items-center border border-ls-ink bg-ls-surface px-2.5 font-ls-sans text-[14px] text-ls-ink hover:bg-white active:bg-ls-ink/[0.08] ${focusRing}`}
+        >
+          {p || "None"}
+        </button>
+      ))}
+      <button type="button" onClick={onClear} className={`ml-auto min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-muted underline underline-offset-4 ${focusRing}`}>
+        Clear
+      </button>
     </div>
   );
 }

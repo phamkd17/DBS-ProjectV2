@@ -504,6 +504,19 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await ff.getByRole("textbox", { name: "Ingredient 2", exact: true }).fill("water");
   await ff.getByRole("textbox", { name: "Ingredient 3", exact: true }).fill("whole milk");
   await ff.getByRole("radiogroup", { name: "Component of ingredient 3" }).getByRole("radio", { name: "Custard" }).click();
+  // Bulk move: tick two rows, then one tap moves both (student, Nov 28).
+  await ff.getByRole("checkbox", { name: "Select ingredient 1" }).check();
+  await ff.getByRole("checkbox", { name: "Select ingredient 2" }).check();
+  const bulk = ff.getByRole("group", { name: "Move 2 selected ingredients" });
+  await check(page, "recipe-components-bulk");
+  await bulk.getByRole("button", { name: "Custard" }).click();
+  for (const n of [1, 2])
+    await expect(ff.getByRole("radiogroup", { name: `Component of ingredient ${n}` }).getByRole("radio", { name: "Custard" })).toHaveAttribute("aria-checked", "true");
+  await expect(ff.getByRole("group", { name: /Move \d+ selected ingredients/ })).toHaveCount(0); // cleared after the move
+  await ff.getByRole("checkbox", { name: "Select ingredient 1" }).check();
+  await ff.getByRole("checkbox", { name: "Select ingredient 2" }).check();
+  await bulk.getByRole("button", { name: "Caramel sauce" }).click();
+  await expect(ff.getByRole("radiogroup", { name: "Component of ingredient 2" }).getByRole("radio", { name: "Caramel sauce" })).toHaveAttribute("aria-checked", "true");
   await ff.getByRole("textbox", { name: "Step 1", exact: true }).fill("Preheat the oven to 320°F.");
   await ff.getByRole("textbox", { name: "Step 1", exact: true }).press("Enter");
   await page.keyboard.type("Dissolve the sugar in the water over medium-low heat.");

@@ -5,7 +5,7 @@ import { useActionState, useEffect, useId, useRef, useState, type KeyboardEvent 
 import { createManualRecipe } from "@/app/actions";
 import type { ActionState } from "@/lib/types";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
-import { PartSelect, PartsBar } from "./Parts";
+import { BulkMoveBar, PartSelect, PartsBar } from "./Parts";
 
 type Ing = { key: string; amount: string; item: string; section: string };
 // Each step can have several "Why it works" notes and "Adjust to taste" pairs, like the recipe editor (student, Nov 28).
@@ -33,6 +33,16 @@ export function ManualRecipeForm({
   const [steps, setSteps] = useState<Step[]>(() => [{ key: `${uid}-2`, text: "", section: "", why: [], dials: [] }]);
   // Parts of the recipe, e.g. "Caramel sauce", "Custard" (student, Nov 28).
   const [parts, setParts] = useState<string[]>([]);
+  // Bulk move: tick several rows, then pick a component once (student, Nov 28).
+  const [selIng, setSelIng] = useState<Set<string>>(new Set());
+  const [selStep, setSelStep] = useState<Set<string>>(new Set());
+  const toggle = (set: (f: (s: Set<string>) => Set<string>) => void, key: string, on: boolean) =>
+    set((s) => {
+      const n = new Set(s);
+      if (on) n.add(key);
+      else n.delete(key);
+      return n;
+    });
   // Errors clear as soon as you edit that part, and come back only on the next Save.
   const [edited, setEdited] = useState<Record<string, boolean>>({});
   const [state, action, pending] = useActionState<ActionState, FormData>((prev, fd) => {
@@ -157,7 +167,7 @@ export function ManualRecipeForm({
                 <span aria-hidden>×</span>
               </button>
               <div className="col-span-full">
-                <PartSelect id={`ipart-${r.key}`} label={`ingredient ${i + 1}`} parts={parts} value={r.section} onChange={(v) => setIng(r.key, { section: v })} />
+                <PartSelect id={`ipart-${r.key}`} label={`ingredient ${i + 1}`} parts={parts} value={r.section} onChange={(v) => setIng(r.key, { section: v })} selected={selIng.has(r.key)} onSelect={(on) => toggle(setSelIng, r.key, on)} />
               </div>
             </li>
           ))}
@@ -170,6 +180,16 @@ export function ManualRecipeForm({
         <button type="button" onClick={() => setIngs((x) => [...x, { key: k(), amount: "", item: "", section: x[x.length - 1]?.section ?? "" }])} className={addBtn}>
           + Add ingredient
         </button>
+        <BulkMoveBar
+          count={selIng.size}
+          parts={parts}
+          noun="ingredients"
+          onMove={(p) => {
+            setIngs((r) => r.map((x) => (selIng.has(x.key) ? { ...x, section: p } : x)));
+            setSelIng(new Set());
+          }}
+          onClear={() => setSelIng(new Set())}
+        />
       </fieldset>
 
       <fieldset className="space-y-3" aria-describedby={err.steps ? "steps-error" : undefined}>
@@ -186,7 +206,7 @@ export function ManualRecipeForm({
                   Step {i + 1}
                 </label>
                 <textarea id={`step-${s.key}`} rows={2} value={s.text} maxLength={2000} onChange={(e) => setStep(s.key, { text: e.target.value })} onKeyDown={(e) => nextStep(e, s.key)} placeholder={i === 0 ? "e.g. Heat the milk until it steams. Don't let it boil." : "Next step"} className={fieldClass} />
-                <PartSelect id={`spart-${s.key}`} label={`step ${i + 1}`} parts={parts} value={s.section} onChange={(v) => setStep(s.key, { section: v })} />
+                <PartSelect id={`spart-${s.key}`} label={`step ${i + 1}`} parts={parts} value={s.section} onChange={(v) => setStep(s.key, { section: v })} selected={selStep.has(s.key)} onSelect={(on) => toggle(setSelStep, s.key, on)} />
                 {s.why.map((w, j) => (
                   <div key={w.key} className="flex items-end gap-2">
                     <div className="min-w-0 flex-1 space-y-1">
@@ -269,6 +289,16 @@ export function ManualRecipeForm({
         <button type="button" onClick={() => setSteps((x) => [...x, { key: k(), text: "", section: x[x.length - 1]?.section ?? "", why: [], dials: [] }])} className={addBtn}>
           + Add step
         </button>
+        <BulkMoveBar
+          count={selStep.size}
+          parts={parts}
+          noun="steps"
+          onMove={(p) => {
+            setSteps((r) => r.map((x) => (selStep.has(x.key) ? { ...x, section: p } : x)));
+            setSelStep(new Set());
+          }}
+          onClear={() => setSelStep(new Set())}
+        />
       </fieldset>
 
       <div className="space-y-1.5">

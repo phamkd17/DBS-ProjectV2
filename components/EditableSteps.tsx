@@ -5,7 +5,7 @@ import { updateSteps } from "@/app/actions";
 import type { Recipe } from "@/lib/ai/schema";
 import type { ActionState } from "@/lib/types";
 import { PencilButton } from "./InlineEdit";
-import { PartSelect, PartsBar } from "./Parts";
+import { BulkMoveBar, PartSelect, PartsBar } from "./Parts";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
 type Why = { key: string; orig: number | null; text: string };
@@ -37,6 +37,8 @@ export function EditableSteps({
   const [editing, setEditing] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
   const [parts, setParts] = useState<string[]>([]);
+  const [sel, setSel] = useState<Set<string>>(new Set());
+  const tick = (key: string, on: boolean) => setSel((s) => { const n = new Set(s); if (on) n.add(key); else n.delete(key); return n; });
   const pencil = useRef<HTMLButtonElement>(null);
   const was = useRef(false);
   useEffect(() => {
@@ -64,6 +66,7 @@ export function EditableSteps({
       })),
     );
     setParts(allParts);
+    setSel(new Set());
     setEditing(true);
   };
   const patch = (key: string, p: (r: Row) => Row) => setRows((rs) => rs.map((r) => (r.key === key ? p(r) : r)));
@@ -138,7 +141,7 @@ export function EditableSteps({
                 </div>
 
                 <div className="space-y-2 pl-7">
-                  <PartSelect id={`spart-${r.key}`} label={`step ${i + 1}`} parts={parts} value={r.section} onChange={(v) => patch(r.key, (x) => ({ ...x, section: v }))} />
+                  <PartSelect id={`spart-${r.key}`} label={`step ${i + 1}`} parts={parts} value={r.section} onChange={(v) => patch(r.key, (x) => ({ ...x, section: v }))} selected={sel.has(r.key)} onSelect={(on) => tick(r.key, on)} />
                   {r.why.map((w, j) => (
                     <div key={w.key} className="flex items-end gap-2">
                       <div className="min-w-0 flex-1 space-y-1">
@@ -232,6 +235,16 @@ export function EditableSteps({
           <button type="button" onClick={() => setRows((rs) => [...rs, { key: k(), orig: null, text: "", section: rs[rs.length - 1]?.section ?? "", why: [], dials: [] }])} className={addBtn}>
             + Add step
           </button>
+          <BulkMoveBar
+            count={sel.size}
+            parts={parts}
+            noun="steps"
+            onMove={(p) => {
+              setRows((rs) => rs.map((x) => (sel.has(x.key) ? { ...x, section: p } : x)));
+              setSel(new Set());
+            }}
+            onClear={() => setSel(new Set())}
+          />
           {state.error && <ErrorNote>{state.error}</ErrorNote>}
           <div className="flex flex-wrap items-center gap-2 border-t border-ls-border pt-4">
             <Button type="submit" variant="secondary" disabled={pending}>
