@@ -1179,3 +1179,24 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   Move to.
 - Lines beside the dish photo (the student's screenshot): the list's own top/bottom borders ran under the float and touched the photo, while row dividers (flow-root rows) stopped short. The dark top/bottom lines are now on the first/last row (`border-t-ls-ink`/`border-b-ls-ink`), so every line stops the same way, and rows below the photo still run full width. Verify ✓.
 - Even row spacing (the student's screenshot: more space under the text than over it). Cause: `space-y` (Tailwind v4 adds margin-bottom to every child but the last) still reserved space for hidden note panels and hidden source details, and the 44px icon buttons made rows taller. Fix: rows use `flex flex-col gap` (display:none children take no space), and the icons sit on the first text line with negative margins (-my-2.5 ingredients, -my-[9px] steps), so they don't add height. Ingredients and steps now have equal space above and below. Verify ✓, axe clean.
+
+## Nov 28 — Iterations: the trial log (#9, branch `iterations`)
+- Migration `20261128030000_trials.sql`: `trials` (entry, `tried_on` date,
+  `changed` ≤1000, `result` ≤2000). Owner-only RLS; the insert checks the entry
+  is yours; the only column grant for update is (tried_on, changed, result),
+  so a trial can't be re-pointed. Tested as two users (rolled back): own only,
+  B can't add to A's entry (42501; a first test wrongly showed "allowed"
+  because B's select returned 0 rows, so it was re-run with A's id captured),
+  B can't edit or delete A's, re-pointing blocked, anon blocked.
+- `saveTrial` (new or edit) / `deleteTrial`. A valid date is required, plus
+  "what changed" or "how it turned out".
+- `TrialLog` on the recipe page below Instructions: "Trials N" with + Log a
+  trial. The form has a date (today by default), what you changed (chips from
+  the recipe's own dial settings, one tap appends), and how it turned out.
+  Trials are oldest first, side by side: a sideways scroll-snap row on phones
+  (85% cards so the next one peeks), two columns wider. Edit in place or
+  delete (confirm).
+- Verify: an empty trial is refused; log 2 (one via an adjustment chip);
+  date order; edit; delete. Axe clean.
+- Not yet: the AI summary of trials and its eval (#9's AI part), and photos on
+  trials.

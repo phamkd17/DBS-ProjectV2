@@ -84,6 +84,7 @@
 | Nov 28 | Component headings are **gray, medium weight** (still bigger than the items), so they read as a level below Ingredients/Instructions; their items are indented | Bigger section headings; a dash marker before each component |
 | Nov 28 | The **AI uses components** too (prompt p5): it splits a dish into components only when it really has separate parts, in the cook's words | |
 | Nov 28 | On a recipe, **Save** (while editing) is the red action; **Make a link** is not red; no double lines anywhere in the lists | |
+| Nov 28 | **Iterations** on the final recipe: a Trials log (date, what I changed, how it turned out), shown side by side; the recipe's own adjustments are one tap | |
 
 ## What the app is
 
