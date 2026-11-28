@@ -105,33 +105,16 @@ export function PartSelect({
   parts,
   value,
   onChange,
-  selected,
-  onSelect,
 }: {
   id: string;
   label: string;
   parts: string[];
   value: string;
   onChange: (v: string) => void;
-  /** Bulk move (student, Nov 28): tick several rows, then pick a component once. */
-  selected?: boolean;
-  onSelect?: (on: boolean) => void;
 }) {
   if (parts.length === 0) return null;
   const current = parts.includes(value) ? value : "";
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {onSelect && (
-        <label className="-my-2 -ml-1 inline-flex min-h-11 cursor-pointer items-center px-1">
-          <input
-            type="checkbox"
-            checked={!!selected}
-            onChange={(e) => onSelect(e.target.checked)}
-            className="size-5 cursor-pointer accent-ls-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ls-ink"
-          />
-          <span className="sr-only">Select {label}</span>
-        </label>
-      )}
     <div id={id} role="radiogroup" aria-label={`Component of ${label}`} className="flex flex-wrap gap-1.5">
       {["", ...parts].map((p) => {
         const on = current === p;
@@ -151,11 +134,33 @@ export function PartSelect({
         );
       })}
     </div>
-    </div>
   );
 }
 
-/** Shown while rows are ticked: move them all into one component with one tap. Sticks to the bottom while you scroll. */
+/**
+ * Bulk move (student, Nov 28): a checkbox at the start of the row, beside the
+ * step number like mobile apps. Tick several rows, then pick a component once.
+ */
+export function RowCheck({ show, label, checked, onChange }: { show: boolean; label: string; checked: boolean; onChange: (on: boolean) => void }) {
+  if (!show) return null;
+  return (
+    <label className="-ml-1 inline-flex min-h-11 w-7 shrink-0 cursor-pointer items-start justify-center pt-2.5">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="size-5 cursor-pointer accent-ls-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ls-ink"
+      />
+      <span className="sr-only">Select {label}</span>
+    </label>
+  );
+}
+
+/**
+ * Shown while rows are ticked: move them all into one component with one tap.
+ * Fixed at the top of the screen, like a phone app's selection bar (student, Nov 28:
+ * at the bottom, the browser's own bars covered it).
+ */
 export function BulkMoveBar({
   count,
   parts,
@@ -171,23 +176,26 @@ export function BulkMoveBar({
 }) {
   if (count === 0 || parts.length === 0) return null;
   return (
-    <div role="group" aria-label={`Move ${count} selected ${noun}`} className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center gap-1.5 border-t border-ls-ink bg-ls-bg px-4 py-2">
-      <span className="mr-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-ink">
-        Move {count} to
-      </span>
-      {["", ...parts].map((p) => (
-        <button
-          key={p || "_none"}
-          type="button"
-          onClick={() => onMove(p)}
-          className={`inline-flex h-8 cursor-pointer items-center border border-ls-ink bg-ls-surface px-2.5 font-ls-sans text-[14px] text-ls-ink hover:bg-white active:bg-ls-ink/[0.08] ${focusRing}`}
-        >
-          {p || "None"}
+    // Fixed over the top of the screen (like a phone's selection bar), so ticking a row never shifts the list.
+    <div role="group" aria-label={`Move ${count} selected ${noun}`} className="fixed inset-x-0 top-0 z-30 border-b border-ls-ink bg-ls-bg">
+      <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-1.5 px-5 py-2">
+        <span className="mr-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-ink">
+          Move {count} to
+        </span>
+        {["", ...parts].map((p) => (
+          <button
+            key={p || "_none"}
+            type="button"
+            onClick={() => onMove(p)}
+            className={`inline-flex h-8 cursor-pointer items-center border border-ls-ink bg-ls-surface px-2.5 font-ls-sans text-[14px] text-ls-ink hover:bg-white active:bg-ls-ink/[0.08] ${focusRing}`}
+          >
+            {p || "None"}
+          </button>
+        ))}
+        <button type="button" onClick={onClear} className={`ml-auto min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-muted underline underline-offset-4 ${focusRing}`}>
+          Clear
         </button>
-      ))}
-      <button type="button" onClick={onClear} className={`ml-auto min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] text-ls-muted underline underline-offset-4 ${focusRing}`}>
-        Clear
-      </button>
+      </div>
     </div>
   );
 }

@@ -42,7 +42,8 @@ export function IngredientList({ ingredients, cookName }: { ingredients: Recipe[
       {groups.map((g) => (
         <div key={g.part || "_"} className="space-y-1.5">
           {g.part && <h3 className={partHeading}>{g.part}</h3>}
-          <ul className="divide-y divide-ls-border">
+          {/* Items under a component are indented a little (student, Nov 28). */}
+          <ul className={`divide-y divide-ls-border ${g.part ? "ml-4" : ""}`}>
             {g.items.map(({ item: ing, index: i }) => {
               const { rest, history } = splitNote(ing.note);
               const line = (

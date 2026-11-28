@@ -5,7 +5,7 @@ import { updateSteps } from "@/app/actions";
 import type { Recipe } from "@/lib/ai/schema";
 import type { ActionState } from "@/lib/types";
 import { PencilButton } from "./InlineEdit";
-import { BulkMoveBar, PartSelect, PartsBar } from "./Parts";
+import { BulkMoveBar, PartSelect, PartsBar, RowCheck } from "./Parts";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
 type Why = { key: string; orig: number | null; text: string };
@@ -113,10 +113,21 @@ export function EditableSteps({
               setRows((rs) => rs.map((x) => (x.section === name ? { ...x, section: "" } : x)));
             }}
           />
+          <BulkMoveBar
+            count={sel.size}
+            parts={parts}
+            noun="steps"
+            onMove={(p) => {
+              setRows((rs) => rs.map((x) => (sel.has(x.key) ? { ...x, section: p } : x)));
+              setSel(new Set());
+            }}
+            onClear={() => setSel(new Set())}
+          />
           <ol className="space-y-5">
             {rows.map((r, i) => (
               <li key={r.key} className="space-y-2 border-b border-ls-border pb-4 last:border-b-0">
                 <div className="flex gap-2">
+                  <RowCheck show={parts.length > 0} label={`step ${i + 1}`} checked={sel.has(r.key)} onChange={(on) => tick(r.key, on)} />
                   <span aria-hidden className="w-5 shrink-0 pt-2.5 font-ls-serif text-[17px] text-ls-muted">
                     {i + 1}
                   </span>
@@ -140,8 +151,8 @@ export function EditableSteps({
                   </button>
                 </div>
 
-                <div className="space-y-2 pl-7">
-                  <PartSelect id={`spart-${r.key}`} label={`step ${i + 1}`} parts={parts} value={r.section} onChange={(v) => patch(r.key, (x) => ({ ...x, section: v }))} selected={sel.has(r.key)} onSelect={(on) => tick(r.key, on)} />
+                <div className={`space-y-2 ${parts.length > 0 ? "pl-14" : "pl-7"}`}>
+                  <PartSelect id={`spart-${r.key}`} label={`step ${i + 1}`} parts={parts} value={r.section} onChange={(v) => patch(r.key, (x) => ({ ...x, section: v }))} />
                   {r.why.map((w, j) => (
                     <div key={w.key} className="flex items-end gap-2">
                       <div className="min-w-0 flex-1 space-y-1">
@@ -235,16 +246,6 @@ export function EditableSteps({
           <button type="button" onClick={() => setRows((rs) => [...rs, { key: k(), orig: null, text: "", section: rs[rs.length - 1]?.section ?? "", why: [], dials: [] }])} className={addBtn}>
             + Add step
           </button>
-          <BulkMoveBar
-            count={sel.size}
-            parts={parts}
-            noun="steps"
-            onMove={(p) => {
-              setRows((rs) => rs.map((x) => (sel.has(x.key) ? { ...x, section: p } : x)));
-              setSel(new Set());
-            }}
-            onClear={() => setSel(new Set())}
-          />
           {state.error && <ErrorNote>{state.error}</ErrorNote>}
           <div className="flex flex-wrap items-center gap-2 border-t border-ls-border pt-4">
             <Button type="submit" variant="secondary" disabled={pending}>

@@ -6,7 +6,7 @@ import type { Recipe } from "@/lib/ai/schema";
 import type { ActionState } from "@/lib/types";
 import { IngredientList } from "./IngredientList";
 import { PencilButton } from "./InlineEdit";
-import { BulkMoveBar, PartSelect, PartsBar } from "./Parts";
+import { BulkMoveBar, PartSelect, PartsBar, RowCheck } from "./Parts";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
 type Row = { key: string; orig: number | null; amount: string; item: string; section: string };
@@ -81,13 +81,22 @@ export function EditableIngredients({
               setRows((rs) => rs.map((x) => (x.section === name ? { ...x, section: "" } : x)));
             }}
           />
+          <BulkMoveBar
+            count={sel.size}
+            parts={parts}
+            noun="ingredients"
+            onMove={(p) => {
+              setRows((rs) => rs.map((x) => (sel.has(x.key) ? { ...x, section: p } : x)));
+              setSel(new Set());
+            }}
+            onClear={() => setSel(new Set())}
+          />
           <ul className="space-y-3">
             {rows.map((r, n) => (
               // Phones: name full width with the amount under it. Wider: amount | name | remove.
-              <li
-                key={r.key}
-                className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1.5 border-b border-ls-border pb-3 last:border-b-0 sm:grid-cols-[10rem_1fr_auto] sm:items-end sm:border-b-0 sm:pb-0"
-              >
+              <li key={r.key} className="flex gap-1 border-b border-ls-border pb-3 last:border-b-0 sm:border-b-0 sm:pb-0">
+                <RowCheck show={parts.length > 0} label={r.item || `ingredient ${n + 1}`} checked={sel.has(r.key)} onChange={(on) => tick(r.key, on)} />
+                <div className="grid min-w-0 flex-1 grid-cols-[1fr_auto] gap-x-2 gap-y-1.5 sm:grid-cols-[10rem_1fr_auto] sm:items-end">
                 <div className="col-start-1 row-start-2 max-w-48 space-y-1 sm:row-start-1 sm:max-w-none">
                   <label htmlFor={`amt-${r.key}`} className={`${eyebrow} ${n === 0 ? "" : "sm:sr-only"}`}>
                     Amount<span className="sr-only"> of {r.item || "new ingredient"}</span>
@@ -125,7 +134,8 @@ export function EditableIngredients({
                   <span aria-hidden>×</span>
                 </button>
                 <div className="col-span-full">
-                  <PartSelect id={`ipart-${r.key}`} label={r.item || `ingredient ${n + 1}`} parts={parts} value={r.section} onChange={(v) => update(r.key, { section: v })} selected={sel.has(r.key)} onSelect={(on) => tick(r.key, on)} />
+                  <PartSelect id={`ipart-${r.key}`} label={r.item || `ingredient ${n + 1}`} parts={parts} value={r.section} onChange={(v) => update(r.key, { section: v })} />
+                </div>
                 </div>
               </li>
             ))}
@@ -137,16 +147,6 @@ export function EditableIngredients({
           >
             + Add ingredient
           </button>
-          <BulkMoveBar
-            count={sel.size}
-            parts={parts}
-            noun="ingredients"
-            onMove={(p) => {
-              setRows((rs) => rs.map((x) => (sel.has(x.key) ? { ...x, section: p } : x)));
-              setSel(new Set());
-            }}
-            onClear={() => setSel(new Set())}
-          />
           {state.error && <ErrorNote>{state.error}</ErrorNote>}
           <div className="flex flex-wrap items-center gap-2 border-t border-ls-border pt-4">
             <Button type="submit" variant="secondary" disabled={pending}>

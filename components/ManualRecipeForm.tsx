@@ -5,7 +5,7 @@ import { useActionState, useEffect, useId, useRef, useState, type KeyboardEvent 
 import { createManualRecipe } from "@/app/actions";
 import type { ActionState } from "@/lib/types";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
-import { BulkMoveBar, PartSelect, PartsBar } from "./Parts";
+import { BulkMoveBar, PartSelect, PartsBar, RowCheck } from "./Parts";
 
 type Ing = { key: string; amount: string; item: string; section: string };
 // Each step can have several "Why it works" notes and "Adjust to taste" pairs, like the recipe editor (student, Nov 28).
@@ -148,9 +148,21 @@ export function ManualRecipeForm({
       <fieldset className="space-y-3" aria-describedby={err.ingredients ? "ing-error" : undefined}>
         <legend className="font-ls-serif text-3xl leading-tight">Ingredients</legend>
         <p className="text-[15px] text-ls-muted">Press Enter for the next ingredient.</p>
+        <BulkMoveBar
+          count={selIng.size}
+          parts={parts}
+          noun="ingredients"
+          onMove={(p) => {
+            setIngs((r) => r.map((x) => (selIng.has(x.key) ? { ...x, section: p } : x)));
+            setSelIng(new Set());
+          }}
+          onClear={() => setSelIng(new Set())}
+        />
         <ul className="space-y-3">
           {ings.map((r, i) => (
-            <li key={r.key} className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1.5 sm:grid-cols-[10rem_1fr_auto] sm:items-end">
+            <li key={r.key} className="flex gap-1">
+              <RowCheck show={parts.length > 0} label={`ingredient ${i + 1}`} checked={selIng.has(r.key)} onChange={(on) => toggle(setSelIng, r.key, on)} />
+              <div className="grid min-w-0 flex-1 grid-cols-[1fr_auto] gap-x-2 gap-y-1.5 sm:grid-cols-[10rem_1fr_auto] sm:items-end">
               <div className="col-start-1 row-start-2 max-w-48 space-y-1 sm:row-start-1 sm:max-w-none">
                 <label htmlFor={`amt-${r.key}`} className={`${eyebrow} ${i === 0 ? "" : "sm:sr-only"}`}>
                   Amount<span className="sr-only"> {i + 1}</span>
@@ -167,7 +179,8 @@ export function ManualRecipeForm({
                 <span aria-hidden>×</span>
               </button>
               <div className="col-span-full">
-                <PartSelect id={`ipart-${r.key}`} label={`ingredient ${i + 1}`} parts={parts} value={r.section} onChange={(v) => setIng(r.key, { section: v })} selected={selIng.has(r.key)} onSelect={(on) => toggle(setSelIng, r.key, on)} />
+                <PartSelect id={`ipart-${r.key}`} label={`ingredient ${i + 1}`} parts={parts} value={r.section} onChange={(v) => setIng(r.key, { section: v })} />
+              </div>
               </div>
             </li>
           ))}
@@ -180,24 +193,25 @@ export function ManualRecipeForm({
         <button type="button" onClick={() => setIngs((x) => [...x, { key: k(), amount: "", item: "", section: x[x.length - 1]?.section ?? "" }])} className={addBtn}>
           + Add ingredient
         </button>
-        <BulkMoveBar
-          count={selIng.size}
-          parts={parts}
-          noun="ingredients"
-          onMove={(p) => {
-            setIngs((r) => r.map((x) => (selIng.has(x.key) ? { ...x, section: p } : x)));
-            setSelIng(new Set());
-          }}
-          onClear={() => setSelIng(new Set())}
-        />
       </fieldset>
 
       <fieldset className="space-y-3" aria-describedby={err.steps ? "steps-error" : undefined}>
         <legend className="font-ls-serif text-3xl leading-tight">Instructions</legend>
         <p className="text-[15px] text-ls-muted">Press Enter for the next step, Shift+Enter for a new line.</p>
+        <BulkMoveBar
+          count={selStep.size}
+          parts={parts}
+          noun="steps"
+          onMove={(p) => {
+            setSteps((r) => r.map((x) => (selStep.has(x.key) ? { ...x, section: p } : x)));
+            setSelStep(new Set());
+          }}
+          onClear={() => setSelStep(new Set())}
+        />
         <ol className="space-y-4">
           {steps.map((s, i) => (
             <li key={s.key} className="flex gap-3">
+              <RowCheck show={parts.length > 0} label={`step ${i + 1}`} checked={selStep.has(s.key)} onChange={(on) => toggle(setSelStep, s.key, on)} />
               <span aria-hidden className="w-7 shrink-0 pt-2 font-ls-serif text-3xl leading-none text-ls-muted">
                 {i + 1}
               </span>
@@ -206,7 +220,7 @@ export function ManualRecipeForm({
                   Step {i + 1}
                 </label>
                 <textarea id={`step-${s.key}`} rows={2} value={s.text} maxLength={2000} onChange={(e) => setStep(s.key, { text: e.target.value })} onKeyDown={(e) => nextStep(e, s.key)} placeholder={i === 0 ? "e.g. Heat the milk until it steams. Don't let it boil." : "Next step"} className={fieldClass} />
-                <PartSelect id={`spart-${s.key}`} label={`step ${i + 1}`} parts={parts} value={s.section} onChange={(v) => setStep(s.key, { section: v })} selected={selStep.has(s.key)} onSelect={(on) => toggle(setSelStep, s.key, on)} />
+                <PartSelect id={`spart-${s.key}`} label={`step ${i + 1}`} parts={parts} value={s.section} onChange={(v) => setStep(s.key, { section: v })} />
                 {s.why.map((w, j) => (
                   <div key={w.key} className="flex items-end gap-2">
                     <div className="min-w-0 flex-1 space-y-1">
@@ -289,16 +303,6 @@ export function ManualRecipeForm({
         <button type="button" onClick={() => setSteps((x) => [...x, { key: k(), text: "", section: x[x.length - 1]?.section ?? "", why: [], dials: [] }])} className={addBtn}>
           + Add step
         </button>
-        <BulkMoveBar
-          count={selStep.size}
-          parts={parts}
-          noun="steps"
-          onMove={(p) => {
-            setSteps((r) => r.map((x) => (selStep.has(x.key) ? { ...x, section: p } : x)));
-            setSelStep(new Set());
-          }}
-          onClear={() => setSelStep(new Set())}
-        />
       </fieldset>
 
       <div className="space-y-1.5">

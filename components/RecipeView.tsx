@@ -106,7 +106,8 @@ function StepsList({ steps, cookName }: { steps: Recipe["steps"]; cookName?: str
       {runs.map((run, r) => (
         <div key={r} className="space-y-1.5">
           {run.part && <h3 className={partHeading}>{run.part}</h3>}
-          <ol className="divide-y divide-ls-border border-y border-ls-ink">
+          {/* Steps under a component are indented a little (student, Nov 28). */}
+          <ol className={`divide-y divide-ls-border border-y border-ls-ink ${run.part ? "ml-4" : ""}`}>
             {run.items.map(({ item: step, index: i }) => (
                 <li key={i} className="flex gap-3 py-2">
                   {/* The number sits on the first line of the step (compact, Nov 28). */}
