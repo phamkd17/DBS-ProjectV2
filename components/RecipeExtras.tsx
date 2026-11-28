@@ -120,7 +120,7 @@ function IconToggle({
       onClick={onClick}
       className={`inline-grid size-11 cursor-pointer place-items-center border transition-colors ${focusRing} ${
         open
-          ? "border-ls-ink bg-ls-ink text-ls-surface"
+          ? "border-transparent bg-ls-ink/[0.08] text-ls-ink" // muted when open (student, Nov 28)
           : "border-transparent text-ls-muted hover:bg-ls-ink/[0.06] hover:text-ls-ink active:bg-ls-ink/[0.12]"
       }`}
     >
@@ -176,9 +176,9 @@ export function StepExtras({
       </div>
 
       {hasWhy && (
-        // Food science: Cypress tint, flask (student, Nov 28: tell it apart from adjustments).
-        <div id={`${id}-why`} hidden={!whyOpen} className="space-y-3 border-l-2 border-src-science-ink bg-src-science px-4 py-3">
-          <p className={`${eyebrow} text-src-science-ink`}>Why it works</p>
+        // Muted (student, Nov 28): a thin rule, no tint. The flask icon and the heading tell it apart.
+        <div id={`${id}-why`} hidden={!whyOpen} className="space-y-2 border-l border-ls-rule pl-4">
+          <p className={eyebrow}>Why it works</p>
           {cookWhy.map((w, j) => (
             <div key={`c${j}`} className="space-y-0.5">
               <p className="text-[13px] font-medium text-ls-muted">{who}&apos;s reason</p>
@@ -197,12 +197,12 @@ export function StepExtras({
       )}
 
       {hasDials && (
-        // Adjust to taste: blue tint, sliders.
-        <div id={`${id}-dials`} hidden={!dialsOpen} className="space-y-1.5 border-l-2 border-src-suggested-ink bg-src-suggested px-4 py-3">
-          <p className={`${eyebrow} text-src-suggested-ink`}>Adjust to taste</p>
-          <ul className="divide-y divide-ls-rule/60 border border-ls-border bg-ls-surface">
+        // Adjust to taste: the same muted look; the sliders icon and the heading tell it apart.
+        <div id={`${id}-dials`} hidden={!dialsOpen} className="space-y-1 border-l border-ls-rule pl-4">
+          <p className={eyebrow}>Adjust to taste</p>
+          <ul className="space-y-0.5">
             {realDials.map((d, j) => (
-              <li key={j} className="flex flex-wrap items-baseline gap-x-2 px-3 py-2 text-[15px]">
+              <li key={j} className="flex flex-wrap items-baseline gap-x-2 text-[15px]">
                 <span className="font-medium">{d.setting}</span>
                 <span aria-hidden className="text-ls-muted">
                   →
@@ -248,7 +248,7 @@ export function IngredientNote({ note, item, children }: { note: string; item: s
       <p
         id={`${id}-note`}
         hidden={!open}
-        className={`border-l-2 px-3 py-2 text-[15px] ${taste ? "border-src-suggested-ink bg-src-suggested text-src-suggested-ink" : "border-ls-rule text-ls-muted"}`}
+        className="border-l border-ls-rule pl-3 text-[15px] text-ls-muted"
       >
         {taste && <span className="font-medium">Adjust to taste: </span>}
         {note}
