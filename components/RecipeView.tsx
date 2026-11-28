@@ -2,7 +2,8 @@ import type { Recipe } from "@/lib/ai/schema";
 import { EditableIngredients } from "./EditableIngredients";
 import { EditableSteps } from "./EditableSteps";
 import { SourcesScope, StepExtras } from "./RecipeExtras";
-import { IngredientList, recipeHasNotes } from "./IngredientList";
+import { IngredientList, partHeading, recipeHasNotes } from "./IngredientList";
+import { partsOf, runsByPart } from "@/lib/types";
 import { SourceBadge, Transcript } from "./ui";
 import type { ReactNode } from "react";
 
@@ -22,6 +23,7 @@ type Props = {
 
 /** The finished recipe: ingredients, steps, the why labeled by source, and her words. */
 export function RecipeView({ recipe, transcript, cookName, editedAt, editableRecipeId, aside, switchOutside }: Props) {
+  const allParts = partsOf([...recipe.ingredients, ...recipe.steps] as { section?: string }[]);
   return (
     <SourcesScope hasNotes={recipeHasNotes(recipe)} ownSwitch={!switchOutside}>
     <article className="space-y-5">
@@ -35,7 +37,7 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
       </header>
 
       {editableRecipeId ? (
-        <EditableIngredients recipeId={editableRecipeId} ingredients={recipe.ingredients} cookName={cookName} />
+        <EditableIngredients recipeId={editableRecipeId} ingredients={recipe.ingredients} cookName={cookName} allParts={allParts} />
       ) : (
         <section aria-labelledby="ingredients" className="space-y-2">
           <h2 id="ingredients" className="font-ls-serif text-2xl leading-tight">
@@ -48,59 +50,15 @@ export function RecipeView({ recipe, transcript, cookName, editedAt, editableRec
 
       {/* "Instructions" (was "Steps"; student, Nov 28). The owner can edit them from one pencil. */}
       {editableRecipeId ? (
-        <EditableSteps recipeId={editableRecipeId} steps={recipe.steps}>
-        <ol className="divide-y divide-ls-border border-y border-ls-ink">
-          {recipe.steps.map((step, i) => (
-            <li key={i} className="flex gap-3 py-2">
-              {/* The number sits on the first line of the step (compact, Nov 28). */}
-              <span aria-hidden className="w-5 shrink-0 font-ls-serif text-[17px] leading-relaxed text-ls-muted">
-                {i + 1}
-              </span>
-              <div className="min-w-0 flex-1 space-y-2">
-                <StepExtras step={step} number={i + 1} cookName={cookName} />
-                {step.from_answers.length > 0 && (
-                  <ul className="src-only space-y-1.5">
-                    {step.from_answers.map((a, j) => (
-                      <li key={j} className="flex flex-wrap items-baseline gap-2 text-[15px] text-ls-muted">
-                        <SourceBadge source={a.source} /> {a.text}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-              </div>
-            </li>
-          ))}
-        </ol>
+        <EditableSteps recipeId={editableRecipeId} steps={recipe.steps} allParts={allParts}>
+        <StepsList steps={recipe.steps} cookName={cookName} />
         </EditableSteps>
       ) : (
         <section aria-labelledby="steps" className="space-y-2">
           <h2 id="steps" className="font-ls-serif text-2xl leading-tight">
             Instructions
           </h2>
-        <ol className="divide-y divide-ls-border border-y border-ls-ink">
-          {recipe.steps.map((step, i) => (
-            <li key={i} className="flex gap-3 py-2">
-              {/* The number sits on the first line of the step (compact, Nov 28). */}
-              <span aria-hidden className="w-5 shrink-0 font-ls-serif text-[17px] leading-relaxed text-ls-muted">
-                {i + 1}
-              </span>
-              <div className="min-w-0 flex-1 space-y-2">
-                <StepExtras step={step} number={i + 1} cookName={cookName} />
-                {step.from_answers.length > 0 && (
-                  <ul className="src-only space-y-1.5">
-                    {step.from_answers.map((a, j) => (
-                      <li key={j} className="flex flex-wrap items-baseline gap-2 text-[15px] text-ls-muted">
-                        <SourceBadge source={a.source} /> {a.text}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-              </div>
-            </li>
-          ))}
-        </ol>
+        <StepsList steps={recipe.steps} cookName={cookName} />
         </section>
       )}
 
@@ -137,5 +95,42 @@ function Legend({ cookName }: { cookName?: string | null }) {
       <SourceBadge source="suggested" />
       <SourceBadge source="food_science" />
     </p>
+  );
+}
+
+/** Steps in order; a part heading wherever the part changes, numbering straight through (student, Nov 28). */
+function StepsList({ steps, cookName }: { steps: Recipe["steps"]; cookName?: string | null }) {
+  const runs = runsByPart(steps as (Recipe["steps"][number] & { section?: string })[]);
+  return (
+    <div className="space-y-3">
+      {runs.map((run, r) => (
+        <div key={r} className="space-y-1">
+          {run.part && <h3 className={`pt-1 ${partHeading}`}>{run.part}</h3>}
+          <ol className="divide-y divide-ls-border border-y border-ls-ink">
+            {run.items.map(({ item: step, index: i }) => (
+                <li key={i} className="flex gap-3 py-2">
+                  {/* The number sits on the first line of the step (compact, Nov 28). */}
+                  <span aria-hidden className="w-5 shrink-0 font-ls-serif text-[17px] leading-relaxed text-ls-muted">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <StepExtras step={step} number={i + 1} cookName={cookName} />
+                    {step.from_answers.length > 0 && (
+                      <ul className="src-only space-y-1.5">
+                        {step.from_answers.map((a, j) => (
+                          <li key={j} className="flex flex-wrap items-baseline gap-2 text-[15px] text-ls-muted">
+                            <SourceBadge source={a.source} /> {a.text}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                  </div>
+                </li>
+            ))}
+          </ol>
+        </div>
+      ))}
+    </div>
   );
 }

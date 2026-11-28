@@ -94,3 +94,40 @@ export type ActionState = {
 export type TagRow = { id: string; name: string; created_at: string };
 /** Offered when you have no tags yet. Draft names: for the student to review. */
 export const STARTER_TAGS = ["American", "Indian", "Mexican", "Desserts"];
+
+// ---------------------------------------------------------------------------
+// Parts of a recipe (student, Nov 28): e.g. a flan's "Caramel sauce", "Milk",
+// "Egg mixture". Stored as an optional `section` on each ingredient and step
+// in the recipe JSON (not part of the AI's output schema; older recipes have none).
+// ---------------------------------------------------------------------------
+export const cleanPart = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ").slice(0, 60);
+
+/** The parts in the order they first appear. */
+export function partsOf(items: { section?: string }[]): string[] {
+  const seen: string[] = [];
+  for (const x of items) {
+    const p = cleanPart(x.section);
+    if (p && !seen.includes(p)) seen.push(p);
+  }
+  return seen;
+}
+
+/** Ingredients grouped by part (items with no part first), keeping their order within each part. */
+export function groupByPart<T extends { section?: string }>(items: T[]): { part: string; items: { item: T; index: number }[] }[] {
+  const order = ["", ...partsOf(items)];
+  return order
+    .map((part) => ({ part, items: items.map((item, index) => ({ item, index })).filter(({ item }) => cleanPart(item.section) === part) }))
+    .filter((g) => g.items.length > 0);
+}
+
+/** Steps stay in order; a new run starts whenever the part changes. */
+export function runsByPart<T extends { section?: string }>(items: T[]): { part: string; items: { item: T; index: number }[] }[] {
+  const runs: { part: string; items: { item: T; index: number }[] }[] = [];
+  items.forEach((item, index) => {
+    const part = cleanPart(item.section);
+    const last = runs[runs.length - 1];
+    if (last && last.part === part) last.items.push({ item, index });
+    else runs.push({ part, items: [{ item, index }] });
+  });
+  return runs;
+}

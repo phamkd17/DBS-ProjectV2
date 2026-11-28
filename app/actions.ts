@@ -16,6 +16,7 @@ import { supabaseForUser } from "@/lib/supabase/server";
 import { AiLimitError, recordAiCall } from "@/lib/ai/limits";
 import { deletePhotos, MAX_PHOTOS_PER_ENTRY, readPhoto, savePhoto } from "@/lib/photos";
 import {
+  cleanPart,
   isStage,
   STARTER_TAGS,
   toQuestion,
@@ -467,7 +468,7 @@ export async function updateIngredients(
   formData: FormData
 ): Promise<ActionState> {
   await requireUser();
-  let rows: { orig: number | null; amount: string; item: string }[];
+  let rows: { orig: number | null; amount: string; item: string; section?: string }[];
   try {
     rows = JSON.parse(String(formData.get("rows") ?? "[]"));
     if (!Array.isArray(rows) || rows.length > 80) throw new Error("bad");
@@ -492,18 +493,22 @@ export async function updateIngredients(
     const item = String(r.item ?? "").trim().slice(0, 120);
     if (!item && !amount) continue; // empty new row
     if (!item) return { error: `Give the ingredient with “${amount}” a name, or remove it.` };
+    const section = cleanPart(r.section); // the recipe part (student, Nov 28); "" = none
     const o = typeof r.orig === "number" && Number.isInteger(r.orig) ? old[r.orig] : undefined;
     if (o && typeof r.orig === "number") {
       kept.add(r.orig);
       const history: string[] = [];
       if (amount !== o.amount) history.push(o.amount ? `Changed from “${o.amount}” (${whoSaid(o.source)}) on ${when}.` : `Amount added on ${when}.`);
       if (item !== o.item) history.push(`Renamed from “${o.item}” on ${when}.`);
+      const { section: _old, ...rest } = o as typeof o & { section?: string };
+      void _old;
       ingredients.push({
-        ...o,
+        ...rest,
         item,
         amount,
         source: amount !== o.amount ? (amount ? "user_answer" : "not_stated") : o.source,
         note: [o.note, ...history].filter(Boolean).join(" "),
+        ...(section ? { section } : {}),
       });
     } else {
       ingredients.push({
@@ -512,6 +517,7 @@ export async function updateIngredients(
         source: amount ? "user_answer" : "not_stated",
         note: `Added on ${when}.`,
         from_answers: [],
+        ...(section ? { section } : {}),
       });
     }
   }
@@ -539,6 +545,7 @@ export async function updateIngredients(
 type StepRow = {
   orig: number | null;
   text: string;
+  section?: string;
   why: { orig: number | null; text: string }[];
   dials: { orig: number | null; setting: string; effect: string }[];
 };
@@ -582,7 +589,8 @@ export async function updateSteps(recipeId: string, _prev: ActionState, formData
     });
     if (!text && why.length === 0 && dials.length === 0) continue; // an empty new step
     if (!text) return { error: "A step has notes but no instructions. Add the step's text, or remove it." };
-    steps.push({ text, from_answers: o?.from_answers ?? [], why, dials });
+    const section = cleanPart(r.section);
+    steps.push({ text, from_answers: o?.from_answers ?? [], why, dials, ...(section ? { section } : {}) });
   }
   if (steps.length === 0) return { error: "Keep at least one step." };
 
@@ -679,9 +687,10 @@ export async function deletePhoto(photoId: string): Promise<void> {
 // recipe. Everything is labeled as the cook's (the "Whose recipe?" name).
 // ---------------------------------------------------------------------------
 type ManualRows = {
-  ingredients: { amount: string; item: string }[];
+  ingredients: { amount: string; item: string; section?: string }[];
+  // section = the part of the recipe, e.g. "Caramel sauce" (student, Nov 28).
   // why: one string (older form) or several; dials: "Adjust to taste" pairs (student, Nov 28).
-  steps: { text: string; why: string | string[]; dials?: { setting: string; effect: string }[] }[];
+  steps: { text: string; section?: string; why: string | string[]; dials?: { setting: string; effect: string }[] }[];
 };
 
 export async function createManualRecipe(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -698,12 +707,13 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
   }
   const ingredients = rows.ingredients
     .slice(0, 80)
-    .map((r) => ({ amount: String(r?.amount ?? "").trim().slice(0, 60), item: String(r?.item ?? "").trim().slice(0, 120) }))
+    .map((r) => ({ amount: String(r?.amount ?? "").trim().slice(0, 60), item: String(r?.item ?? "").trim().slice(0, 120), section: cleanPart(r?.section) }))
     .filter((r) => r.item || r.amount);
   const steps = rows.steps
     .slice(0, 80)
     .map((r) => ({
       text: String(r?.text ?? "").trim().slice(0, 2000),
+      section: cleanPart(r?.section),
       why: (Array.isArray(r?.why) ? r.why : [r?.why]).slice(0, 8).map((w) => String(w ?? "").trim().slice(0, 1000)).filter(Boolean),
       dials: (Array.isArray(r?.dials) ? r.dials : [])
         .slice(0, 8)
@@ -728,9 +738,11 @@ export async function createManualRecipe(_prev: ActionState, formData: FormData)
       source: r.amount ? ("cook" as const) : ("not_stated" as const),
       note: "",
       from_answers: [],
+      ...(r.section ? { section: r.section } : {}),
     })),
     steps: steps.map((r) => ({
       text: r.text,
+      ...(r.section ? { section: r.section } : {}),
       from_answers: [],
       dials: r.dials.map((d) => ({ ...d, source: "cook" as const })),
       why: r.why.map((w) => ({ source: "cook" as const, text: w, quote: w })),

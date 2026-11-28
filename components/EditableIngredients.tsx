@@ -6,22 +6,27 @@ import type { Recipe } from "@/lib/ai/schema";
 import type { ActionState } from "@/lib/types";
 import { IngredientList } from "./IngredientList";
 import { PencilButton } from "./InlineEdit";
+import { PartSelect, PartsBar } from "./Parts";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
-type Row = { key: string; orig: number | null; amount: string; item: string };
+type Row = { key: string; orig: number | null; amount: string; item: string; section: string };
 
 /** The whole ingredient list, edited at once from one pencil next to the heading. */
 export function EditableIngredients({
   recipeId,
   ingredients,
   cookName,
+  allParts = [],
 }: {
   recipeId: string;
   ingredients: Recipe["ingredients"];
   cookName?: string | null;
+  /** The recipe's parts, from both ingredients and instructions (student, Nov 28). */
+  allParts?: string[];
 }) {
   const [editing, setEditing] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
+  const [parts, setParts] = useState<string[]>([]);
   const pencil = useRef<HTMLButtonElement>(null);
   const was = useRef(false);
   useEffect(() => {
@@ -36,7 +41,8 @@ export function EditableIngredients({
   }, {});
 
   const start = () => {
-    setRows(ingredients.map((x, i) => ({ key: `o${i}`, orig: i, amount: x.amount, item: x.item })));
+    setRows(ingredients.map((x, i) => ({ key: `o${i}`, orig: i, amount: x.amount, item: x.item, section: (x as { section?: string }).section ?? "" })));
+    setParts(allParts);
     setEditing(true);
   };
   const update = (key: string, patch: Partial<Row>) => setRows((r) => r.map((x) => (x.key === key ? { ...x, ...patch } : x)));
@@ -61,7 +67,16 @@ export function EditableIngredients({
           className="space-y-4 border border-ls-ink bg-ls-surface p-4"
         >
           <p className="text-[15px] text-ls-muted">Change amounts and names, add or remove ingredients.</p>
-          <input type="hidden" name="rows" value={JSON.stringify(rows.map(({ orig, amount, item }) => ({ orig, amount, item })))} />
+          <input type="hidden" name="rows" value={JSON.stringify(rows.map(({ orig, amount, item, section }) => ({ orig, amount, item, section })))} />
+          <PartsBar
+            idPrefix="ing"
+            parts={parts}
+            onAdd={(name) => setParts((p) => [...p, name])}
+            onRemove={(name) => {
+              setParts((p) => p.filter((x) => x !== name));
+              setRows((rs) => rs.map((x) => (x.section === name ? { ...x, section: "" } : x)));
+            }}
+          />
           <ul className="space-y-3">
             {rows.map((r, n) => (
               // Phones: name full width with the amount under it. Wider: amount | name | remove.
@@ -105,12 +120,15 @@ export function EditableIngredients({
                 >
                   <span aria-hidden>×</span>
                 </button>
+                <div className="col-span-full">
+                  <PartSelect id={`ipart-${r.key}`} label={r.item || `ingredient ${n + 1}`} parts={parts} value={r.section} onChange={(v) => update(r.key, { section: v })} />
+                </div>
               </li>
             ))}
           </ul>
           <button
             type="button"
-            onClick={() => setRows((rs) => [...rs, { key: `n${Date.now()}`, orig: null, amount: "", item: "" }])}
+            onClick={() => setRows((rs) => [...rs, { key: `n${Date.now()}`, orig: null, amount: "", item: "", section: rs[rs.length - 1]?.section ?? "" }])}
             className={`min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`}
           >
             + Add ingredient

@@ -5,11 +5,12 @@ import { updateSteps } from "@/app/actions";
 import type { Recipe } from "@/lib/ai/schema";
 import type { ActionState } from "@/lib/types";
 import { PencilButton } from "./InlineEdit";
+import { PartSelect, PartsBar } from "./Parts";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
 
 type Why = { key: string; orig: number | null; text: string };
 type Dial = { key: string; orig: number | null; setting: string; effect: string };
-type Row = { key: string; orig: number | null; text: string; why: Why[]; dials: Dial[] };
+type Row = { key: string; orig: number | null; text: string; section: string; why: Why[]; dials: Dial[] };
 
 const removeBtn = `grid size-11 shrink-0 cursor-pointer place-items-center text-xl text-ls-muted hover:bg-ls-ink/[0.06] hover:text-ls-error active:bg-ls-ink/[0.12] ${focusRing}`;
 const addBtn = `min-h-11 cursor-pointer px-1 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] ${textLink}`;
@@ -21,9 +22,21 @@ const k = () => `n${Date.now()}-${n++}`;
  * each step's text, and its "Why it works" (food science) and "Adjust to taste" notes.
  * `children` is the read-only list.
  */
-export function EditableSteps({ recipeId, steps, children }: { recipeId: string; steps: Recipe["steps"]; children: ReactNode }) {
+export function EditableSteps({
+  recipeId,
+  steps,
+  allParts = [],
+  children,
+}: {
+  recipeId: string;
+  steps: Recipe["steps"];
+  /** The recipe's parts, from both ingredients and instructions (student, Nov 28). */
+  allParts?: string[];
+  children: ReactNode;
+}) {
   const [editing, setEditing] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
+  const [parts, setParts] = useState<string[]>([]);
   const pencil = useRef<HTMLButtonElement>(null);
   const was = useRef(false);
   useEffect(() => {
@@ -43,12 +56,14 @@ export function EditableSteps({ recipeId, steps, children }: { recipeId: string;
         key: `o${i}`,
         orig: i,
         text: s.text,
+        section: (s as { section?: string }).section ?? "",
         why: s.why
           .map((w, j) => ({ key: `o${i}w${j}`, orig: j, text: w.source === "cook" && w.quote?.trim() ? w.quote : w.text }))
           .filter((w) => w.text.trim()),
         dials: s.dials.map((d, j) => ({ key: `o${i}d${j}`, orig: j, setting: d.setting, effect: d.effect })),
       })),
     );
+    setParts(allParts);
     setEditing(true);
   };
   const patch = (key: string, p: (r: Row) => Row) => setRows((rs) => rs.map((r) => (r.key === key ? p(r) : r)));
@@ -80,10 +95,20 @@ export function EditableSteps({ recipeId, steps, children }: { recipeId: string;
               rows.map((r) => ({
                 orig: r.orig,
                 text: r.text,
+                section: r.section,
                 why: r.why.map(({ orig, text }) => ({ orig, text })),
                 dials: r.dials.map(({ orig, setting, effect }) => ({ orig, setting, effect })),
               })),
             )}
+          />
+          <PartsBar
+            idPrefix="steps"
+            parts={parts}
+            onAdd={(name) => setParts((p) => [...p, name])}
+            onRemove={(name) => {
+              setParts((p) => p.filter((x) => x !== name));
+              setRows((rs) => rs.map((x) => (x.section === name ? { ...x, section: "" } : x)));
+            }}
           />
           <ol className="space-y-5">
             {rows.map((r, i) => (
@@ -113,6 +138,7 @@ export function EditableSteps({ recipeId, steps, children }: { recipeId: string;
                 </div>
 
                 <div className="space-y-2 pl-7">
+                  <PartSelect id={`spart-${r.key}`} label={`step ${i + 1}`} parts={parts} value={r.section} onChange={(v) => patch(r.key, (x) => ({ ...x, section: v }))} />
                   {r.why.map((w, j) => (
                     <div key={w.key} className="flex items-end gap-2">
                       <div className="min-w-0 flex-1 space-y-1">
@@ -203,7 +229,7 @@ export function EditableSteps({ recipeId, steps, children }: { recipeId: string;
               </li>
             ))}
           </ol>
-          <button type="button" onClick={() => setRows((rs) => [...rs, { key: k(), orig: null, text: "", why: [], dials: [] }])} className={addBtn}>
+          <button type="button" onClick={() => setRows((rs) => [...rs, { key: k(), orig: null, text: "", section: rs[rs.length - 1]?.section ?? "", why: [], dials: [] }])} className={addBtn}>
             + Add step
           </button>
           {state.error && <ErrorNote>{state.error}</ErrorNote>}

@@ -485,6 +485,52 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   await page.goto(manualUrl);
   await expect(page.getByRole("heading", { name: "Not in your lab book" })).toBeVisible();
 
+  // ---- Recipe parts, like a flan's caramel and custard (student, Nov 28) ----
+  const FLAN = `Flan (verify ${RUN})`;
+  await page.goto("/recipes/new");
+  const ff = page.locator("main").filter({ visible: true });
+  await ff.getByLabel("Recipe name").fill(FLAN);
+  await ff.getByRole("button", { name: "+ Part" }).click();
+  await ff.getByRole("textbox", { name: "New part" }).fill("Caramel sauce");
+  await ff.getByRole("textbox", { name: "New part" }).press("Enter");
+  await ff.getByRole("textbox", { name: "New part" }).fill("Custard");
+  await ff.getByRole("textbox", { name: "New part" }).press("Enter");
+  await ff.getByRole("textbox", { name: "Ingredient 1", exact: true }).click(); // closes the part box
+  await ff.getByLabel("Part of ingredient 1").selectOption("Caramel sauce");
+  await ff.getByRole("textbox", { name: "Ingredient 1", exact: true }).fill("sugar");
+  await ff.getByRole("textbox", { name: "Amount 1", exact: true }).fill("100 g");
+  await ff.getByRole("textbox", { name: "Ingredient 1", exact: true }).press("Enter"); // the new row stays in Caramel sauce
+  await expect(ff.getByLabel("Part of ingredient 2")).toHaveValue("Caramel sauce");
+  await ff.getByRole("textbox", { name: "Ingredient 2", exact: true }).fill("water");
+  await ff.getByRole("textbox", { name: "Ingredient 3", exact: true }).fill("whole milk");
+  await ff.getByLabel("Part of ingredient 3").selectOption("Custard");
+  await ff.getByRole("textbox", { name: "Step 1", exact: true }).fill("Preheat the oven to 320°F.");
+  await ff.getByRole("textbox", { name: "Step 1", exact: true }).press("Enter");
+  await page.keyboard.type("Dissolve the sugar in the water over medium-low heat.");
+  await ff.getByLabel("Part of step 2").selectOption("Caramel sauce");
+  await ff.getByRole("button", { name: "+ Add step" }).click();
+  await ff.getByRole("textbox", { name: "Step 3", exact: true }).fill("Bring the milk to 200°F.");
+  await ff.getByLabel("Part of step 3").selectOption("Custard");
+  await check(page, "recipe-parts-form", { keyboard: true });
+  await ff.getByRole("button", { name: "Save recipe" }).click();
+  await page.waitForURL(/\/r\//);
+  const fr = page.locator("main").filter({ visible: true });
+  // Ingredients grouped under part headings; instructions keep their order with headings where the part changes.
+  await expect(fr.getByRole("heading", { level: 3, name: "Caramel sauce" })).toHaveCount(2);
+  await expect(fr.getByRole("heading", { level: 3, name: "Custard" })).toHaveCount(2);
+  await expect(fr.locator("ol").first().getByText("Preheat the oven", { exact: false })).toBeVisible(); // no part: first
+  await check(page, "recipe-parts", { keyboard: true });
+  // Move "water" to Custard in the ingredient editor.
+  await fr.getByRole("button", { name: "Edit ingredients" }).click();
+  await fr.getByLabel("Part of water").selectOption("Custard");
+  await fr.getByRole("button", { name: "Save ingredients" }).click();
+  await expect(fr.getByRole("button", { name: "Edit ingredients" })).toBeVisible();
+  const custardList = fr.getByRole("heading", { level: 3, name: "Custard" }).first().locator("xpath=following-sibling::ul[1]");
+  await expect(custardList.getByText(/^water/)).toBeVisible();
+  page.once("dialog", (d) => d.accept());
+  await fr.getByRole("button", { name: "Delete recipe" }).click();
+  await page.waitForURL((u) => u.pathname === "/");
+
   // ---- The full idea form (note + link) ----
   await page.goto("/ideas/new");
   await page.getByRole("button", { name: "Save idea" }).click();

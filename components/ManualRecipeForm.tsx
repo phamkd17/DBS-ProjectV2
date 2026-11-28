@@ -5,10 +5,11 @@ import { useActionState, useEffect, useId, useRef, useState, type KeyboardEvent 
 import { createManualRecipe } from "@/app/actions";
 import type { ActionState } from "@/lib/types";
 import { Button, ErrorNote, eyebrow, fieldClass, focusRing, Spinner, textLink } from "./ui";
+import { PartSelect, PartsBar } from "./Parts";
 
-type Ing = { key: string; amount: string; item: string };
+type Ing = { key: string; amount: string; item: string; section: string };
 // Each step can have several "Why it works" notes and "Adjust to taste" pairs, like the recipe editor (student, Nov 28).
-type Step = { key: string; text: string; why: { key: string; text: string }[]; dials: { key: string; setting: string; effect: string }[] };
+type Step = { key: string; text: string; section: string; why: { key: string; text: string }[]; dials: { key: string; setting: string; effect: string }[] };
 
 
 const removeBtn = `grid size-11 shrink-0 cursor-pointer place-items-center text-xl text-ls-muted hover:bg-ls-ink/[0.06] hover:text-ls-error active:bg-ls-ink/[0.12] ${focusRing}`;
@@ -26,10 +27,12 @@ export function ManualRecipeForm({
   const next = useRef(3);
   const k = () => `${uid}-${next.current++}`;
   const [ings, setIngs] = useState<Ing[]>(() => [
-    { key: `${uid}-0`, amount: "", item: "" },
-    { key: `${uid}-1`, amount: "", item: "" },
+    { key: `${uid}-0`, amount: "", item: "", section: "" },
+    { key: `${uid}-1`, amount: "", item: "", section: "" },
   ]);
-  const [steps, setSteps] = useState<Step[]>(() => [{ key: `${uid}-2`, text: "", why: [], dials: [] }]);
+  const [steps, setSteps] = useState<Step[]>(() => [{ key: `${uid}-2`, text: "", section: "", why: [], dials: [] }]);
+  // Parts of the recipe, e.g. "Caramel sauce", "Custard" (student, Nov 28).
+  const [parts, setParts] = useState<string[]>([]);
   // Errors clear as soon as you edit that part, and come back only on the next Save.
   const [edited, setEdited] = useState<Record<string, boolean>>({});
   const [state, action, pending] = useActionState<ActionState, FormData>((prev, fd) => {
@@ -65,7 +68,7 @@ export function ManualRecipeForm({
     focusId.current = `${window.matchMedia("(min-width: 40rem)").matches ? "amt" : "item"}-${key}`;
     setIngs((r) => {
       const i = r.findIndex((x) => x.key === after);
-      return [...r.slice(0, i + 1), { key, amount: "", item: "" }, ...r.slice(i + 1)];
+      return [...r.slice(0, i + 1), { key, amount: "", item: "", section: r[i]?.section ?? "" }, ...r.slice(i + 1)]; // same part as the row above
     });
   };
   const nextStep = (e: KeyboardEvent, after: string) => {
@@ -75,7 +78,7 @@ export function ManualRecipeForm({
     focusId.current = `step-${key}`;
     setSteps((r) => {
       const i = r.findIndex((x) => x.key === after);
-      return [...r.slice(0, i + 1), { key, text: "", why: [], dials: [] }, ...r.slice(i + 1)];
+      return [...r.slice(0, i + 1), { key, text: "", section: r[i]?.section ?? "", why: [], dials: [] }, ...r.slice(i + 1)];
     });
   };
 
@@ -86,8 +89,8 @@ export function ManualRecipeForm({
         type="hidden"
         name="rows"
         value={JSON.stringify({
-          ingredients: ings.map(({ amount, item }) => ({ amount, item })),
-          steps: steps.map(({ text, why, dials }) => ({ text, why: why.map((w) => w.text), dials: dials.map(({ setting, effect }) => ({ setting, effect })) })),
+          ingredients: ings.map(({ amount, item, section }) => ({ amount, item, section })),
+          steps: steps.map(({ text, section, why, dials }) => ({ text, section, why: why.map((w) => w.text), dials: dials.map(({ setting, effect }) => ({ setting, effect })) })),
         })}
       />
 
@@ -121,6 +124,17 @@ export function ManualRecipeForm({
         </div>
       </div>
 
+      <PartsBar
+        idPrefix="manual"
+        parts={parts}
+        onAdd={(name) => setParts((p) => [...p, name])}
+        onRemove={(name) => {
+          setParts((p) => p.filter((x) => x !== name));
+          setIngs((r) => r.map((x) => (x.section === name ? { ...x, section: "" } : x)));
+          setSteps((r) => r.map((x) => (x.section === name ? { ...x, section: "" } : x)));
+        }}
+      />
+
       <fieldset className="space-y-3" aria-describedby={err.ingredients ? "ing-error" : undefined}>
         <legend className="font-ls-serif text-3xl leading-tight">Ingredients</legend>
         <p className="text-[15px] text-ls-muted">Press Enter for the next ingredient.</p>
@@ -142,6 +156,9 @@ export function ManualRecipeForm({
               <button type="button" aria-label={`Remove ingredient ${i + 1}`} title="Remove" onClick={() => setIngs((x) => x.filter((y) => y.key !== r.key))} className={`col-start-2 row-start-1 self-end sm:col-start-3 ${removeBtn}`}>
                 <span aria-hidden>×</span>
               </button>
+              <div className="col-span-full">
+                <PartSelect id={`ipart-${r.key}`} label={`ingredient ${i + 1}`} parts={parts} value={r.section} onChange={(v) => setIng(r.key, { section: v })} />
+              </div>
             </li>
           ))}
         </ul>
@@ -150,7 +167,7 @@ export function ManualRecipeForm({
             {err.ingredients}
           </p>
         )}
-        <button type="button" onClick={() => setIngs((x) => [...x, { key: k(), amount: "", item: "" }])} className={addBtn}>
+        <button type="button" onClick={() => setIngs((x) => [...x, { key: k(), amount: "", item: "", section: x[x.length - 1]?.section ?? "" }])} className={addBtn}>
           + Add ingredient
         </button>
       </fieldset>
@@ -169,6 +186,7 @@ export function ManualRecipeForm({
                   Step {i + 1}
                 </label>
                 <textarea id={`step-${s.key}`} rows={2} value={s.text} maxLength={2000} onChange={(e) => setStep(s.key, { text: e.target.value })} onKeyDown={(e) => nextStep(e, s.key)} placeholder={i === 0 ? "e.g. Heat the milk until it steams. Don't let it boil." : "Next step"} className={fieldClass} />
+                <PartSelect id={`spart-${s.key}`} label={`step ${i + 1}`} parts={parts} value={s.section} onChange={(v) => setStep(s.key, { section: v })} />
                 {s.why.map((w, j) => (
                   <div key={w.key} className="flex items-end gap-2">
                     <div className="min-w-0 flex-1 space-y-1">
@@ -248,7 +266,7 @@ export function ManualRecipeForm({
             {err.steps}
           </p>
         )}
-        <button type="button" onClick={() => setSteps((x) => [...x, { key: k(), text: "", why: [], dials: [] }])} className={addBtn}>
+        <button type="button" onClick={() => setSteps((x) => [...x, { key: k(), text: "", section: x[x.length - 1]?.section ?? "", why: [], dials: [] }])} className={addBtn}>
           + Add step
         </button>
       </fieldset>
