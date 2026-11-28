@@ -129,8 +129,9 @@ export function StepExtras({
       </div>
 
       {hasWhy && (
-        <div id={`${id}-why`} hidden={open !== "why"} className="space-y-3 border-l-2 border-ls-ink pl-4">
-          <p className={eyebrow}>Why it works</p>
+        // Food science: Cypress tint, flask (student, Nov 28: tell it apart from adjustments).
+        <div id={`${id}-why`} hidden={open !== "why"} className="space-y-3 border-l-2 border-src-science-ink bg-src-science px-4 py-3">
+          <p className={`${eyebrow} text-src-science-ink`}>Why it works</p>
           {cookWhy.map((w, j) => (
             <div key={`c${j}`} className="space-y-0.5">
               <p className="text-[13px] font-medium text-ls-muted">{who}&apos;s reason</p>
@@ -149,8 +150,9 @@ export function StepExtras({
       )}
 
       {hasDials && (
-        <div id={`${id}-dials`} hidden={open !== "dials"} className="space-y-1.5">
-          <p className={eyebrow}>Adjust to taste</p>
+        // Adjust to taste: blue tint, sliders.
+        <div id={`${id}-dials`} hidden={open !== "dials"} className="space-y-1.5 border-l-2 border-src-suggested-ink bg-src-suggested px-4 py-3">
+          <p className={`${eyebrow} text-src-suggested-ink`}>Adjust to taste</p>
           <ul className="divide-y divide-ls-rule/60 border border-ls-border bg-ls-surface">
             {realDials.map((d, j) => (
               <li key={j} className="flex flex-wrap items-baseline gap-x-2 px-3 py-2 text-[15px]">
@@ -168,24 +170,40 @@ export function StepExtras({
   );
 }
 
-/**
- * An ingredient row whose extra note ("or less to taste") hides behind the same
- * flask icon as the steps (student, Nov 28).
- */
-export function IngredientNote({ note, label, children }: { note: string; label: string; children: ReactNode }) {
+// Notes about how much to use are adjustments (sliders); anything else is a plain note.
+// The flask is kept for food science only (student, Nov 28).
+const TASTE = /\b(to taste|less|more|optional|prefer|preferred|adjust|if you like|sweeter|tangier|to your liking)\b/i;
+
+function NoteIcon() {
+  return (
+    <svg aria-hidden viewBox="0 0 20 20" className="size-[18px]">
+      <path d="M5 3.5h10v13H5zM7.5 7.5h5M7.5 10.5h5M7.5 13.5h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** An ingredient row whose extra note hides behind an icon: sliders for taste notes, a note icon otherwise. */
+export function IngredientNote({ note, item, children }: { note: string; item: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const id = useId();
+  const taste = TASTE.test(note);
+  const label = taste ? `Adjust ${item} to taste` : `Note about ${item}`;
   return (
     <div className="w-full space-y-1">
       <div className="flex items-start justify-between gap-2">
         {children}
         <div className="-my-2 shrink-0">
           <IconToggle open={open} onClick={() => setOpen((o) => !o)} controls={`${id}-note`} label={label}>
-            <FlaskIcon />
+            {taste ? <SlidersIcon /> : <NoteIcon />}
           </IconToggle>
         </div>
       </div>
-      <p id={`${id}-note`} hidden={!open} className="border-l-2 border-ls-ink pl-3 text-[15px] text-ls-muted">
+      <p
+        id={`${id}-note`}
+        hidden={!open}
+        className={`border-l-2 px-3 py-2 text-[15px] ${taste ? "border-src-suggested-ink bg-src-suggested text-src-suggested-ink" : "border-ls-rule text-ls-muted"}`}
+      >
+        {taste && <span className="font-medium">Adjust to taste: </span>}
         {note}
       </p>
     </div>

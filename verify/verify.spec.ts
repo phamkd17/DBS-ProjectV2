@@ -689,11 +689,12 @@ test("core task as a new person, every screen at 390 and 1440", async ({ page, b
   if (await dials.count()) {
     await dials.click();
     await expect(dials).toHaveAttribute("aria-expanded", "true");
-    await expect(main.getByText("Adjust to taste").first()).toBeVisible();
+    await expect(main.getByText("Adjust to taste", { exact: true }).filter({ visible: true }).first()).toBeVisible();
   }
   await check(page, "recipe-science-and-dials-open");
-  // Ingredient notes hide behind the same flask icon (student, Nov 28).
-  const noteBtn = main.getByRole("button", { name: /^Note about / }).first();
+  // Ingredient notes hide behind an icon: sliders for taste notes, a note icon otherwise (student, Nov 28).
+  await expect(main.getByRole("button", { name: /^Why .* works$/ }).first()).toBeVisible(); // the flask is for steps' food science
+  const noteBtn = main.getByRole("button", { name: /^(Note about|Adjust) / }).first();
   if (await noteBtn.count()) {
     await expect(noteBtn).toHaveAttribute("aria-expanded", "false");
     await noteBtn.click();
