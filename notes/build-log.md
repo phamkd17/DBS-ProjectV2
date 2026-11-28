@@ -933,3 +933,13 @@ Questions (answer / Use suggestion / leave blank) → Recipe page (labeled why,
   "Saved" so it fits on one line.
 - At 390px: 1658 → 1226px (with long notes), and 1231 → 995px with no notes.
   Verify ✓ (Show all/less), axe clean.
+
+## Nov 28 — Compact recipe body (branch `compact-recipe`)
+- PR 16 merged and live (Vercel ✓). `/security-review` before the merge found
+  no issues at confidence ≥ 8; the live `photos` bucket is private. v1 still
+  loads.
+- The student asked for a more compact recipe. Title 4xl/5xl → 3xl/4xl;
+  Ingredients/Steps headings 2xl → xl; ingredient rows py-3 → py-2; step rows
+  py-3 → py-2 with gap 4 → 3; the step number is 17px on the first text line
+  (was a 2xl numeral). At 390px: 2534 → 2272px (2967 before any compaction).
+  Verify ✓, axe clean.
